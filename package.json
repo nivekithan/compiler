@@ -1,0 +1,25 @@
+{
+  "name": "compiler",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nivekithan/compiler.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nivekithan/compiler/issues"
+  },
+  "homepage": "https://github.com/nivekithan/compiler#readme",
+  "devDependencies": {
+    "@swc/cli": "^0.1.56",
+    "@swc/core": "^1.2.160",
+    "@swc/jest": "^0.2.20",
+    "@types/jest": "^27.4.1",
+    "jest": "^27.5.1"
+  }
+}
