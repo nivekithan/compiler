@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:debug" : "node --inspect-brk ./node_modules/.bin/jest -i"
   },
   "repository": {
     "type": "git",
