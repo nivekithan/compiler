@@ -68,7 +68,24 @@ class LexerFactory {
     }
   }
 
-  getNextToken() {
+  consumeTillWhiteSpaceOrEOF() {
+    let activeChar = this.getCurrentChar();
+
+    if (activeChar === null) return;
+
+    while (!isWhitespaceCharacter(activeChar)) {
+      this.next();
+      const curChar = this.getCurrentChar();
+
+      if (curChar === null) {
+        break;
+      }
+
+      activeChar = curChar;
+    }
+  }
+
+  getNextToken(): Tokens {
     this.skipWhiteSpace();
     const curChar = this.getCurrentChar();
 
@@ -89,7 +106,7 @@ class LexerFactory {
           if (this.isCurrentCharWhiteSpaceOrEOF()) {
             return Token.StrictEquality;
           } else {
-            this.next();
+            this.consumeTillWhiteSpaceOrEOF();
             return Token.Illegal;
           }
         }
@@ -97,7 +114,7 @@ class LexerFactory {
         if (this.isCurrentCharWhiteSpaceOrEOF()) {
           return Token.Equality;
         } else {
-          this.next();
+          this.consumeTillWhiteSpaceOrEOF();
           return Token.Illegal;
         }
       } else if (curChar === ">") {
@@ -106,7 +123,7 @@ class LexerFactory {
         if (this.isCurrentCharWhiteSpaceOrEOF()) {
           return Token.FunctionArrow;
         } else {
-          this.next();
+          this.consumeTillWhiteSpaceOrEOF();
           return Token.Illegal;
         }
       }
@@ -114,17 +131,184 @@ class LexerFactory {
       if (this.isCurrentCharWhiteSpaceOrEOF()) {
         return Token.Assign;
       } else {
-        this.next();
+        this.consumeTillWhiteSpaceOrEOF();
+        return Token.Illegal;
+      }
+    } else if (curChar === "+") {
+      this.next(); // consumes +
+
+      const curChar = this.getCurrentChar();
+
+      if (curChar === "=") {
+        this.next(); // consumes =
+
+        if (this.isCurrentCharWhiteSpaceOrEOF()) {
+          return Token.PlusAssign;
+        } else {
+          this.consumeTillWhiteSpaceOrEOF();
+          return Token.Illegal;
+        }
+      }
+
+      if (this.isCurrentCharWhiteSpaceOrEOF()) {
+        return Token.Plus;
+      } else {
+        this.consumeTillWhiteSpaceOrEOF();
+        return Token.Illegal;
+      }
+    } else if (curChar === "-") {
+      this.next(); // consumes -
+
+      const curChar = this.getCurrentChar();
+
+      if (curChar === "=") {
+        this.next(); // consumes =
+
+        if (this.isCurrentCharWhiteSpaceOrEOF()) {
+          return Token.MinusAssign;
+        } else {
+          this.consumeTillWhiteSpaceOrEOF();
+          return Token.Illegal;
+        }
+      }
+
+      if (this.isCurrentCharWhiteSpaceOrEOF()) {
+        return Token.Minus;
+      } else {
+        this.consumeTillWhiteSpaceOrEOF();
+        return Token.Illegal;
+      }
+    } else if (curChar === "*") {
+      this.next(); // consumes *
+
+      const curChar = this.getCurrentChar();
+
+      if (curChar === "=") {
+        this.next(); // consumes =
+
+        if (this.isCurrentCharWhiteSpaceOrEOF()) {
+          return Token.StarAssign;
+        } else {
+          this.consumeTillWhiteSpaceOrEOF();
+          return Token.Illegal;
+        }
+      }
+
+      if (this.isCurrentCharWhiteSpaceOrEOF()) {
+        return Token.Star;
+      } else {
+        this.consumeTillWhiteSpaceOrEOF();
+        return Token.Illegal;
+      }
+    } else if (curChar === "/") {
+      this.next(); // consumes /
+
+      const curChar = this.getCurrentChar();
+
+      if (curChar === "=") {
+        this.next(); // consumes =
+
+        if (this.isCurrentCharWhiteSpaceOrEOF()) {
+          return Token.SlashAssign;
+        } else {
+          this.consumeTillWhiteSpaceOrEOF();
+          return Token.Illegal;
+        }
+      }
+
+      if (this.isCurrentCharWhiteSpaceOrEOF()) {
+        return Token.Slash;
+      } else {
+        this.consumeTillWhiteSpaceOrEOF();
+        return Token.Illegal;
+      }
+    } else if (curChar === "!") {
+      this.next(); // consumes !
+
+      const curChar = this.getCurrentChar();
+
+      if (curChar === "=") {
+        this.next(); // consumes =
+        const curChar = this.getCurrentChar();
+
+        if (curChar === "=") {
+          this.next(); // consumes =
+
+          if (this.isCurrentCharWhiteSpaceOrEOF()) {
+            return Token.StrictNotEqual;
+          } else {
+            this.consumeTillWhiteSpaceOrEOF();
+            return Token.Illegal;
+          }
+        }
+
+        if (this.isCurrentCharWhiteSpaceOrEOF()) {
+          return Token.NotEqual;
+        } else {
+          this.consumeTillWhiteSpaceOrEOF();
+          return Token.Illegal;
+        }
+      }
+
+      if (this.isCurrentCharWhiteSpaceOrEOF()) {
+        return Token.Bang;
+      } else {
+        this.consumeTillWhiteSpaceOrEOF();
+        return Token.Illegal;
+      }
+    } else if (curChar === "<") {
+      this.next(); // consumes <
+
+      const curChar = this.getCurrentChar();
+
+      if (curChar === "=") {
+        this.next(); // consumes =
+
+        if (this.isCurrentCharWhiteSpaceOrEOF()) {
+          return Token.LessThanOrEqual;
+        } else {
+          this.consumeTillWhiteSpaceOrEOF();
+          return Token.Illegal;
+        }
+      }
+
+      if (this.isCurrentCharWhiteSpaceOrEOF()) {
+        return Token.LessThan;
+      } else {
+        this.consumeTillWhiteSpaceOrEOF();
+        return Token.Illegal;
+      }
+    } else if (curChar === ">") {
+      this.next(); // consumes >
+
+      const curChar = this.getCurrentChar();
+
+      if (curChar === "=") {
+        this.next(); // consumes =
+
+        if (this.isCurrentCharWhiteSpaceOrEOF()) {
+          return Token.GreaterThanOrEqual;
+        } else {
+          this.consumeTillWhiteSpaceOrEOF();
+          return Token.Illegal;
+        }
+      }
+
+      if (this.isCurrentCharWhiteSpaceOrEOF()) {
+        return Token.GreaterThan;
+      } else {
+        this.consumeTillWhiteSpaceOrEOF();
         return Token.Illegal;
       }
     }
-    this.next();
+
+    this.consumeTillWhiteSpaceOrEOF();
 
     return Token.Illegal;
   }
 }
 
-export const isWhitespaceCharacter = (character: string | number): boolean => {
+ const isWhitespaceCharacter = (character: string | number): boolean => {
   return /\s/.test(
     typeof character === "number"
       ? String.fromCharCode(character)

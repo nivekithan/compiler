@@ -3,7 +3,7 @@ export type Tokens = Token;
 export enum Token {
   // Assignment operators
   Assign = "Assign", // =
-  PlusAssign = "PlusAssign", // +4=
+  PlusAssign = "PlusAssign", // +=
   MinusAssign = "MinusAssign", // -=
   StarAssign = "StarAssign", // *=
   SlashAssign = "SlashAssign", // /=
