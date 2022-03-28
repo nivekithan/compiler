@@ -1,4 +1,4 @@
-export type Tokens = Token;
+export type Tokens = Token | LiteralToken | KeywordTokens | IdentifierToken;
 
 export enum Token {
   // Assignment operators
@@ -49,4 +49,27 @@ export enum Token {
 
   Illegal = "Illegal", // Unknown token
   EOF = "EOF", // End of File
+}
+
+export type LiteralToken =
+  | { type: "string"; value: string }
+  | { type: "number"; value: number }
+  | { type: "boolean"; value: boolean };
+
+export type IdentifierToken = {type : "identifier", value : string};
+
+export enum KeywordTokens {
+  Const = "Const",
+  Let = "Let",
+  If = "If",
+  Else = "Else",
+  While = "While",
+  Do = "Do",
+  Break = "Break",
+  Continue = "Continue",
+  Function = "Function",
+  Return = "Return",
+  Import = "Import",
+  From = "From",
+  Export = "Export",
 }
