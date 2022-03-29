@@ -31,7 +31,8 @@ export type Expression =
   | NumberLiteralExp
   | BooleanLiteralExp
   | UninaryExp
-  | BinaryExp;
+  | BinaryExp
+  | BoxMemberAccessExp;
 
 export type StringLiteralExp = { type: "string"; value: string };
 export type NumberLiteralExp = { type: "number"; value: number };
@@ -122,6 +123,12 @@ export type GreaterThanBinaryExp = {
 };
 export type GreaterThanOrEqualBinaryExp = {
   type: Token.GreaterThanOrEqual;
+  left: Expression;
+  right: Expression;
+};
+
+export type BoxMemberAccessExp = {
+  type: "BoxMemberAccess";
   left: Expression;
   right: Expression;
 };

@@ -307,3 +307,23 @@ test("Testing group expressions", () => {
     },
   ]);
 });
+
+test("Array member Access Test", () => {
+  const input = `
+  const a = b[1];`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      identifierName: "a",
+      datatype: DataType.NotCalculated,
+      exp: {
+        type: "ArrayMemberAccess",
+        left: { type: "identifier", name: "b" },
+        right: { type: "number", value: 1 },
+      },
+    },
+  ]);
+});

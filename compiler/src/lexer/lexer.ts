@@ -111,6 +111,8 @@ class LexerFactory {
   // Expect curChar to be LatinChar or $ or _, else it will return null
   // Ends at first non latinChar or $ or _ or numbers
   readIdentifier(): string | null {
+    debugger;
+
     const startChar = this.getCurrentChar();
     const chars: string[] = [];
 
@@ -122,7 +124,7 @@ class LexerFactory {
 
     while (true) {
       const curChar = this.getCurrentChar();
-
+      debugger
       if (
         curChar === null ||
         !(
@@ -356,7 +358,7 @@ class LexerFactory {
 }
 
 const isLatinCharacter = (character: string | number): boolean => {
-  return /[a-zA-z]/.test(
+  return /[a-zA-Z]/.test(
     typeof character === "number"
       ? String.fromCharCode(character)
       : character.charAt(0)

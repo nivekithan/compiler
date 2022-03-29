@@ -236,6 +236,17 @@ export class ParserFactory {
       return this.parseGenericBinaryExpression(curToken, left);
     }
 
+    if (curToken === Token.BoxOpenBracket) {
+      this.next(); // consumes [
+
+      const memberAccessExp = this.parseExpression();
+
+      this.assertCurToken(Token.BoxCloseBracket);
+      this.next(); // consumes ]
+      
+      return { type: "BoxMemberAccess", left, right: memberAccessExp };
+    }
+
     return null;
   }
 
@@ -250,7 +261,6 @@ export class ParserFactory {
     token: BinaryExp["type"],
     left: Expression
   ): BinaryExp {
-
     this.next(); // consumes token
     const nextExp = this.parseExpression(this.getNonPrefixPrecedence(token));
     return { type: token, left, right: nextExp };
