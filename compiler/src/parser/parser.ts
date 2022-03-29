@@ -1,6 +1,7 @@
 import { IdentifierToken, KeywordTokens, Token, Tokens } from "../lexer/tokens";
 import {
   Ast,
+  BinaryExp,
   ConstVariableDeclaration,
   DataType,
   Expression,
@@ -138,6 +139,7 @@ export class ParserFactory {
     const fileName = fileNameToken.value;
     this.next(); // consume stringLiteral
     this.skipSemiColon();
+
     return {
       type: "importDeclaration",
       from: fileName,
@@ -153,12 +155,16 @@ export class ParserFactory {
         `There is no prefix token associated with token ${this.getCurToken()}`
       );
 
-    const nextToken = this.getCurToken();
-
     while (
-      nextToken !== Token.SemiColon &&
-      nextToken !== null &&
-      precedence < this.getNonPrefixPrecedence(nextToken)
+      (() => {
+        const nextToken = this.getCurToken();
+
+        return (
+          nextToken !== Token.SemiColon &&
+          nextToken !== null &&
+          precedence < this.getNonPrefixPrecedence(nextToken)
+        );
+      })()
     ) {
       const nonPrefixExp = this.parseNonPrefixExp(prefixExp);
 
@@ -193,22 +199,61 @@ export class ParserFactory {
       curToken === Token.Bang
     ) {
       return this.parseGenericUninaryExpression(curToken);
+    } else if (curToken === Token.CurveOpenBracket) {
+      this.next(); // consumes (
+
+      const groupedExp = this.parseExpression();
+
+      this.assertCurToken(Token.CurveCloseBracket);
+      this.next(); // consumes )
+
+      return groupedExp;
     }
 
     return null;
   }
 
-  parseGenericUninaryExpression(
-    token: Token.Plus | Token.Minus | Token.Bang
-  ): UninaryExp {
+  parseNonPrefixExp(left: Expression): Expression | null {
+    const curToken = this.getCurToken();
+
+    if (curToken === null) return null;
+
+    if (
+      curToken === Token.Plus ||
+      curToken === Token.Minus ||
+      curToken === Token.Star ||
+      curToken === Token.Slash ||
+      curToken === Token.VerticalBar ||
+      curToken === Token.Caret ||
+      curToken === Token.Ampersand ||
+      curToken === Token.StrictEquality ||
+      curToken === Token.StrictNotEqual ||
+      curToken === Token.LessThan ||
+      curToken === Token.LessThanOrEqual ||
+      curToken === Token.GreaterThan ||
+      curToken === Token.GreaterThanOrEqual
+    ) {
+      return this.parseGenericBinaryExpression(curToken, left);
+    }
+
+    return null;
+  }
+
+  parseGenericUninaryExpression(token: UninaryExp["type"]): UninaryExp {
     this.next(); // consumes token
 
     const nextExp = this.parseExpression(this.getPrefixPrecedence(token));
     return { type: token, argument: nextExp };
   }
 
-  parseNonPrefixExp(left: Expression): Expression | null {
-    return null;
+  parseGenericBinaryExpression(
+    token: BinaryExp["type"],
+    left: Expression
+  ): BinaryExp {
+
+    this.next(); // consumes token
+    const nextExp = this.parseExpression(this.getNonPrefixPrecedence(token));
+    return { type: token, left, right: nextExp };
   }
 
   getPrefixPrecedence(token: Tokens): number {
@@ -230,7 +275,39 @@ export class ParserFactory {
   }
 
   getNonPrefixPrecedence(token: Tokens): number {
-    return 1;
+    const nonPrefixPrecedence: { [index: string]: number | undefined } = {
+      [Token.BoxOpenBracket]: 20,
+      [Token.Dot]: 20,
+      [Token.CurveOpenBracket]: 20,
+
+      [Token.Star]: 15,
+      [Token.Slash]: 15,
+
+      [Token.Plus]: 14,
+      [Token.Minus]: 14,
+
+      [Token.LessThan]: 12,
+      [Token.LessThanOrEqual]: 12,
+      [Token.GreaterThan]: 12,
+      [Token.GreaterThanOrEqual]: 12,
+
+      [Token.StrictEquality]: 11,
+      [Token.StrictNotEqual]: 11,
+
+      [Token.Ampersand]: 10,
+      [Token.Caret]: 9,
+      [Token.VerticalBar]: 8,
+    };
+
+    if (typeof token === "string") {
+      const precedence = nonPrefixPrecedence[token];
+
+      if (precedence === undefined) return 1;
+
+      return precedence;
+    } else {
+      return 1;
+    }
   }
 
   skipSemiColon() {

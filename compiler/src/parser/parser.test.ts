@@ -1,6 +1,6 @@
 import { convertToTokens } from "../lexer/lexer";
 import { Token } from "../lexer/tokens";
-import { Ast, DataType } from "./ast";
+import { Ast, ConstVariableDeclaration, DataType } from "./ast";
 import { convertToAst } from "./parser";
 
 test("Test import declaration", () => {
@@ -61,7 +61,7 @@ test("Const variable declaration", () => {
   const e = false 
   const f = +123
   const g = -123
-  const h = !!true`;
+  const h = !!true;`;
 
   const output = convertToAst(convertToTokens(input));
 
@@ -119,6 +119,159 @@ test("Const variable declaration", () => {
         },
       },
       datatype: DataType.NotCalculated,
+    },
+  ]);
+});
+
+test("Testing Binary Expression", () => {
+  const input = `
+  const a = 1 + 2;
+  const b = 1 - 2;
+  const c = 1 * 2;
+  const d = 1 / 2;
+  const e = 1 | 2;
+  const f = 1 ^ 2;
+  const g = 1 & 2;
+  const h = 1 === 2;
+  const i = 1 !== 2;
+  const j = 1 < 2;
+  const k = 1 <= 2;
+  const l = 1 > 2;
+  const m = 1 >= 2;
+   `;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "a",
+      exp: {
+        type: Token.Plus,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "b",
+      exp: {
+        type: Token.Minus,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "c",
+      exp: {
+        type: Token.Star,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "d",
+      exp: {
+        type: Token.Slash,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "e",
+      exp: {
+        type: Token.VerticalBar,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "f",
+      exp: {
+        type: Token.Caret,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "g",
+      exp: {
+        type: Token.Ampersand,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "h",
+      exp: {
+        type: Token.StrictEquality,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "i",
+      exp: {
+        type: Token.StrictNotEqual,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "j",
+      exp: {
+        type: Token.LessThan,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "k",
+      exp: {
+        type: Token.LessThanOrEqual,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "l",
+      exp: {
+        type: Token.GreaterThan,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "m",
+      exp: {
+        type: Token.GreaterThanOrEqual,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 2 },
+      },
     },
   ]);
 });
