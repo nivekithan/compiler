@@ -308,7 +308,7 @@ test("Testing group expressions", () => {
   ]);
 });
 
-test("Array member Access Test", () => {
+test("Box Member Access Test", () => {
   const input = `
   const a = b[1];`;
 
@@ -320,9 +320,29 @@ test("Array member Access Test", () => {
       identifierName: "a",
       datatype: DataType.NotCalculated,
       exp: {
-        type: "ArrayMemberAccess",
+        type: "BoxMemberAccess",
         left: { type: "identifier", name: "b" },
         right: { type: "number", value: 1 },
+      },
+    },
+  ]);
+});
+
+test("Dot Member Access Test", () => {
+  const input = `
+  const a = b.c;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      identifierName: "a",
+      datatype: DataType.NotCalculated,
+      exp: {
+        type: "DotMemberAccess",
+        left: { type: "identifier", name: "b" },
+        right: "c",
       },
     },
   ]);

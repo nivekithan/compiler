@@ -243,8 +243,24 @@ export class ParserFactory {
 
       this.assertCurToken(Token.BoxCloseBracket);
       this.next(); // consumes ]
-      
+
       return { type: "BoxMemberAccess", left, right: memberAccessExp };
+    }
+
+    if (curToken === Token.Dot) {
+      this.next(); // consumes .
+
+      const curToken = this.getCurToken();
+
+      if (curToken === null) throw Error("Expected Identifier after Dot");
+
+      if (isIdentifier(curToken)) {
+        const identifierName = curToken.value;
+
+        this.next(); // consumes Identifier
+
+        return { type: "DotMemberAccess", left, right: identifierName };
+      }
     }
 
     return null;

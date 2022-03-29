@@ -32,7 +32,8 @@ export type Expression =
   | BooleanLiteralExp
   | UninaryExp
   | BinaryExp
-  | BoxMemberAccessExp;
+  | BoxMemberAccessExp
+  | DotMemberAccessExp;
 
 export type StringLiteralExp = { type: "string"; value: string };
 export type NumberLiteralExp = { type: "number"; value: number };
@@ -131,6 +132,12 @@ export type BoxMemberAccessExp = {
   type: "BoxMemberAccess";
   left: Expression;
   right: Expression;
+};
+
+export type DotMemberAccessExp = {
+  type: "DotMemberAccess";
+  left: Expression;
+  right: string;
 };
 
 export enum DataType {
