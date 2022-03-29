@@ -275,3 +275,35 @@ test("Testing Binary Expression", () => {
     },
   ]);
 });
+
+test("Testing group expressions", () => {
+  const input = `
+  const a = (1 * (2 + 3)) / (4 + 5)`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      identifierName: "a",
+      datatype: DataType.NotCalculated,
+      exp: {
+        type: Token.Slash,
+        left: {
+          type: Token.Star,
+          left: { type: "number", value: 1 },
+          right: {
+            type: Token.Plus,
+            left: { type: "number", value: 2 },
+            right: { type: "number", value: 3 },
+          },
+        },
+        right: {
+          type: Token.Plus,
+          left: { type: "number", value: 4 },
+          right: { type: "number", value: 5 },
+        },
+      },
+    },
+  ]);
+});
