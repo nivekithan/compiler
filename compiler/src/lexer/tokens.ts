@@ -56,7 +56,7 @@ export type LiteralToken =
   | { type: "number"; value: number }
   | { type: "boolean"; value: boolean };
 
-export type IdentifierToken = {type : "identifier", value : string};
+export type IdentifierToken = { type: "identifier"; value: string };
 
 export enum KeywordTokens {
   Const = "Const",

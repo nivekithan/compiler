@@ -1,4 +1,5 @@
 import { convertToTokens } from "../lexer/lexer";
+import { Token } from "../lexer/tokens";
 import { Ast, DataType } from "./ast";
 import { convertToAst } from "./parser";
 
@@ -57,7 +58,10 @@ test("Const variable declaration", () => {
   const b = someOtherVar;
   const c = 123
   const d = true;
-  const e = false `;
+  const e = false 
+  const f = +123
+  const g = -123
+  const h = !!true`;
 
   const output = convertToAst(convertToTokens(input));
 
@@ -90,6 +94,30 @@ test("Const variable declaration", () => {
       type: "constVariableDeclaration",
       identifierName: "e",
       exp: { type: "boolean", value: false },
+      datatype: DataType.NotCalculated,
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "f",
+      exp: { type: Token.Plus, argument: { type: "number", value: 123 } },
+      datatype: DataType.NotCalculated,
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "g",
+      exp: { type: Token.Minus, argument: { type: "number", value: 123 } },
+      datatype: DataType.NotCalculated,
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "h",
+      exp: {
+        type: Token.Bang,
+        argument: {
+          type: Token.Bang,
+          argument: { type: "boolean", value: true },
+        },
+      },
       datatype: DataType.NotCalculated,
     },
   ]);

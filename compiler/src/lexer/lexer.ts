@@ -184,37 +184,17 @@ class LexerFactory {
         if (curChar === "=") {
           this.next(); // consumes =
 
-          if (this.isCurrentCharWhiteSpaceOrEOF()) {
-            return Token.StrictEquality;
-          } else {
-            this.consumeTillWhiteSpaceOrEOF();
-            return Token.Illegal;
-          }
+          return Token.StrictEquality;
         }
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.Equality;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.Equality;
       } else if (curChar === ">") {
         this.next(); // consumes >
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.FunctionArrow;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.FunctionArrow;
       }
 
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.Assign;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.Assign;
     } else if (curChar === "+") {
       this.next(); // consumes +
 
@@ -223,19 +203,9 @@ class LexerFactory {
       if (curChar === "=") {
         this.next(); // consumes =
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.PlusAssign;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.PlusAssign;
       }
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.Plus;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.Plus;
     } else if (curChar === "-") {
       this.next(); // consumes -
 
@@ -244,20 +214,10 @@ class LexerFactory {
       if (curChar === "=") {
         this.next(); // consumes =
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.MinusAssign;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.MinusAssign;
       }
 
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.Minus;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.Minus;
     } else if (curChar === "*") {
       this.next(); // consumes *
 
@@ -266,20 +226,10 @@ class LexerFactory {
       if (curChar === "=") {
         this.next(); // consumes =
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.StarAssign;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.StarAssign;
       }
 
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.Star;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.Star;
     } else if (curChar === "/") {
       this.next(); // consumes /
 
@@ -288,20 +238,10 @@ class LexerFactory {
       if (curChar === "=") {
         this.next(); // consumes =
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.SlashAssign;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.SlashAssign;
       }
 
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.Slash;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.Slash;
     } else if (curChar === "!") {
       this.next(); // consumes !
 
@@ -314,28 +254,13 @@ class LexerFactory {
         if (curChar === "=") {
           this.next(); // consumes =
 
-          if (this.isCurrentCharWhiteSpaceOrEOF()) {
-            return Token.StrictNotEqual;
-          } else {
-            this.consumeTillWhiteSpaceOrEOF();
-            return Token.Illegal;
-          }
+          return Token.StrictNotEqual;
         }
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.NotEqual;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.NotEqual;
       }
 
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.Bang;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.Bang;
     } else if (curChar === "<") {
       this.next(); // consumes <
 
@@ -344,20 +269,10 @@ class LexerFactory {
       if (curChar === "=") {
         this.next(); // consumes =
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.LessThanOrEqual;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.LessThanOrEqual;
       }
 
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.LessThan;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.LessThan;
     } else if (curChar === ">") {
       this.next(); // consumes >
 
@@ -366,20 +281,10 @@ class LexerFactory {
       if (curChar === "=") {
         this.next(); // consumes =
 
-        if (this.isCurrentCharWhiteSpaceOrEOF()) {
-          return Token.GreaterThanOrEqual;
-        } else {
-          this.consumeTillWhiteSpaceOrEOF();
-          return Token.Illegal;
-        }
+        return Token.GreaterThanOrEqual;
       }
 
-      if (this.isCurrentCharWhiteSpaceOrEOF()) {
-        return Token.GreaterThan;
-      } else {
-        this.consumeTillWhiteSpaceOrEOF();
-        return Token.Illegal;
-      }
+      return Token.GreaterThan;
     } else if (curChar === ";") {
       this.next(); // consumes ;
       return Token.SemiColon;
@@ -440,7 +345,7 @@ class LexerFactory {
           return maybeKeyword;
         }
 
-        return {type : "identifier", value : ident};
+        return { type: "identifier", value: ident };
       }
     }
 

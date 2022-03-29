@@ -34,27 +34,7 @@ test("Testing Token", () => {
   ===
   ==
   =
-  =>
-  =>=
-  ====
-  ===+
-  ==-
-  =-
-  ////
-  /====
-  ****
-  *===
-  ----
-  -====
-  +++++
-  +====
-  !====
-  !*
-  !=*
-  <*
-  <=*
-  >*
-  >=*`;
+  =>`;
 
   const output = convertToTokens(input);
 
@@ -91,26 +71,6 @@ test("Testing Token", () => {
     Token.Equality,
     Token.Assign,
     Token.FunctionArrow,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
-    Token.Illegal,
   ]);
 });
 

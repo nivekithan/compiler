@@ -6,6 +6,7 @@ import {
   Expression,
   IdentifierAst,
   ImportDeclaration,
+  UninaryExp,
 } from "./ast";
 
 export const convertToAst = (tokens: Tokens[]): Ast[] => {
@@ -157,7 +158,7 @@ export class ParserFactory {
     while (
       nextToken !== Token.SemiColon &&
       nextToken !== null &&
-      precedence > this.getNonPrefixPrecedence(nextToken)
+      precedence < this.getNonPrefixPrecedence(nextToken)
     ) {
       const nonPrefixExp = this.parseNonPrefixExp(prefixExp);
 
@@ -186,13 +187,46 @@ export class ParserFactory {
     } else if (isBooleanLiteral(curToken)) {
       this.next(); // consumes Boolean
       return { type: "boolean", value: curToken.value };
+    } else if (
+      curToken === Token.Plus ||
+      curToken === Token.Minus ||
+      curToken === Token.Bang
+    ) {
+      return this.parseGenericUninaryExpression(curToken);
     }
 
     return null;
   }
 
+  parseGenericUninaryExpression(
+    token: Token.Plus | Token.Minus | Token.Bang
+  ): UninaryExp {
+    this.next(); // consumes token
+
+    const nextExp = this.parseExpression(this.getPrefixPrecedence(token));
+    return { type: token, argument: nextExp };
+  }
+
   parseNonPrefixExp(left: Expression): Expression | null {
     return null;
+  }
+
+  getPrefixPrecedence(token: Tokens): number {
+    const prefixPrecendance: { [index: string]: number | undefined } = {
+      [Token.Plus]: 17,
+      [Token.Minus]: 17,
+      [Token.Bang]: 17,
+    };
+
+    if (typeof token === "string") {
+      const precedence = prefixPrecendance[token];
+
+      if (precedence === undefined) return 1;
+
+      return precedence;
+    } else {
+      return 1;
+    }
   }
 
   getNonPrefixPrecedence(token: Tokens): number {
