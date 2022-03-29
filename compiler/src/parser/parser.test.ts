@@ -50,3 +50,47 @@ test("Test import declaration", () => {
     },
   ]);
 });
+
+test("Const variable declaration", () => {
+  const input = `
+  const a = "A"
+  const b = someOtherVar;
+  const c = 123
+  const d = true;
+  const e = false `;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      identifierName: "a",
+      exp: { type: "string", value: "A" },
+      datatype: DataType.NotCalculated,
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "b",
+      exp: { type: "identifier", name: "someOtherVar" },
+      datatype: DataType.NotCalculated,
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "c",
+      exp: { type: "number", value: 123 },
+      datatype: DataType.NotCalculated,
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "d",
+      exp: { type: "boolean", value: true },
+      datatype: DataType.NotCalculated,
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "e",
+      exp: { type: "boolean", value: false },
+      datatype: DataType.NotCalculated,
+    },
+  ]);
+});

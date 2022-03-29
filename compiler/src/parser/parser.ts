@@ -1,5 +1,12 @@
 import { IdentifierToken, KeywordTokens, Token, Tokens } from "../lexer/tokens";
-import { Ast, DataType, IdentifierAst, ImportDeclaration } from "./ast";
+import {
+  Ast,
+  ConstVariableDeclaration,
+  DataType,
+  Expression,
+  IdentifierAst,
+  ImportDeclaration,
+} from "./ast";
 
 export const convertToAst = (tokens: Tokens[]): Ast[] => {
   const Parser = new ParserFactory(tokens);
@@ -24,6 +31,54 @@ export class ParserFactory {
   constructor(content: Tokens[]) {
     this.content = content;
     this.curPos = 0;
+  }
+
+  getNextAst(): Ast {
+    const curToken = this.getCurToken();
+
+    if (curToken === null) return { type: "EOF" };
+    if (curToken === KeywordTokens.Import) return this.parseImportDeclaration();
+    if (curToken === KeywordTokens.Const)
+      return this.parseVariableDeclaration();
+
+    throw Error(`This token cannot be parsed: ${curToken}`);
+  }
+
+  /**
+   * Expect curToken to be Keyword.Const
+   *
+   */
+
+  parseVariableDeclaration(): ConstVariableDeclaration {
+    const curToken = this.getCurToken();
+
+    if (curToken !== KeywordTokens.Const)
+      throw Error("Expected curToken be keyword.const");
+
+    this.next(); // consumes const
+
+    const identifierToken = this.getCurToken();
+
+    if (identifierToken === null || !isIdentifier(identifierToken))
+      throw Error("Expected Identifier token next to Keyword.const");
+
+    this.next(); // consumes identifier
+
+    this.assertCurToken(Token.Assign);
+    this.next(); // consumes =
+
+    const exp = this.parseExpression();
+
+    const constVariableDeclarationAst: ConstVariableDeclaration = {
+      type: "constVariableDeclaration",
+      identifierName: identifierToken.value,
+      datatype: DataType.NotCalculated,
+      exp,
+    };
+
+    this.skipSemiColon();
+
+    return constVariableDeclarationAst;
   }
 
   /**
@@ -89,21 +144,67 @@ export class ParserFactory {
     };
   }
 
-  skipSemiColon() {
-      const isSemiColon = this.isCurToken(Token.SemiColon);
+  parseExpression(precedence: number = 1): Expression {
+    let prefixExp = this.parsePrefixExp();
 
-      if (isSemiColon) {
-          this.next(); // consumes ;
+    if (prefixExp === null)
+      throw Error(
+        `There is no prefix token associated with token ${this.getCurToken()}`
+      );
+
+    const nextToken = this.getCurToken();
+
+    while (
+      nextToken !== Token.SemiColon &&
+      nextToken !== null &&
+      precedence > this.getNonPrefixPrecedence(nextToken)
+    ) {
+      const nonPrefixExp = this.parseNonPrefixExp(prefixExp);
+
+      if (nonPrefixExp !== null) {
+        prefixExp = nonPrefixExp;
       }
+    }
+
+    return prefixExp;
   }
 
-  getNextAst(): Ast {
+  parsePrefixExp(): Expression | null {
     const curToken = this.getCurToken();
 
-    if (curToken === null) return { type: "EOF" };
-    if (curToken === KeywordTokens.Import) return this.parseImportDeclaration();
+    if (curToken === null) return null;
 
-    throw Error(`This token cannot be parsed: ${curToken}`);
+    if (isStringLiteral(curToken)) {
+      this.next(); // consumes StringLiteral
+      return curToken;
+    } else if (isIdentifier(curToken)) {
+      this.next(); // consumes Identifier
+      return { type: "identifier", name: curToken.value };
+    } else if (isNumberLiteral(curToken)) {
+      this.next(); // consumes NumberLiteral
+      return { type: "number", value: curToken.value };
+    } else if (isBooleanLiteral(curToken)) {
+      this.next(); // consumes Boolean
+      return { type: "boolean", value: curToken.value };
+    }
+
+    return null;
+  }
+
+  parseNonPrefixExp(left: Expression): Expression | null {
+    return null;
+  }
+
+  getNonPrefixPrecedence(token: Tokens): number {
+    return 1;
+  }
+
+  skipSemiColon() {
+    const isSemiColon = this.isCurToken(Token.SemiColon);
+
+    if (isSemiColon) {
+      this.next(); // consumes ;
+    }
   }
 
   next() {
@@ -152,5 +253,19 @@ const isStringLiteral = (
   token: Tokens
 ): token is { type: "string"; value: string } => {
   if (typeof token === "object" && token.type === "string") return true;
+  return false;
+};
+
+const isNumberLiteral = (
+  token: Tokens
+): token is { type: "number"; value: number } => {
+  if (typeof token === "object" && token.type === "number") return true;
+  return false;
+};
+
+const isBooleanLiteral = (
+  token: Tokens
+): token is { type: "boolean"; value: boolean } => {
+  if (typeof token === "object" && token.type === "boolean") return true;
   return false;
 };
