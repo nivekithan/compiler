@@ -1,5 +1,5 @@
 import { convertToTokens } from "../lexer/lexer";
-import { Token } from "../lexer/tokens";
+import { KeywordTokens, Token } from "../lexer/tokens";
 import { Ast, ConstVariableDeclaration, DataType } from "./ast";
 import { convertToAst } from "./parser";
 
@@ -588,5 +588,18 @@ test("Testing naked Expressions", () => {
       left: { type: "identifier", name: "b" },
       right: { type: "number", value: 2 },
     },
+  ]);
+});
+
+test("Testing break and continue statement", () => {
+  const input = `
+  break
+  continue;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    { type: KeywordTokens.Break },
+    { type: KeywordTokens.Continue },
   ]);
 });

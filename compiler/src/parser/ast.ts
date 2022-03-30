@@ -1,4 +1,4 @@
-import { Token } from "../lexer/tokens";
+import { KeywordTokens, Token } from "../lexer/tokens";
 
 export type Ast =
   | ImportDeclaration
@@ -6,6 +6,8 @@ export type Ast =
   | IdentifierAst
   | ReAssignment
   | Expression
+  | BreakStatement
+  | ContinueStatement
   | { type: "EOF" };
 
 export type ImportDeclaration = {
@@ -64,6 +66,9 @@ export type BoxMemberPath = {
   leftPath: ReAssignmentPath;
   accessExp: Expression;
 };
+
+export type BreakStatement = { type: KeywordTokens.Break };
+export type ContinueStatement = { type: KeywordTokens.Continue };
 
 export type Expression =
   | StringLiteralExp

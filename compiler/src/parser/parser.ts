@@ -50,6 +50,15 @@ export class ParserFactory {
     if (curToken === KeywordTokens.Const || curToken === KeywordTokens.Let)
       return this.parseVariableDeclaration();
 
+    if (
+      curToken === KeywordTokens.Break ||
+      curToken === KeywordTokens.Continue
+    ) {
+      this.next(); // consumes Break or Continue;
+      this.skipSemiColon();
+      return { type: curToken };
+    }
+
     if (isIdentifier(curToken)) {
       const reAssignmentStatement = this.tryParseReassignment();
 
