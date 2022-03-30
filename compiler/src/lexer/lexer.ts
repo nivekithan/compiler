@@ -111,7 +111,6 @@ class LexerFactory {
   // Expect curChar to be LatinChar or $ or _, else it will return null
   // Ends at first non latinChar or $ or _ or numbers
   readIdentifier(): string | null {
-
     const startChar = this.getCurrentChar();
     const chars: string[] = [];
 

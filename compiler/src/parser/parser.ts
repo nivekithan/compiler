@@ -247,6 +247,28 @@ export class ParserFactory {
       this.next(); // consumes }
 
       return { type: "object", keys };
+    } else if (curToken === Token.BoxOpenBracket) {
+      this.next(); // consumes [
+
+      const exps: Expression[] = [];
+
+      while (this.getCurToken() !== Token.BoxCloseBracket) {
+        const exp = this.parseExpression();
+
+        const isComma = this.isCurToken(Token.Comma);
+
+        exps.push(exp);
+
+        if (isComma) {
+          this.next(); // consumes ,
+        } else {
+          this.assertCurToken(Token.BoxCloseBracket);
+        }
+      }
+
+      this.next(); // consumes ]
+
+      return { type: "array", exps };
     }
 
     return null;

@@ -42,6 +42,7 @@ export type Expression =
   | NumberLiteralExp
   | BooleanLiteralExp
   | ObjectLiteralExp
+  | ArrayLiteralExp
   | UninaryExp
   | BinaryExp
   | BoxMemberAccessExp
@@ -53,6 +54,7 @@ export type NumberLiteralExp = { type: "number"; value: number };
 export type BooleanLiteralExp = { type: "boolean"; value: boolean };
 export type IdentifierExp = { type: "identifier"; name: string };
 export type ObjectLiteralExp = { type: "object"; keys: [string, Expression][] };
+export type ArrayLiteralExp = { type: "array"; exps: Expression[] };
 
 export type UninaryExp = PlusUninaryExp | MinusUninaryExp | BangUninaryExp;
 
@@ -91,6 +93,7 @@ export type StarBinaryExp = {
   left: Expression;
   right: Expression;
 };
+
 export type SlashBinaryExp = {
   type: Token.Slash;
   left: Expression;

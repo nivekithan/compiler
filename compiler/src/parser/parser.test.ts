@@ -432,3 +432,32 @@ test("Testing Object Literal Expressions", () => {
     },
   ]);
 });
+
+test("Testing Array literal expression", () => {
+  const input = `
+  const b = [1, true, [false, true]]`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      identifierName: "b",
+      datatype: DataType.NotCalculated,
+      exp: {
+        type: "array",
+        exps: [
+          { type: "number", value: 1 },
+          { type: "boolean", value: true },
+          {
+            type: "array",
+            exps: [
+              { type: "boolean", value: false },
+              { type: "boolean", value: true },
+            ],
+          },
+        ],
+      },
+    },
+  ]);
+});
