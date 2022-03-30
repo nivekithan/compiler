@@ -214,6 +214,7 @@ export class ParserFactory {
   }
 
   parseNonPrefixExp(left: Expression): Expression | null {
+    debugger;
     const curToken = this.getCurToken();
 
     if (curToken === null) return null;
@@ -261,6 +262,30 @@ export class ParserFactory {
 
         return { type: "DotMemberAccess", left, right: identifierName };
       }
+    }
+
+    if (curToken === Token.CurveOpenBracket) {
+      this.next(); // consumes (
+
+      const args: Expression[] = [];
+
+      while (this.getCurToken() !== Token.CurveCloseBracket) {
+        const argExp = this.parseExpression();
+
+        args.push(argExp);
+
+        const isComma = this.isCurToken(Token.Comma);
+
+        if (isComma) {
+          this.next(); // consumes ,
+        } else {
+          this.assertCurToken(Token.CurveCloseBracket);
+        }
+      }
+
+      this.next(); // consumes )
+
+      return { type: "FunctionCall", left, arguments: args };
     }
 
     return null;

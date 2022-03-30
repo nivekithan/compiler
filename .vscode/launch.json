@@ -18,7 +18,10 @@
           "runtimeArgs": [
             "--inspect-brk",
             "${workspaceRoot}/node_modules/.bin/jest",
-            "--runInBand"
+            "--runInBand",
+            "./compiler/src/parser/parser.test.ts",
+            "-t",
+            "Function Call test"
           ],
           "console": "integratedTerminal",
           "internalConsoleOptions": "neverOpen",

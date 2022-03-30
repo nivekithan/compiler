@@ -347,3 +347,42 @@ test("Dot Member Access Test", () => {
     },
   ]);
 });
+
+test("Function Call test", () => {
+  const input = `
+  const a = b(1, 2, 3);
+  const c = d(1,2,);
+  `;
+  
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      identifierName: "a",
+      datatype: DataType.NotCalculated,
+      exp: {
+        type: "FunctionCall",
+        left: { type: "identifier", name: "b" },
+        arguments: [
+          { type: "number", value: 1 },
+          { type: "number", value: 2 },
+          { type: "number", value: 3 },
+        ],
+      },
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "c",
+      datatype: DataType.NotCalculated,
+      exp: {
+        type: "FunctionCall",
+        left: { type: "identifier", name: "d" },
+        arguments: [
+          { type: "number", value: 1 },
+          { type: "number", value: 2 },
+        ],
+      },
+    },
+  ]);
+});

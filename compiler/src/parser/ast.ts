@@ -33,7 +33,8 @@ export type Expression =
   | UninaryExp
   | BinaryExp
   | BoxMemberAccessExp
-  | DotMemberAccessExp;
+  | DotMemberAccessExp
+  | FunctionCall;
 
 export type StringLiteralExp = { type: "string"; value: string };
 export type NumberLiteralExp = { type: "number"; value: number };
@@ -138,6 +139,12 @@ export type DotMemberAccessExp = {
   type: "DotMemberAccess";
   left: Expression;
   right: string;
+};
+
+export type FunctionCall = {
+  type: "FunctionCall";
+  left: Expression;
+  arguments: Expression[];
 };
 
 export enum DataType {
