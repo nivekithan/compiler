@@ -401,3 +401,34 @@ test("Function Call test", () => {
     },
   ]);
 });
+
+test("Testing Object Literal Expressions", () => {
+  const input = `
+  const a = { b : 1, c : { d : 1, e : 2} }`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: DataType.NotCalculated,
+      identifierName: "a",
+      exp: {
+        type: "object",
+        keys: [
+          ["b", { type: "number", value: 1 }],
+          [
+            "c",
+            {
+              type: "object",
+              keys: [
+                ["d", { type: "number", value: 1 }],
+                ["e", { type: "number", value: 2 }],
+              ],
+            },
+          ],
+        ],
+      },
+    },
+  ]);
+});
