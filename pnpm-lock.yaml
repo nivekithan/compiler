@@ -5,7 +5,11 @@ specifiers:
   '@swc/core': ^1.2.160
   '@swc/jest': ^0.2.20
   '@types/jest': ^27.4.1
+  compiler: 'link:'
   jest: ^27.5.1
+
+dependencies:
+  compiler: 'link:'
 
 devDependencies:
   '@swc/cli': 0.1.56_@swc+core@1.2.160

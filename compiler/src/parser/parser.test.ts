@@ -567,3 +567,26 @@ test("Testing Reassignment with SlashAssign Operator", () => {
     },
   ]);
 });
+
+test("Testing naked Expressions", () => {
+  const input = `
+  1;
+  a(2);
+  b !== 2;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    { type: "number", value: 1 },
+    {
+      type: "FunctionCall",
+      left: { type: "identifier", name: "a" },
+      arguments: [{ type: "number", value: 2 }],
+    },
+    {
+      type: Token.StrictNotEqual,
+      left: { type: "identifier", name: "b" },
+      right: { type: "number", value: 2 },
+    },
+  ]);
+});

@@ -5,6 +5,7 @@ export type Ast =
   | VariableDeclaration
   | IdentifierAst
   | ReAssignment
+  | Expression
   | { type: "EOF" };
 
 export type ImportDeclaration = {

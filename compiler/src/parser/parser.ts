@@ -56,7 +56,10 @@ export class ParserFactory {
       if (reAssignmentStatement !== null) return reAssignmentStatement;
     }
 
-    throw Error(`This token cannot be parsed: ${curToken}`);
+    const nakedExp = this.parseExpression();
+    this.skipSemiColon();
+
+    return nakedExp;
   }
 
   /**
