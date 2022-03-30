@@ -4,6 +4,7 @@ export type Ast =
   | ImportDeclaration
   | VariableDeclaration
   | IdentifierAst
+  | ReAssignment
   | { type: "EOF" };
 
 export type ImportDeclaration = {
@@ -34,6 +35,33 @@ export type IdentifierAst = {
   type: "identifier";
   name: string;
   dataType: DataType;
+};
+
+export type ReAssignment = {
+  type: "ReAssignment";
+  path: ReAssignmentPath;
+  assignmentOperator:
+    | Token.Assign
+    | Token.PlusAssign
+    | Token.StarAssign
+    | Token.SlashAssign
+    | Token.MinusAssign;
+  exp: Expression;
+};
+
+// LHS of Reassignment statement
+export type ReAssignmentPath = IdentifierPath | DotMemberPath | BoxMemberPath;
+
+export type IdentifierPath = { type: "IdentifierPath"; name: string };
+export type DotMemberPath = {
+  type: "DotMemberPath";
+  leftPath: ReAssignmentPath;
+  rightPath: string;
+};
+export type BoxMemberPath = {
+  type: "BoxMemberPath";
+  leftPath: ReAssignmentPath;
+  accessExp: Expression;
 };
 
 export type Expression =

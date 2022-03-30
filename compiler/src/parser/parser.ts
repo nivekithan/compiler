@@ -8,6 +8,8 @@ import {
   IdentifierAst,
   ImportDeclaration,
   LetVariableDeclaration,
+  ReAssignment,
+  ReAssignmentPath,
   UninaryExp,
   VariableDeclaration,
 } from "./ast";
@@ -32,9 +34,12 @@ export class ParserFactory {
   content: Tokens[];
   curPos: number | null;
 
+  savedPos: number | null | "NOT SAVED";
+
   constructor(content: Tokens[]) {
     this.content = content;
     this.curPos = 0;
+    this.savedPos = "NOT SAVED";
   }
 
   getNextAst(): Ast {
@@ -45,7 +50,53 @@ export class ParserFactory {
     if (curToken === KeywordTokens.Const || curToken === KeywordTokens.Let)
       return this.parseVariableDeclaration();
 
+    if (isIdentifier(curToken)) {
+      const reAssignmentStatement = this.tryParseReassignment();
+
+      if (reAssignmentStatement !== null) return reAssignmentStatement;
+    }
+
     throw Error(`This token cannot be parsed: ${curToken}`);
+  }
+
+  /**
+   * Expects the curToken to be Identifier
+   *
+   * Tries to parse as Reassignment statement, if the syntax does not suit
+   * of reassignment then it will revert the parserState and returns null
+   *
+   */
+  tryParseReassignment(): ReAssignment | null {
+    this.saveState();
+
+    try {
+      const path = this.parseReAssignmentPath();
+
+      const assignmentOperator = this.getCurToken();
+
+      if (
+        assignmentOperator === Token.Assign ||
+        assignmentOperator === Token.PlusAssign ||
+        assignmentOperator === Token.StarAssign ||
+        assignmentOperator === Token.SlashAssign ||
+        assignmentOperator === Token.MinusAssign
+      ) {
+        this.next(); // consumes AssignmentOperator
+
+        const exp = this.parseExpression();
+
+        this.skipSemiColon();
+        this.deleteSavedState();
+        return { type: "ReAssignment", path, exp, assignmentOperator };
+      } else {
+        throw Error(
+          `Expected token to be Assignment operator but instead got ${this.getCurToken()}`
+        );
+      }
+    } catch (err) {
+      this.revertToSavedState();
+      return null;
+    }
   }
 
   /**
@@ -152,6 +203,87 @@ export class ParserFactory {
       from: fileName,
       importedIdentifires: identifiers,
     };
+  }
+
+  /**
+   * Expects the curToken to be Identifier
+   */
+  parseReAssignmentPath(): ReAssignmentPath {
+    const curToken = this.getCurToken();
+
+    if (curToken !== null && isIdentifier(curToken)) {
+      const whileCondChecker = () => {
+        const curToken = this.getCurToken();
+        return (
+          curToken !== null &&
+          (curToken === Token.Dot ||
+            curToken === Token.BoxOpenBracket ||
+            isIdentifier(curToken))
+        );
+      };
+
+      let leftPath: ReAssignmentPath | null = null;
+
+      while (whileCondChecker()) {
+        const curToken = this.getCurToken();
+
+        if (curToken === null) break;
+
+        if (isIdentifier(curToken)) {
+          if (leftPath !== null)
+            throw Error("When curToken is Identifier leftPath must be null");
+
+          leftPath = { type: "IdentifierPath", name: curToken.value };
+          this.next(); // consumes Identifier
+          continue;
+        }
+
+        if (leftPath === null)
+          throw Error(
+            "If curToken is not Identifier then leftPath cannot be null"
+          );
+
+        if (curToken === Token.Dot) {
+          this.next(); // consumes .
+
+          const identifierToken = this.getCurToken();
+
+          if (identifierToken !== null && isIdentifier(identifierToken)) {
+            const identifierName = identifierToken.value;
+
+            leftPath = {
+              type: "DotMemberPath",
+              leftPath,
+              rightPath: identifierName,
+            };
+            this.next(); // consumes identifier
+            continue;
+          }
+
+          throw Error(
+            `Expected Identifier token but instead got ${this.getCurToken()}`
+          );
+        }
+
+        if (curToken === Token.BoxOpenBracket) {
+          this.next(); // consumes [
+
+          const identExp = this.parseExpression();
+
+          this.assertCurToken(Token.BoxCloseBracket);
+          this.next(); // consumes ]
+
+          leftPath = { type: "BoxMemberPath", leftPath, accessExp: identExp };
+          continue;
+        }
+      }
+
+      if (leftPath === null) throw Error("LeftPath Cannot be null");
+
+      return leftPath;
+    }
+
+    throw Error("Expected curToken to be Identifier");
   }
 
   parseExpression(precedence: number = 1): Expression {
@@ -427,6 +559,27 @@ export class ParserFactory {
 
     if (isSemiColon) {
       this.next(); // consumes ;
+    }
+  }
+
+  saveState() {
+    this.savedPos = this.curPos;
+  }
+
+  revertToSavedState() {
+    if (this.savedPos === "NOT SAVED") {
+      throw Error("Cannot Call revertState without calling saveState");
+    } else {
+      this.curPos = this.savedPos;
+      this.savedPos = "NOT SAVED";
+    }
+  }
+
+  deleteSavedState() {
+    if (this.savedPos === "NOT SAVED") {
+      throw Error("Cannot call deleteSavedState without calling saveState");
+    } else {
+      this.savedPos = "NOT SAVED";
     }
   }
 

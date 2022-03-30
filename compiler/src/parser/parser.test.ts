@@ -461,3 +461,109 @@ test("Testing Array literal expression", () => {
     },
   ]);
 });
+
+test("Testing reassignment", () => {
+  const input = `
+  a = 1;
+  b.a = 2
+  a["a"].b = 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ReAssignment",
+      path: { type: "IdentifierPath", name: "a" },
+      exp: { type: "number", value: 1 },
+      assignmentOperator: Token.Assign,
+    },
+    {
+      type: "ReAssignment",
+      path: {
+        type: "DotMemberPath",
+        leftPath: { type: "IdentifierPath", name: "b" },
+        rightPath: "a",
+      },
+      exp: { type: "number", value: 2 },
+      assignmentOperator: Token.Assign,
+    },
+    {
+      type: "ReAssignment",
+      path: {
+        type: "DotMemberPath",
+        leftPath: {
+          type: "BoxMemberPath",
+          leftPath: { type: "IdentifierPath", name: "a" },
+          accessExp: { type: "string", value: "a" },
+        },
+        rightPath: "b",
+      },
+      exp: { type: "number", value: 1 },
+      assignmentOperator: Token.Assign,
+    },
+  ]);
+});
+
+test("Testing Reassignment with PlusAssign Operator", () => {
+  const input = `
+  a += 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.PlusAssign,
+      exp: { type: "number", value: 1 },
+      path: { type: "IdentifierPath", name: "a" },
+    },
+  ]);
+});
+
+test("Testing Reassignment with MinusAssign Operator", () => {
+  const input = `
+  a -= 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.MinusAssign,
+      exp: { type: "number", value: 1 },
+      path: { type: "IdentifierPath", name: "a" },
+    },
+  ]);
+});
+
+test("Testing Reassignment with StarAssign Operator", () => {
+  const input = `
+  a *= 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.StarAssign,
+      exp: { type: "number", value: 1 },
+      path: { type: "IdentifierPath", name: "a" },
+    },
+  ]);
+});
+
+test("Testing Reassignment with SlashAssign Operator", () => {
+  const input = `
+  a /= 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.SlashAssign,
+      exp: { type: "number", value: 1 },
+      path: { type: "IdentifierPath", name: "a" },
+    },
+  ]);
+});
