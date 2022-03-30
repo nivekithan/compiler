@@ -52,6 +52,21 @@ test("Test import declaration", () => {
   ]);
 });
 
+test("Let variable declaration", () => {
+  const input = `
+  let a = "A";`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "letVariableDeclaration",
+      identifierName: "a",
+      datatype: DataType.NotCalculated,
+      exp: { type: "string", value: "A" },
+    },
+  ]);
+});
 test("Const variable declaration", () => {
   const input = `
   const a = "A"
@@ -353,7 +368,7 @@ test("Function Call test", () => {
   const a = b(1, 2, 3);
   const c = d(1,2,);
   `;
-  
+
   const output = convertToAst(convertToTokens(input));
 
   expect(output).toEqual<Ast[]>([

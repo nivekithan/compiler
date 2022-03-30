@@ -7,7 +7,9 @@ import {
   Expression,
   IdentifierAst,
   ImportDeclaration,
+  LetVariableDeclaration,
   UninaryExp,
+  VariableDeclaration,
 } from "./ast";
 
 export const convertToAst = (tokens: Tokens[]): Ast[] => {
@@ -40,7 +42,7 @@ export class ParserFactory {
 
     if (curToken === null) return { type: "EOF" };
     if (curToken === KeywordTokens.Import) return this.parseImportDeclaration();
-    if (curToken === KeywordTokens.Const)
+    if (curToken === KeywordTokens.Const || curToken === KeywordTokens.Let)
       return this.parseVariableDeclaration();
 
     throw Error(`This token cannot be parsed: ${curToken}`);
@@ -51,13 +53,13 @@ export class ParserFactory {
    *
    */
 
-  parseVariableDeclaration(): ConstVariableDeclaration {
+  parseVariableDeclaration(): VariableDeclaration {
     const curToken = this.getCurToken();
 
-    if (curToken !== KeywordTokens.Const)
-      throw Error("Expected curToken be keyword.const");
+    if (curToken !== KeywordTokens.Const && curToken !== KeywordTokens.Let)
+      throw Error("Expected curToken be keyword.const or keyword.let");
 
-    this.next(); // consumes const
+    this.next(); // consumes const or let
 
     const identifierToken = this.getCurToken();
 
@@ -71,8 +73,13 @@ export class ParserFactory {
 
     const exp = this.parseExpression();
 
-    const constVariableDeclarationAst: ConstVariableDeclaration = {
-      type: "constVariableDeclaration",
+    const constVariableDeclarationAst:
+      | ConstVariableDeclaration
+      | LetVariableDeclaration = {
+      type:
+        curToken === KeywordTokens.Const
+          ? "constVariableDeclaration"
+          : "letVariableDeclaration",
       identifierName: identifierToken.value,
       datatype: DataType.NotCalculated,
       exp,

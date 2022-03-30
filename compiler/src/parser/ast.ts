@@ -2,7 +2,7 @@ import { Token } from "../lexer/tokens";
 
 export type Ast =
   | ImportDeclaration
-  | ConstVariableDeclaration
+  | VariableDeclaration
   | IdentifierAst
   | { type: "EOF" };
 
@@ -12,8 +12,19 @@ export type ImportDeclaration = {
   importedIdentifires: IdentifierAst[];
 };
 
+export type VariableDeclaration =
+  | ConstVariableDeclaration
+  | LetVariableDeclaration;
+
 export type ConstVariableDeclaration = {
   type: "constVariableDeclaration";
+  identifierName: string;
+  exp: Expression;
+  datatype: DataType;
+};
+
+export type LetVariableDeclaration = {
+  type: "letVariableDeclaration";
   identifierName: string;
   exp: Expression;
   datatype: DataType;
