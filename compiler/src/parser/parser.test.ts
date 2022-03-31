@@ -1,11 +1,6 @@
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
-import {
-  Ast,
-  ConstVariableDeclaration,
-  DataType,
-  LiteralDataType,
-} from "./ast";
+import { Ast, LiteralDataType } from "./ast";
 import { convertToAst } from "./parser";
 
 test("Test import declaration", () => {
