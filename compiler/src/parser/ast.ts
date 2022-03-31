@@ -10,12 +10,19 @@ export type Ast =
   | ContinueStatement
   | CondBlockDeclaration
   | WhileLoopDeclaration
+  | DoWhileLoopDeclaration
   | { type: "EOF" };
 
 export type WhileLoopDeclaration = {
   type: "WhileLoopDeclaration";
   condition: Expression;
-  blocks : Ast[];
+  blocks: Ast[];
+};
+
+export type DoWhileLoopDeclaration = {
+  type: "DoWhileLoopDeclaration";
+  condition: Expression;
+  blocks: Ast[];
 };
 
 export type ImportDeclaration = {

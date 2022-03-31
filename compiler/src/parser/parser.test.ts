@@ -695,3 +695,26 @@ test("Testing while loop declaration", () => {
     },
   ]);
 });
+
+test("Testing Do While loop Declaration", () => {
+  const input = `
+  do {
+    doSomething();
+  } while (1)`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "DoWhileLoopDeclaration",
+      condition: { type: "number", value: 1 },
+      blocks: [
+        {
+          type: "FunctionCall",
+          left: { type: "identifier", name: "doSomething" },
+          arguments: [],
+        },
+      ],
+    },
+  ]);
+});
