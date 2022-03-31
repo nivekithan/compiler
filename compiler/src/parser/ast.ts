@@ -9,7 +9,14 @@ export type Ast =
   | BreakStatement
   | ContinueStatement
   | CondBlockDeclaration
+  | WhileLoopDeclaration
   | { type: "EOF" };
+
+export type WhileLoopDeclaration = {
+  type: "WhileLoopDeclaration";
+  condition: Expression;
+  blocks : Ast[];
+};
 
 export type ImportDeclaration = {
   type: "importDeclaration";
@@ -17,7 +24,10 @@ export type ImportDeclaration = {
   importedIdentifires: IdentifierAst[];
 };
 
-export type CondBlockDeclaration = IfBlockDeclaration | ElseBlockDeclaration | ElseIfBlockDeclaration;
+export type CondBlockDeclaration =
+  | IfBlockDeclaration
+  | ElseBlockDeclaration
+  | ElseIfBlockDeclaration;
 
 export type IfBlockDeclaration = {
   type: "IfBlockDeclaration";

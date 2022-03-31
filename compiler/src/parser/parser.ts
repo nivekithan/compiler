@@ -13,6 +13,7 @@ import {
   ReAssignmentPath,
   UninaryExp,
   VariableDeclaration,
+  WhileLoopDeclaration,
 } from "./ast";
 
 export const convertToAst = (tokens: Tokens[]): Ast[] => {
@@ -53,6 +54,7 @@ export class ParserFactory {
 
     if (curToken === KeywordTokens.If) return this.parseCondBlock();
     if (curToken === KeywordTokens.Else) return this.parseCondBlock();
+    if (curToken === KeywordTokens.While) return this.parseWhileLoop();
 
     if (
       curToken === KeywordTokens.Break ||
@@ -73,6 +75,44 @@ export class ParserFactory {
     this.skipSemiColon();
 
     return nakedExp;
+  }
+
+  /**
+   * Expects the curToken to be KeyWord.While
+   *
+   */
+
+  parseWhileLoop(): WhileLoopDeclaration {
+    this.assertCurToken(KeywordTokens.While);
+    this.next(); // consume While
+
+    this.assertCurToken(Token.CurveOpenBracket);
+    this.next(); // consumes (
+
+    const condExp = this.parseExpression();
+
+    this.assertCurToken(Token.CurveCloseBracket);
+    this.next(); // consumes )
+
+    this.assertCurToken(Token.AngleOpenBracket);
+    this.next(); // consumes {
+
+    const asts: Ast[] = [];
+
+    while (!this.isCurToken(Token.AngleCloseBracket)) {
+      const ast = this.getNextAst();
+
+      if (ast.type === "EOF") {
+        throw Error(`Expected AngleCloseBracket "}" before end of file"`);
+      }
+
+      asts.push(ast);
+    }
+
+    this.next(); // consumes }
+    this.skipSemiColon();
+
+    return { type: "WhileLoopDeclaration", blocks: asts, condition: condExp };
   }
 
   /**
@@ -130,6 +170,7 @@ export class ParserFactory {
     }
 
     this.next(); // consumes }
+    this.skipSemiColon();
 
     return { type: blockType, condition: condExp, blocks: asts };
   }
