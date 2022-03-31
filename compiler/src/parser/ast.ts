@@ -235,10 +235,17 @@ export type FunctionCall = {
   arguments: Expression[];
 };
 
-export enum DataType {
+export type DataType = LiteralDataType | IdentifierDatatype;
+
+export enum LiteralDataType {
   Boolean = "Boolean",
   String = "String",
   Number = "Number",
   Unknown = "Unknown",
   NotCalculated = "NotCalculated",
 }
+
+export type IdentifierDatatype = {
+  type: "IdentifierDatatype";
+  name: string;
+};

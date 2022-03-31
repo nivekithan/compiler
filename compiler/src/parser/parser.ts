@@ -10,6 +10,7 @@ import {
   IdentifierAst,
   ImportDeclaration,
   LetVariableDeclaration,
+  LiteralDataType,
   ReAssignment,
   ReAssignmentPath,
   UninaryExp,
@@ -81,22 +82,23 @@ export class ParserFactory {
 
   /**
    * Expects the curToken to be KeyWord.Do
-   * 
+   *
    */
 
-  parseDoWhileLoop() : DoWhileLoopDeclaration {
+  parseDoWhileLoop(): DoWhileLoopDeclaration {
     this.assertCurToken(KeywordTokens.Do);
     this.next(); // consumes Do
 
     this.assertCurToken(Token.AngleOpenBracket);
     this.next(); // consumes {
 
-    const asts : Ast[] = [];
+    const asts: Ast[] = [];
 
     while (!this.isCurToken(Token.AngleCloseBracket)) {
       const ast = this.getNextAst();
 
-      if (ast.type === "EOF") throw Error(`Expected AngleCloseBracket before EOF`);
+      if (ast.type === "EOF")
+        throw Error(`Expected AngleCloseBracket before EOF`);
 
       asts.push(ast);
     }
@@ -110,12 +112,12 @@ export class ParserFactory {
     this.next(); // consumes (
 
     const condExp = this.parseExpression();
-    
+
     this.assertCurToken(Token.CurveCloseBracket);
     this.next(); // consumes )
 
     this.skipSemiColon();
-    return {type : 'DoWhileLoopDeclaration', blocks : asts, condition : condExp};
+    return { type: "DoWhileLoopDeclaration", blocks: asts, condition: condExp };
   }
 
   /**
@@ -276,6 +278,16 @@ export class ParserFactory {
 
     this.next(); // consumes identifier
 
+    const isColonToken = this.isCurToken(Token.Colon);
+
+    let datatype: DataType = LiteralDataType.NotCalculated;
+
+    if (isColonToken) {
+      this.next(); // consumes :
+      const explicitDataType = this.parseType();
+      datatype = explicitDataType;
+    }
+
     this.assertCurToken(Token.Assign);
     this.next(); // consumes =
 
@@ -289,7 +301,7 @@ export class ParserFactory {
           ? "constVariableDeclaration"
           : "letVariableDeclaration",
       identifierName: identifierToken.value,
-      datatype: DataType.NotCalculated,
+      datatype,
       exp,
     };
 
@@ -325,7 +337,7 @@ export class ParserFactory {
       const identifierAst: IdentifierAst = {
         type: "identifier",
         name: identifierName,
-        dataType: DataType.NotCalculated,
+        dataType: LiteralDataType.NotCalculated,
       };
       identifiers.push(identifierAst);
 
@@ -708,6 +720,32 @@ export class ParserFactory {
       return precedence;
     } else {
       return 1;
+    }
+  }
+
+  parseType(): DataType {
+    const curToken = this.getCurToken();
+
+    if (curToken === null) throw Error("Did not expect null when parsing Type");
+
+    if (isIdentifier(curToken)) {
+      const identifierName = curToken.value;
+
+      if (identifierName === "string") {
+        this.next(); // consumes string
+        return LiteralDataType.String;
+      } else if (identifierName === "boolean") {
+        this.next(); // consumes boolean
+        return LiteralDataType.Boolean;
+      } else if (identifierName === "number") {
+        this.next(); // consumes number
+        return LiteralDataType.Number;
+      } else {
+        this.next(); // consumes Datatype
+        return { type: "IdentifierDatatype", name: identifierName };
+      }
+    } else {
+      throw Error("As of now only supported syntax for type is identifier");
     }
   }
 

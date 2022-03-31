@@ -1,6 +1,11 @@
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
-import { Ast, ConstVariableDeclaration, DataType } from "./ast";
+import {
+  Ast,
+  ConstVariableDeclaration,
+  DataType,
+  LiteralDataType,
+} from "./ast";
 import { convertToAst } from "./parser";
 
 test("Test import declaration", () => {
@@ -17,11 +22,15 @@ test("Test import declaration", () => {
       type: "importDeclaration",
       from: "./someFile",
       importedIdentifires: [
-        { type: "identifier", name: "table", dataType: DataType.NotCalculated },
+        {
+          type: "identifier",
+          name: "table",
+          dataType: LiteralDataType.NotCalculated,
+        },
         {
           type: "identifier",
           name: "Chair",
-          dataType: DataType.NotCalculated,
+          dataType: LiteralDataType.NotCalculated,
         },
       ],
     },
@@ -29,11 +38,15 @@ test("Test import declaration", () => {
       type: "importDeclaration",
       from: "./file2",
       importedIdentifires: [
-        { type: "identifier", name: "so", dataType: DataType.NotCalculated },
+        {
+          type: "identifier",
+          name: "so",
+          dataType: LiteralDataType.NotCalculated,
+        },
         {
           type: "identifier",
           name: "soo",
-          dataType: DataType.NotCalculated,
+          dataType: LiteralDataType.NotCalculated,
         },
       ],
     },
@@ -41,11 +54,15 @@ test("Test import declaration", () => {
       type: "importDeclaration",
       from: "./file3",
       importedIdentifires: [
-        { type: "identifier", name: "so", dataType: DataType.NotCalculated },
+        {
+          type: "identifier",
+          name: "so",
+          dataType: LiteralDataType.NotCalculated,
+        },
         {
           type: "identifier",
           name: "soo",
-          dataType: DataType.NotCalculated,
+          dataType: LiteralDataType.NotCalculated,
         },
       ],
     },
@@ -62,7 +79,7 @@ test("Let variable declaration", () => {
     {
       type: "letVariableDeclaration",
       identifierName: "a",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       exp: { type: "string", value: "A" },
     },
   ]);
@@ -85,43 +102,43 @@ test("Const variable declaration", () => {
       type: "constVariableDeclaration",
       identifierName: "a",
       exp: { type: "string", value: "A" },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "b",
       exp: { type: "identifier", name: "someOtherVar" },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "c",
       exp: { type: "number", value: 123 },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "d",
       exp: { type: "boolean", value: true },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "e",
       exp: { type: "boolean", value: false },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "f",
       exp: { type: Token.Plus, argument: { type: "number", value: 123 } },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "g",
       exp: { type: Token.Minus, argument: { type: "number", value: 123 } },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
     {
       type: "constVariableDeclaration",
@@ -133,7 +150,7 @@ test("Const variable declaration", () => {
           argument: { type: "boolean", value: true },
         },
       },
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
     },
   ]);
 });
@@ -160,7 +177,7 @@ test("Testing Binary Expression", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "a",
       exp: {
         type: Token.Plus,
@@ -170,7 +187,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "b",
       exp: {
         type: Token.Minus,
@@ -180,7 +197,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "c",
       exp: {
         type: Token.Star,
@@ -190,7 +207,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "d",
       exp: {
         type: Token.Slash,
@@ -200,7 +217,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "e",
       exp: {
         type: Token.VerticalBar,
@@ -210,7 +227,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "f",
       exp: {
         type: Token.Caret,
@@ -220,7 +237,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "g",
       exp: {
         type: Token.Ampersand,
@@ -230,7 +247,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "h",
       exp: {
         type: Token.StrictEquality,
@@ -240,7 +257,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "i",
       exp: {
         type: Token.StrictNotEqual,
@@ -250,7 +267,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "j",
       exp: {
         type: Token.LessThan,
@@ -260,7 +277,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "k",
       exp: {
         type: Token.LessThanOrEqual,
@@ -270,7 +287,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "l",
       exp: {
         type: Token.GreaterThan,
@@ -280,7 +297,7 @@ test("Testing Binary Expression", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "m",
       exp: {
         type: Token.GreaterThanOrEqual,
@@ -301,7 +318,7 @@ test("Testing group expressions", () => {
     {
       type: "constVariableDeclaration",
       identifierName: "a",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       exp: {
         type: Token.Slash,
         left: {
@@ -333,7 +350,7 @@ test("Box Member Access Test", () => {
     {
       type: "constVariableDeclaration",
       identifierName: "a",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "BoxMemberAccess",
         left: { type: "identifier", name: "b" },
@@ -353,7 +370,7 @@ test("Dot Member Access Test", () => {
     {
       type: "constVariableDeclaration",
       identifierName: "a",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "DotMemberAccess",
         left: { type: "identifier", name: "b" },
@@ -375,7 +392,7 @@ test("Function Call test", () => {
     {
       type: "constVariableDeclaration",
       identifierName: "a",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "FunctionCall",
         left: { type: "identifier", name: "b" },
@@ -389,7 +406,7 @@ test("Function Call test", () => {
     {
       type: "constVariableDeclaration",
       identifierName: "c",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "FunctionCall",
         left: { type: "identifier", name: "d" },
@@ -411,7 +428,7 @@ test("Testing Object Literal Expressions", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       identifierName: "a",
       exp: {
         type: "object",
@@ -443,7 +460,7 @@ test("Testing Array literal expression", () => {
     {
       type: "constVariableDeclaration",
       identifierName: "b",
-      datatype: DataType.NotCalculated,
+      datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "array",
         exps: [
@@ -715,6 +732,43 @@ test("Testing Do While loop Declaration", () => {
           arguments: [],
         },
       ],
+    },
+  ]);
+});
+
+test("Testing type parsing", () => {
+  const input = `
+  const a : string = 1;
+  const a : number = 1;
+  const a : boolean = 1;
+  const a : what = 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.String,
+      exp: { type: "number", value: 1 },
+      identifierName: "a",
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      exp: { type: "number", value: 1 },
+      identifierName: "a",
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Boolean,
+      exp: { type: "number", value: 1 },
+      identifierName: "a",
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "IdentifierDatatype", name: "what" },
+      exp: { type: "number", value: 1 },
+      identifierName: "a",
     },
   ]);
 });
