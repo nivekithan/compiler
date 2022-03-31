@@ -63,6 +63,7 @@ export type ConstVariableDeclaration = {
   identifierName: string;
   exp: Expression;
   datatype: DataType;
+  export: boolean;
 };
 
 export type LetVariableDeclaration = {
@@ -70,6 +71,7 @@ export type LetVariableDeclaration = {
   identifierName: string;
   exp: Expression;
   datatype: DataType;
+  export: boolean;
 };
 
 export type IdentifierAst = {

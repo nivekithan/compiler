@@ -58,6 +58,7 @@ export class ParserFactory {
     if (curToken === KeywordTokens.Else) return this.parseCondBlock();
     if (curToken === KeywordTokens.While) return this.parseWhileLoop();
     if (curToken === KeywordTokens.Do) return this.parseDoWhileLoop();
+    if (curToken === KeywordTokens.Export) return this.parseExportDeclaration();
 
     if (
       curToken === KeywordTokens.Break ||
@@ -78,6 +79,31 @@ export class ParserFactory {
     this.skipSemiColon();
 
     return nakedExp;
+  }
+
+  /**
+   * Expects the curToken to be Keyword.Expect
+   */
+  parseExportDeclaration(): VariableDeclaration {
+    this.assertCurToken(KeywordTokens.Export);
+    this.next(); // consumes Export
+
+    const nextAst = this.getNextAst();
+
+    if (
+      nextAst.type === "constVariableDeclaration" ||
+      nextAst.type === "letVariableDeclaration"
+    ) {
+      if (nextAst.export) {
+        throw Error("Cannot export already exported variable declaration");
+      }
+
+      nextAst.export = true;
+
+      return nextAst;
+    } else {
+      throw Error("Can only use export keyword with variable declaration");
+    }
   }
 
   /**
@@ -303,6 +329,7 @@ export class ParserFactory {
       identifierName: identifierToken.value,
       datatype,
       exp,
+      export: false,
     };
 
     this.skipSemiColon();

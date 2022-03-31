@@ -76,6 +76,7 @@ test("Let variable declaration", () => {
       identifierName: "a",
       datatype: LiteralDataType.NotCalculated,
       exp: { type: "string", value: "A" },
+      export: false,
     },
   ]);
 });
@@ -98,42 +99,49 @@ test("Const variable declaration", () => {
       identifierName: "a",
       exp: { type: "string", value: "A" },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "b",
       exp: { type: "identifier", name: "someOtherVar" },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "c",
       exp: { type: "number", value: 123 },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "d",
       exp: { type: "boolean", value: true },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "e",
       exp: { type: "boolean", value: false },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "f",
       exp: { type: Token.Plus, argument: { type: "number", value: 123 } },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       identifierName: "g",
       exp: { type: Token.Minus, argument: { type: "number", value: 123 } },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -146,6 +154,7 @@ test("Const variable declaration", () => {
         },
       },
       datatype: LiteralDataType.NotCalculated,
+      export: false,
     },
   ]);
 });
@@ -179,6 +188,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -189,6 +199,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -199,6 +210,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -209,6 +221,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -219,6 +232,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -229,6 +243,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -239,6 +254,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -249,6 +265,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -259,6 +276,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -269,6 +287,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -279,6 +298,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -289,6 +309,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -299,6 +320,7 @@ test("Testing Binary Expression", () => {
         left: { type: "number", value: 1 },
         right: { type: "number", value: 2 },
       },
+      export: false,
     },
   ]);
 });
@@ -331,6 +353,7 @@ test("Testing group expressions", () => {
           right: { type: "number", value: 5 },
         },
       },
+      export: false,
     },
   ]);
 });
@@ -351,6 +374,7 @@ test("Box Member Access Test", () => {
         left: { type: "identifier", name: "b" },
         right: { type: "number", value: 1 },
       },
+      export: false,
     },
   ]);
 });
@@ -371,6 +395,7 @@ test("Dot Member Access Test", () => {
         left: { type: "identifier", name: "b" },
         right: "c",
       },
+      export: false,
     },
   ]);
 });
@@ -397,6 +422,7 @@ test("Function Call test", () => {
           { type: "number", value: 3 },
         ],
       },
+      export: false,
     },
     {
       type: "constVariableDeclaration",
@@ -410,6 +436,7 @@ test("Function Call test", () => {
           { type: "number", value: 2 },
         ],
       },
+      export: false,
     },
   ]);
 });
@@ -441,6 +468,7 @@ test("Testing Object Literal Expressions", () => {
           ],
         ],
       },
+      export: false,
     },
   ]);
 });
@@ -470,6 +498,7 @@ test("Testing Array literal expression", () => {
           },
         ],
       },
+      export: false,
     },
   ]);
 });
@@ -746,24 +775,65 @@ test("Testing type parsing", () => {
       datatype: LiteralDataType.String,
       exp: { type: "number", value: 1 },
       identifierName: "a",
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Number,
       exp: { type: "number", value: 1 },
       identifierName: "a",
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Boolean,
       exp: { type: "number", value: 1 },
       identifierName: "a",
+      export: false,
     },
     {
       type: "constVariableDeclaration",
       datatype: { type: "IdentifierDatatype", name: "what" },
       exp: { type: "number", value: 1 },
       identifierName: "a",
+      export: false,
     },
   ]);
+});
+
+test("Testing export", () => {
+  const input = `
+  export const x = 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      exp: { type: "number", value: 1 },
+      datatype: LiteralDataType.NotCalculated,
+      export: true,
+      identifierName: "x",
+    },
+  ]);
+});
+
+
+test("Testing double export syntax error", () => {
+  const input = `
+  export export const x = 1;`;
+
+  const getOutput = () => convertToAst(convertToTokens(input));
+
+  expect(getOutput).toThrow();
+});
+
+
+test("Testing exporting non supported statement", () => {
+  const input = `
+  export x += 1;;`;
+
+  const getOutput = () => convertToAst(convertToTokens(input));
+
+  expect(getOutput).toThrow();
 });
