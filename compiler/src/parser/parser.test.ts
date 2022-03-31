@@ -603,3 +603,72 @@ test("Testing break and continue statement", () => {
     { type: KeywordTokens.Continue },
   ]);
 });
+
+test("Testing if block", () => {
+  const input = `
+  if (1) {
+    doSomething();
+  }`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "IfBlockDeclaration",
+      condition: { type: "number", value: 1 },
+      blocks: [
+        {
+          type: "FunctionCall",
+          left: { type: "identifier", name: "doSomething" },
+          arguments: [],
+        },
+      ],
+    },
+  ]);
+});
+
+test("Testing else if block", () => {
+  const input = `
+  else if (1) {
+    doSomething();
+  }`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ElseIfBlockDeclaration",
+      condition: { type: "number", value: 1 },
+      blocks: [
+        {
+          type: "FunctionCall",
+          left: { type: "identifier", name: "doSomething" },
+          arguments: [],
+        },
+      ],
+    },
+  ]);
+});
+
+test("Testing else block", () => {
+  const input = `
+  else (1) {
+    doSomething();
+  }`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ElseBlockDeclaration",
+      condition: { type: "number", value: 1 },
+      blocks: [
+        {
+          type: "FunctionCall",
+          left: { type: "identifier", name: "doSomething" },
+          arguments: [],
+        },
+      ],
+    },
+  ]);
+});

@@ -2,6 +2,7 @@ import { IdentifierToken, KeywordTokens, Token, Tokens } from "../lexer/tokens";
 import {
   Ast,
   BinaryExp,
+  CondBlockDeclaration,
   ConstVariableDeclaration,
   DataType,
   Expression,
@@ -50,6 +51,9 @@ export class ParserFactory {
     if (curToken === KeywordTokens.Const || curToken === KeywordTokens.Let)
       return this.parseVariableDeclaration();
 
+    if (curToken === KeywordTokens.If) return this.parseCondBlock();
+    if (curToken === KeywordTokens.Else) return this.parseCondBlock();
+
     if (
       curToken === KeywordTokens.Break ||
       curToken === KeywordTokens.Continue
@@ -69,6 +73,65 @@ export class ParserFactory {
     this.skipSemiColon();
 
     return nakedExp;
+  }
+
+  /**
+   * Parse condition Block, expects curToken to be
+   * Keyword.If or Keyword.Else
+   *
+   */
+
+  parseCondBlock(): CondBlockDeclaration {
+    const curToken = this.getCurToken();
+
+    let blockType: CondBlockDeclaration["type"];
+
+    if (curToken === KeywordTokens.If) {
+      this.next(); // consumes if
+      blockType = "IfBlockDeclaration";
+    } else if (curToken === KeywordTokens.Else) {
+      this.next(); // consumes else
+
+      const curToken = this.getCurToken();
+
+      if (curToken === KeywordTokens.If) {
+        this.next(); // consumes if
+        blockType = "ElseIfBlockDeclaration";
+      } else {
+        blockType = "ElseBlockDeclaration";
+      }
+    } else {
+      throw Error(
+        `Expected curToken to be either Keyword.If or Keyword.Else but instead got ${curToken}`
+      );
+    }
+
+    this.assertCurToken(Token.CurveOpenBracket);
+    this.next(); // consumes (
+
+    const condExp = this.parseExpression();
+
+    this.assertCurToken(Token.CurveCloseBracket);
+    this.next(); // consumes )
+
+    this.assertCurToken(Token.AngleOpenBracket);
+    this.next(); // consumes {
+
+    const asts: Ast[] = [];
+
+    while (this.getCurToken() !== Token.AngleCloseBracket) {
+      const ast = this.getNextAst();
+
+      if (ast.type === "EOF") {
+        throw Error(`Expected AngleCloseBracket "}" before end of file"`);
+      }
+
+      asts.push(ast);
+    }
+
+    this.next(); // consumes }
+
+    return { type: blockType, condition: condExp, blocks: asts };
   }
 
   /**

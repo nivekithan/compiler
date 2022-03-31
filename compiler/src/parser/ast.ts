@@ -8,12 +8,33 @@ export type Ast =
   | Expression
   | BreakStatement
   | ContinueStatement
+  | CondBlockDeclaration
   | { type: "EOF" };
 
 export type ImportDeclaration = {
   type: "importDeclaration";
   from: string;
   importedIdentifires: IdentifierAst[];
+};
+
+export type CondBlockDeclaration = IfBlockDeclaration | ElseBlockDeclaration | ElseIfBlockDeclaration;
+
+export type IfBlockDeclaration = {
+  type: "IfBlockDeclaration";
+  condition: Expression;
+  blocks: Ast[];
+};
+
+export type ElseBlockDeclaration = {
+  type: "ElseBlockDeclaration";
+  condition: Expression;
+  blocks: Ast[];
+};
+
+export type ElseIfBlockDeclaration = {
+  type: "ElseIfBlockDeclaration";
+  condition: Expression;
+  blocks: Ast[];
 };
 
 export type VariableDeclaration =
