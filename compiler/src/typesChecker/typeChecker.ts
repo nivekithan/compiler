@@ -48,10 +48,41 @@ class TypeCheckerFactory {
         this.typeCheckReAssignment();
       } else if (curAst.type === "WhileLoopDeclaration") {
         this.typeCheckWhileLoopDeclaration();
+      } else if (curAst.type === "DoWhileLoopDeclaration") {
+        this.typeCheckDoWhileLoopDeclaration();
       } else {
         throw Error(`Cannot typecheck ast of type ${curAst.type}`);
       }
     }
+  }
+
+  /**
+   * Expects the curAst to be of type of DoWhileLoopDeclaration
+   */
+  typeCheckDoWhileLoopDeclaration() {
+    const curAst = this.getCurAst();
+
+    if (curAst === null || curAst.type !== "DoWhileLoopDeclaration")
+      throw Error(
+        `Expected curAst to be of type doWhileLoopDeclaration but instead got ${curAst?.type}`
+      );
+
+    const loopCondDatatype = this.getDataTypeOfExpression(curAst.condition);
+
+    if (loopCondDatatype !== LiteralDataType.Boolean)
+      throw Error(
+        "Expected condition of do while loop to be of LiteralDatatype.Boolean"
+      );
+
+    const LowerOrderClosure = new Closure(this.closure);
+    const DoWhileBlockTypeChecker = new TypeCheckerFactory(
+      curAst.blocks,
+      LowerOrderClosure
+    );
+
+    DoWhileBlockTypeChecker.typeCheck();
+
+    this.next(); // consumes Do While loop declaration
   }
 
   /**

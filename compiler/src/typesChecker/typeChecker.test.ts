@@ -423,7 +423,7 @@ test("Typechecking while loop declaration", () => {
   ]);
 });
 
-test("Reassigning inside the loop declaration", () => {
+test("Reassigning inside the while loop declaration", () => {
   const input = `
   let a = 1;
 
@@ -456,13 +456,93 @@ test("Reassigning inside the loop declaration", () => {
   ]);
 });
 
-test("Using datatype other than boolean", () => {
+test("Using datatype other than boolean in while loop", () => {
   const input = `
   let a = 1;
 
   while (1) {
      a += 1;
   }`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Typechecking Do while loop declaration", () => {
+  const input = `
+  const a = 1;
+
+  do {
+    const a = 1;
+  } while (true)`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      export: false,
+      identifierName: "a",
+      exp: { type: "number", value: 1 },
+    },
+    {
+      type: "DoWhileLoopDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          export: false,
+          identifierName: "a",
+          exp: { type: "number", value: 1 },
+        },
+      ],
+    },
+  ]);
+});
+
+test("Reassigning inside the do while loop declaration", () => {
+  const input = `
+  let a = 1;
+
+  do {
+     a += 1;
+  } while (true)`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "letVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      export: false,
+      identifierName: "a",
+      exp: { type: "number", value: 1 },
+    },
+    {
+      type: "DoWhileLoopDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "ReAssignment",
+          assignmentOperator: Token.PlusAssign,
+          path: { type: "IdentifierPath", name: "a" },
+          exp: { type: "number", value: 1 },
+        },
+      ],
+    },
+  ]);
+});
+
+test("Using datatype other than boolean in do while declaration", () => {
+  const input = `
+  let a = 1;
+
+  do {
+     a += 1;
+  } while (1) `;
 
   const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
 

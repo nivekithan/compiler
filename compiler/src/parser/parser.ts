@@ -805,7 +805,7 @@ export class ParserFactory {
       this.next(); // consumes (
 
       const groupedType = this.parseType();
-      
+
       this.next(); // consumes )
       return groupedType;
     }
