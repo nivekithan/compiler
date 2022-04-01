@@ -9,7 +9,8 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
     const a = "1";
     const b = 1;
     const c = true;
-    const d = false;`;
+    const d = false;
+    const e = [1];`;
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
@@ -40,6 +41,16 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
       datatype: LiteralDataType.Boolean,
       identifierName: "d",
       exp: { type: "boolean", value: false },
+      export: false,
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: {
+        type: "ArrayDataType",
+        baseType: LiteralDataType.Number,
+      },
+      identifierName: "e",
+      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
       export: false,
     },
   ]);
@@ -49,7 +60,8 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       const a : string = "1";
       const b : number = 1;
       const c : boolean = true;
-      const d : boolean = false;`;
+      const d : boolean = false;
+      const e : number[] = [1]`;
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
@@ -80,6 +92,16 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       datatype: LiteralDataType.Boolean,
       identifierName: "d",
       exp: { type: "boolean", value: false },
+      export: false,
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: {
+        type: "ArrayDataType",
+        baseType: LiteralDataType.Number,
+      },
+      identifierName: "e",
+      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
       export: false,
     },
   ]);

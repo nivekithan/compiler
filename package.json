@@ -20,12 +20,14 @@
     "@swc/cli": "^0.1.56",
     "@swc/core": "^1.2.160",
     "@swc/jest": "^0.2.20",
-    "@types/jest": "^27.4.1",
     "@types/clone": "^2.1.1",
+    "@types/deep-equal": "^1.0.1",
+    "@types/jest": "^27.4.1",
     "jest": "^27.5.1"
   },
   "dependencies": {
     "clone": "^2.1.2",
-    "compiler": "link:"
+    "compiler": "link:",
+    "deep-equal": "^2.0.5"
   }
 }

@@ -1,3 +1,4 @@
+import deepEqual = require("deep-equal");
 import { Token } from "../lexer/tokens";
 import {
   Ast,
@@ -70,7 +71,9 @@ class TypeCheckerFactory {
       expectedDatatype === LiteralDataType.Unknown
     ) {
       curAst.datatype = expressionDatatype;
-    } else if (expectedDatatype !== expressionDatatype) {
+    } else if (
+      !deepEqual(expectedDatatype, expressionDatatype, { strict: true })
+    ) {
       throw Error(
         `Expected datatype ${expectedDatatype} but instead got ${expressionDatatype}`
       );
@@ -93,6 +96,26 @@ class TypeCheckerFactory {
       return LiteralDataType.Boolean;
     } else if (exp.type === "string") {
       return LiteralDataType.String;
+    } else if (exp.type === "array") {
+      let baseDataType: DataType | null = null;
+
+      exp.exps.forEach((exp) => {
+        const expType = this.getDataTypeOfExpression(exp);
+
+        if (baseDataType === null) {
+          baseDataType = expType;
+        } else {
+          if (!deepEqual(baseDataType, expType, { strict: true }))
+            throw Error(
+              "Expected all expression to be of same datatype in array"
+            );
+        }
+      });
+
+      if (baseDataType === null)
+        throw Error("Expected atleast one expression in array");
+
+      return { type: "ArrayDataType", baseType: baseDataType };
     } else if (exp.type === "identifier") {
       const varInfo = this.closure.getVariableInfo(exp.name);
 
