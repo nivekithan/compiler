@@ -801,6 +801,13 @@ export class ParserFactory {
         this.next(); // consumes Datatype
         return { type: "IdentifierDatatype", name: identifierName };
       }
+    } else if (curToken === Token.CurveOpenBracket) {
+      this.next(); // consumes (
+
+      const groupedType = this.parseType();
+      
+      this.next(); // consumes )
+      return groupedType;
     }
 
     return null;

@@ -853,3 +853,20 @@ test("Testing Array datatype", () => {
     },
   ]);
 });
+
+test("Testing parsing Grouped type", () => {
+  const input = `
+  const a : ((string)[]) = "a"`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ArrayDataType", baseType: LiteralDataType.String },
+      exp: { type: "string", value: "a" },
+      export: false,
+      identifierName: "a",
+    },
+  ]);
+});
