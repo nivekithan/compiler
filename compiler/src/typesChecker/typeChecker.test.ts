@@ -380,9 +380,89 @@ test("Testing reassignment of wrong datatype with StarAssign", () => {
 });
 
 test("Testing reassignment of wrong datatype with SlashAssign", () => {
-  let input = `
+  const input = `
   let a = true;
   a /= true;`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Typechecking while loop declaration", () => {
+  const input = `
+  const a = 1;
+
+  while (true) {
+    const a = 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      export: false,
+      identifierName: "a",
+      exp: { type: "number", value: 1 },
+    },
+    {
+      type: "WhileLoopDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          export: false,
+          identifierName: "a",
+          exp: { type: "number", value: 1 },
+        },
+      ],
+    },
+  ]);
+});
+
+test("Reassigning inside the loop declaration", () => {
+  const input = `
+  let a = 1;
+
+  while (true) {
+     a += 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "letVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      export: false,
+      identifierName: "a",
+      exp: { type: "number", value: 1 },
+    },
+    {
+      type: "WhileLoopDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "ReAssignment",
+          assignmentOperator: Token.PlusAssign,
+          path: { type: "IdentifierPath", name: "a" },
+          exp: { type: "number", value: 1 },
+        },
+      ],
+    },
+  ]);
+});
+
+test("Using datatype other than boolean", () => {
+  const input = `
+  let a = 1;
+
+  while (1) {
+     a += 1;
+  }`;
 
   const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
 

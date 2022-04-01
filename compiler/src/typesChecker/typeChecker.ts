@@ -16,7 +16,7 @@ import { Closure } from "./closure";
  * Mutates the passed ast
  */
 export const typeCheckAst = (asts: Ast[]): Ast[] => {
-  const TypeChecker = new TypeCheckerFactory(asts);
+  const TypeChecker = new TypeCheckerFactory(asts, new Closure());
   TypeChecker.typeCheck();
   return asts;
 };
@@ -27,10 +27,10 @@ class TypeCheckerFactory {
 
   closure: Closure;
 
-  constructor(asts: Ast[]) {
+  constructor(asts: Ast[], closure: Closure) {
     this.asts = asts;
     this.curPos = 0;
-    this.closure = new Closure();
+    this.closure = closure;
   }
 
   typeCheck() {
@@ -46,10 +46,41 @@ class TypeCheckerFactory {
         this.typeCheckVariableDeclaration();
       } else if (curAst.type === "ReAssignment") {
         this.typeCheckReAssignment();
+      } else if (curAst.type === "WhileLoopDeclaration") {
+        this.typeCheckWhileLoopDeclaration();
       } else {
         throw Error(`Cannot typecheck ast of type ${curAst.type}`);
       }
     }
+  }
+
+  /**
+   * Expects the curAst to be of type WhileLoopDeclaration
+   */
+  typeCheckWhileLoopDeclaration() {
+    const curAst = this.getCurAst();
+
+    if (curAst === null || curAst.type !== "WhileLoopDeclaration")
+      throw Error(
+        `Expected curAst to be of type whileLoopDeclaration but instead got ${curAst?.type}`
+      );
+
+    const loopCondDatatype = this.getDataTypeOfExpression(curAst.condition);
+
+    if (loopCondDatatype !== LiteralDataType.Boolean)
+      throw Error(
+        "Expected condition of while loop to be of LiteralDatatype.Boolean"
+      );
+
+    const LowerOrderClosure = new Closure(this.closure);
+    const WhileBlockTypeChecker = new TypeCheckerFactory(
+      curAst.blocks,
+      LowerOrderClosure
+    );
+
+    WhileBlockTypeChecker.typeCheck();
+
+    this.next(); // consumes While Loop declaration
   }
 
   /**
