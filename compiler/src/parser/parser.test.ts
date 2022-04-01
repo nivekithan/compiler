@@ -1,5 +1,6 @@
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
+import { typeCheckAst } from "../typesChecker/typeChecker";
 import { Ast, LiteralDataType } from "./ast";
 import { convertToAst } from "./parser";
 
@@ -818,7 +819,6 @@ test("Testing export", () => {
   ]);
 });
 
-
 test("Testing double export syntax error", () => {
   const input = `
   export export const x = 1;`;
@@ -828,7 +828,6 @@ test("Testing double export syntax error", () => {
   expect(getOutput).toThrow();
 });
 
-
 test("Testing exporting non supported statement", () => {
   const input = `
   export x += 1;;`;
@@ -836,4 +835,21 @@ test("Testing exporting non supported statement", () => {
   const getOutput = () => convertToAst(convertToTokens(input));
 
   expect(getOutput).toThrow();
+});
+
+test("Testing Array datatype", () => {
+  const input = `
+  const a : string[] = "a"`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ArrayDataType", baseType: LiteralDataType.String },
+      exp: { type: "string", value: "a" },
+      export: false,
+      identifierName: "a",
+    },
+  ]);
 });

@@ -750,10 +750,40 @@ export class ParserFactory {
     }
   }
 
-  parseType(): DataType {
+  parseType(precedence: number = 1): DataType {
+    let prefixType = this.parsePrefixType();
+
+    if (prefixType === null)
+      throw Error(
+        `There is no prefix type function associated with token ${this.getCurToken()}`
+      );
+
+    while (
+      (() => {
+        const nextToken = this.getCurToken();
+
+        return (
+          nextToken !== null &&
+          precedence < this.getNonPrefixTypePrecedence(nextToken)
+        );
+      })()
+    ) {
+      const infixType = this.parseNonPrefixType(prefixType);
+
+      if (infixType !== null) {
+        prefixType = infixType;
+      } else {
+        break;
+      }
+    }
+
+    return prefixType;
+  }
+
+  parsePrefixType(): DataType | null {
     const curToken = this.getCurToken();
 
-    if (curToken === null) throw Error("Did not expect null when parsing Type");
+    if (curToken === null) return null;
 
     if (isIdentifier(curToken)) {
       const identifierName = curToken.value;
@@ -771,8 +801,46 @@ export class ParserFactory {
         this.next(); // consumes Datatype
         return { type: "IdentifierDatatype", name: identifierName };
       }
+    }
+
+    return null;
+  }
+
+  parseNonPrefixType(left: DataType): DataType | null {
+    const curToken = this.getCurToken();
+
+    if (curToken === null) return null;
+
+    if (curToken === Token.BoxOpenBracket) {
+      this.next(); // consumes [
+
+      this.assertCurToken(Token.BoxCloseBracket);
+      this.next(); // consumes ]
+
+      return { type: "ArrayDataType", baseType: left };
+    }
+
+    return null;
+  }
+
+  getPrefixTypePrecedence(token: Tokens): number {
+    return 1;
+  }
+
+  getNonPrefixTypePrecedence(token: Tokens): number {
+    const nonPrefixPrecedence: { [index: string]: number | undefined } = {
+      [Token.BoxOpenBracket]: 20,
+      [Token.Dot]: 20,
+    };
+
+    if (typeof token === "string") {
+      const precedence = nonPrefixPrecedence[token];
+
+      if (precedence === undefined) return 1;
+
+      return precedence;
     } else {
-      throw Error("As of now only supported syntax for type is identifier");
+      return 1;
     }
   }
 
