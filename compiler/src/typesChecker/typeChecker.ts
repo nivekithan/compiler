@@ -1,12 +1,14 @@
 import deepEqual = require("deep-equal");
 import { Token } from "../lexer/tokens";
 import {
+  ArrayDatatype,
   Ast,
   DataType,
   Expression,
   LiteralDataType,
   MinusUninaryExp,
   PlusUninaryExp,
+  ReAssignmentPath,
 } from "../parser/ast";
 import { Closure } from "./closure";
 
@@ -40,8 +42,13 @@ class TypeCheckerFactory {
       if (
         curAst.type === "constVariableDeclaration" ||
         curAst.type === "letVariableDeclaration"
-      )
+      ) {
         this.typeCheckVariableDeclaration();
+      } else if (curAst.type === "ReAssignment") {
+        this.typeCheckReAssignment();
+      } else {
+        throw Error(`Cannot typecheck ast of type ${curAst.type}`);
+      }
     }
   }
 
@@ -87,6 +94,87 @@ class TypeCheckerFactory {
     });
 
     this.next();
+  }
+
+  /**
+   * Expects the curAst to be of type a ReAssignment
+   */
+  typeCheckReAssignment() {
+    const curAst = this.getCurAst();
+
+    if (curAst === null || curAst.type !== "ReAssignment")
+      throw Error(
+        `Expected curAst to be of type Reassignment but instead got ${curAst?.type}`
+      );
+
+    const path = curAst.path;
+
+    if (path.type === "IdentifierPath") {
+      const identifierName = path.name;
+      const varInfo = this.closure.getVariableInfo(identifierName);
+
+      if (varInfo === null)
+        throw Error(`There is no variable defined with name ${identifierName}`);
+
+      const isVarConst = varInfo.isDeclaredConst;
+
+      if (isVarConst)
+        throw Error("Cannot reassign variable that is declared const");
+    }
+
+    const dataTypeOfPath = this.getDataTypeOfAssignmentPath(path);
+
+    const expDataType = this.getDataTypeOfExpression(curAst.exp);
+
+    if (!deepEqual(dataTypeOfPath, expDataType, { strict: true })) {
+      throw Error(
+        `Cannot reassign a variable of datatype ${dataTypeOfPath} with exp whose datatype is ${expDataType} `
+      );
+    }
+
+    if (curAst.assignmentOperator !== Token.Assign) {
+      if (dataTypeOfPath !== LiteralDataType.Number)
+        throw Error(`Expected datatype to be number`);
+    }
+
+    this.next(); // consumes ReAssignment
+  }
+
+  getDataTypeOfAssignmentPath(path: ReAssignmentPath): DataType {
+    if (path.type === "IdentifierPath") {
+      const identifierName = path.name;
+      const identInfo = this.closure.getVariableInfo(identifierName);
+
+      if (identInfo === null)
+        throw Error(`There is no variable defined with name ${identifierName}`);
+
+      return identInfo.dataType;
+    } else if (path.type === "BoxMemberPath") {
+      const leftDataType = this.getDataTypeOfAssignmentPath(path.leftPath);
+
+      if (isArrayDatatype(leftDataType)) {
+        const expDatatype = this.getDataTypeOfExpression(path.accessExp);
+
+        if (
+          expDatatype !== LiteralDataType.Number &&
+          expDatatype !== LiteralDataType.String
+        ) {
+          throw Error(
+            "Only exp whose datatype is number or string can be used in accessing exp in BoxMemberPath"
+          );
+        }
+
+        return leftDataType.baseType;
+      } else {
+        throw new Error(
+          "Left datatype can only be Array Datatype in BoxMemberPath"
+        );
+      }
+    } else {
+      throw Error(
+        "It is not still supported to getDataType of reassignment path whose type is DotMemberPath"
+      );
+    }
   }
 
   getDataTypeOfExpression(exp: Expression): DataType {
@@ -289,4 +377,8 @@ const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
   }
 
   return false;
+};
+
+const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
+  return typeof datatype === "object" && datatype.type === "ArrayDataType";
 };

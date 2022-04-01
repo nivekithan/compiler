@@ -164,3 +164,227 @@ test("Identifier typechecking", () => {
     },
   ]);
 });
+
+test("Testing reassignment of operator Token.Assign", () => {
+  const input = `
+  let a = 1;
+  a = 2;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "letVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      exp: { type: "number", value: 1 },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.Assign,
+      path: { type: "IdentifierPath", name: "a" },
+      exp: { type: "number", value: 2 },
+    },
+  ]);
+});
+
+test("Testing reassignment of Array element", () => {
+  const input = `
+  const a = [1];
+  a[0] = 2;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
+      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.Assign,
+      path: {
+        type: "BoxMemberPath",
+        leftPath: { type: "IdentifierPath", name: "a" },
+        accessExp: { type: "number", value: 0 },
+      },
+      exp: { type: "number", value: 2 },
+    },
+  ]);
+});
+
+test("Testing reassignment with PlusAssign operator", () => {
+  const input = `
+  const a = [1];
+  a[0] += 2;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
+      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.PlusAssign,
+      path: {
+        type: "BoxMemberPath",
+        leftPath: { type: "IdentifierPath", name: "a" },
+        accessExp: { type: "number", value: 0 },
+      },
+      exp: { type: "number", value: 2 },
+    },
+  ]);
+});
+
+test("Testing reassignment with MinusAssign operator", () => {
+  const input = `
+  const a = [1];
+  a[0] -= 2;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
+      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.MinusAssign,
+      path: {
+        type: "BoxMemberPath",
+        leftPath: { type: "IdentifierPath", name: "a" },
+        accessExp: { type: "number", value: 0 },
+      },
+      exp: { type: "number", value: 2 },
+    },
+  ]);
+});
+
+test("Testing reassignment with StarAssign operator", () => {
+  const input = `
+  const a = [1];
+  a[0] *= 2;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
+      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.StarAssign,
+      path: {
+        type: "BoxMemberPath",
+        leftPath: { type: "IdentifierPath", name: "a" },
+        accessExp: { type: "number", value: 0 },
+      },
+      exp: { type: "number", value: 2 },
+    },
+  ]);
+});
+
+test("Testing reassignment with SlashAssign operator", () => {
+  const input = `
+  const a = [1];
+  a[0] /= 2;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
+      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.SlashAssign,
+      path: {
+        type: "BoxMemberPath",
+        leftPath: { type: "IdentifierPath", name: "a" },
+        accessExp: { type: "number", value: 0 },
+      },
+      exp: { type: "number", value: 2 },
+    },
+  ]);
+});
+
+test("Testing reassignment of const variable", () => {
+  const input = `
+  const a = 1;
+  a = 2;`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Testing reassignment with another exp of different datatype", () => {
+  let input = `
+  let a = 1;
+  a = true;`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Testing reassignment of wrong datatype with PlusAssign", () => {
+  let input = `
+  let a = true;
+  a += true;`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Testing reassignment of wrong datatype with MinusAssign", () => {
+  let input = `
+  let a = true;
+  a -= true;`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Testing reassignment of wrong datatype with StarAssign", () => {
+  let input = `
+  let a = true;
+  a *= true;`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Testing reassignment of wrong datatype with SlashAssign", () => {
+  let input = `
+  let a = true;
+  a /= true;`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
