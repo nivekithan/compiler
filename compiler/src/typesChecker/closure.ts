@@ -20,15 +20,12 @@ export class Closure {
   higherClosure: Closure | null;
 
   database: { [index: string]: StoredVariable | undefined };
+  insideLoop: boolean;
 
-  constructor(higherClosure?: Closure) {
-    if (higherClosure === undefined) {
-      this.higherClosure = null;
-      this.database = {};
-    } else {
-      this.higherClosure = higherClosure;
-      this.database = {};
-    }
+  constructor(higherClosure: Closure | null, isInsideLoop: boolean) {
+    this.insideLoop = isInsideLoop;
+    this.higherClosure = higherClosure;
+    this.database = {};
   }
 
   insertVariableInfo(info: StoredVariable) {
@@ -59,6 +56,16 @@ export class Closure {
     } else {
       const clonedInfo = clone(varInfo);
       return { ...clonedInfo, presentInCurrentClosure: true };
+    }
+  }
+
+  isInsideLoop(): boolean {
+    if (this.insideLoop) return true;
+
+    if (this.higherClosure === null) {
+      return false;
+    } else {
+      return this.higherClosure.isInsideLoop();
     }
   }
 }

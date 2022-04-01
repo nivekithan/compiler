@@ -1,5 +1,5 @@
 import { convertToTokens } from "../lexer/lexer";
-import { Token } from "../lexer/tokens";
+import { KeywordTokens, Token } from "../lexer/tokens";
 import { Ast, LiteralDataType } from "../parser/ast";
 import { convertToAst } from "../parser/parser";
 import { typeCheckAst } from "./typeChecker";
@@ -543,6 +543,64 @@ test("Using datatype other than boolean in do while declaration", () => {
   do {
      a += 1;
   } while (1) `;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Testing Break and Continue inside while loop", () => {
+  const input = `
+  while (true) {
+    break;
+    continue;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "WhileLoopDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [{ type: KeywordTokens.Break }, { type: KeywordTokens.Continue }],
+    },
+  ]);
+});
+
+test("Testing Break and Continue inside do while loop", () => {
+  const input = `
+  do {
+    break;
+    continue;
+  } while (true)`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "DoWhileLoopDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [{ type: KeywordTokens.Break }, { type: KeywordTokens.Continue }],
+    },
+  ]);
+});
+
+test("Testing Break outside loop", () => {
+  const input = `
+  break;
+  `;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+
+
+test("Testing Continue outside loop", () => {
+  const input = `
+  continue;
+  `;
 
   const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
 

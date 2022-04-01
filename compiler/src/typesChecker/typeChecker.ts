@@ -1,5 +1,5 @@
 import deepEqual = require("deep-equal");
-import { Token } from "../lexer/tokens";
+import { KeywordTokens, Token } from "../lexer/tokens";
 import {
   ArrayDatatype,
   Ast,
@@ -16,11 +16,14 @@ import { Closure } from "./closure";
  * Mutates the passed ast
  */
 export const typeCheckAst = (asts: Ast[]): Ast[] => {
-  const TypeChecker = new TypeCheckerFactory(asts, new Closure());
+  const TypeChecker = new TypeCheckerFactory(asts, new Closure(null, false));
   TypeChecker.typeCheck();
   return asts;
 };
 
+export type TypeCheckerOptions = {
+  isClosureCreatedForLoop: boolean;
+};
 class TypeCheckerFactory {
   asts: Ast[];
   curPos: number | null;
@@ -50,10 +53,33 @@ class TypeCheckerFactory {
         this.typeCheckWhileLoopDeclaration();
       } else if (curAst.type === "DoWhileLoopDeclaration") {
         this.typeCheckDoWhileLoopDeclaration();
+      } else if (curAst.type === KeywordTokens.Break || curAst.type === KeywordTokens.Continue) {
+        this.typeCheckCondFlowStatement();
       } else {
         throw Error(`Cannot typecheck ast of type ${curAst.type}`);
       }
     }
+  }
+
+  /**
+   * Expects the curAst to be of type KeyWord.Break or Keyword.Continue*
+   */
+  typeCheckCondFlowStatement() {
+    const curAst = this.getCurAst();
+
+    if (
+      curAst === null ||
+      (curAst.type !== KeywordTokens.Break &&
+        curAst.type !== KeywordTokens.Continue)
+    )
+      throw Error(
+        `Expects the curAst to be of type Keyword.Break or keyWord.Continue but instead got ${curAst?.type}`
+      );
+
+    if (!this.closure.isInsideLoop())
+      throw Error("Can only use Break or Continue statement inside loops");
+
+    this.next(); // consumes Break or Continue
   }
 
   /**
@@ -74,7 +100,7 @@ class TypeCheckerFactory {
         "Expected condition of do while loop to be of LiteralDatatype.Boolean"
       );
 
-    const LowerOrderClosure = new Closure(this.closure);
+    const LowerOrderClosure = new Closure(this.closure, true);
     const DoWhileBlockTypeChecker = new TypeCheckerFactory(
       curAst.blocks,
       LowerOrderClosure
@@ -103,7 +129,7 @@ class TypeCheckerFactory {
         "Expected condition of while loop to be of LiteralDatatype.Boolean"
       );
 
-    const LowerOrderClosure = new Closure(this.closure);
+    const LowerOrderClosure = new Closure(this.closure, true);
     const WhileBlockTypeChecker = new TypeCheckerFactory(
       curAst.blocks,
       LowerOrderClosure
