@@ -7,6 +7,7 @@ import {
   MinusUninaryExp,
   PlusUninaryExp,
 } from "../parser/ast";
+import { Closure } from "./closure";
 
 /**
  * Mutates the passed ast
@@ -21,9 +22,12 @@ class TypeCheckerFactory {
   asts: Ast[];
   curPos: number | null;
 
+  closure: Closure;
+
   constructor(asts: Ast[]) {
     this.asts = asts;
     this.curPos = 0;
+    this.closure = new Closure();
   }
 
   typeCheck() {
@@ -66,13 +70,18 @@ class TypeCheckerFactory {
       expectedDatatype === LiteralDataType.Unknown
     ) {
       curAst.datatype = expressionDatatype;
-      this.next();
-      return;
     } else if (expectedDatatype !== expressionDatatype) {
       throw Error(
         `Expected datatype ${expectedDatatype} but instead got ${expressionDatatype}`
       );
     }
+
+    this.closure.insertVariableInfo({
+      name: curAst.identifierName,
+      dataType: curAst.datatype,
+      isDeclaredConst: curAst.type === "constVariableDeclaration",
+      isExported: curAst.export,
+    });
 
     this.next();
   }
@@ -84,6 +93,13 @@ class TypeCheckerFactory {
       return LiteralDataType.Boolean;
     } else if (exp.type === "string") {
       return LiteralDataType.String;
+    } else if (exp.type === "identifier") {
+      const varInfo = this.closure.getVariableInfo(exp.name);
+
+      if (varInfo === null)
+        throw Error(`There is no variable with name ${exp.name}`);
+
+      return varInfo.dataType;
     } else if (exp.type === Token.Plus) {
       if (isPlusUninaryExp(exp)) {
         const argumentExp = this.getDataTypeOfExpression(exp.argument);
@@ -200,11 +216,11 @@ class TypeCheckerFactory {
           "Expected both leftDatatype and rightDatatype to be equal and be number"
         );
       }
+    } else {
+      throw Error(
+        `Finding datatype for this expression is not yet supported \n ${exp} `
+      );
     }
-
-    throw Error(
-      `Finding datatype for this expression is not yet supported \n ${exp} `
-    );
   }
 
   next() {

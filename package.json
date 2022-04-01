@@ -21,9 +21,11 @@
     "@swc/core": "^1.2.160",
     "@swc/jest": "^0.2.20",
     "@types/jest": "^27.4.1",
+    "@types/clone": "^2.1.1",
     "jest": "^27.5.1"
   },
   "dependencies": {
+    "clone": "^2.1.2",
     "compiler": "link:"
   }
 }
