@@ -942,3 +942,22 @@ test("Testing exporting function declaraton", () => {
     },
   ]);
 });
+
+test("Testing return statements", () => {
+  const input = `
+  return;
+  return 1;`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "ReturnExpression",
+      exp: null,
+    },
+    {
+      type: "ReturnExpression",
+      exp: { type: "number", value: 1 },
+    },
+  ]);
+});

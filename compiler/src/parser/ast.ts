@@ -12,6 +12,7 @@ export type Ast =
   | WhileLoopDeclaration
   | DoWhileLoopDeclaration
   | FunctionDeclaration
+  | ReturnExp
   | { type: "EOF" };
 
 export type WhileLoopDeclaration = {
@@ -274,4 +275,9 @@ export type FunctionDeclaration = {
   returnType: DataType;
   blocks: Ast[];
   export: boolean;
+};
+
+export type ReturnExp = {
+  type: "ReturnExpression";
+  exp: Expression | null; 
 };

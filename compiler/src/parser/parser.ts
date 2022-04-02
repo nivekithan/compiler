@@ -13,6 +13,7 @@ import {
   LiteralDataType,
   ReAssignment,
   ReAssignmentPath,
+  ReturnExp,
   UninaryExp,
   VariableDeclaration,
   WhileLoopDeclaration,
@@ -61,6 +62,7 @@ export class ParserFactory {
     if (curToken === KeywordTokens.Export) return this.parseExportDeclaration();
     if (curToken === KeywordTokens.Function)
       return this.parseFunctionDeclaration();
+    if (curToken === KeywordTokens.Return) return this.parseReturnExp();
 
     if (
       curToken === KeywordTokens.Break ||
@@ -84,7 +86,28 @@ export class ParserFactory {
   }
 
   /**
-   * Expects curAst to be of type FunctionDeclaration
+   * Expects the curToken to be of KeyWord.Return
+   */
+  parseReturnExp(): ReturnExp {
+    this.assertCurToken(KeywordTokens.Return);
+    this.next(); // consumes Return
+
+    const isSemiColon = this.isCurToken(Token.SemiColon);
+
+    if (isSemiColon) {
+      this.next(); // consumes ;
+      return { type: "ReturnExpression", exp: null };
+    } else {
+      const exp = this.parseExpression();
+
+      this.skipSemiColon();
+
+      return { type: "ReturnExpression", exp };
+    }
+  }
+
+  /**
+   * Expects curToken to be of type FunctionDeclaration
    */
   parseFunctionDeclaration(): Ast {
     this.assertCurToken(KeywordTokens.Function);
