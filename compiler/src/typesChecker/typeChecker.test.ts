@@ -239,6 +239,35 @@ test("Testing reassignment of Array element", () => {
   ]);
 });
 
+test("Testing reassignment of object key", () => {
+  const input = `
+  const a = {b : 1};
+  a.b = 2;
+  `;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "ObjectDataType", keys: { b: LiteralDataType.Number } },
+      exp: { type: "object", keys: [["b", { type: "number", value: 1 }]] },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.Assign,
+      path: {
+        type: "DotMemberPath",
+        leftPath: { type: "IdentifierPath", name: "a" },
+        rightPath: "b",
+      },
+      exp: { type: "number", value: 2 },
+    },
+  ]);
+});
+
 test("Testing reassignment with PlusAssign operator", () => {
   const input = `
   const a = [1];

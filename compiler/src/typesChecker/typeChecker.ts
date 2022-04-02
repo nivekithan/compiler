@@ -7,6 +7,7 @@ import {
   Expression,
   LiteralDataType,
   MinusUninaryExp,
+  ObjectDatatype,
   PlusUninaryExp,
   ReAssignmentPath,
 } from "../parser/ast";
@@ -246,25 +247,35 @@ class TypeCheckerFactory {
       if (isArrayDatatype(leftDataType)) {
         const expDatatype = this.getDataTypeOfExpression(path.accessExp);
 
-        if (
-          expDatatype !== LiteralDataType.Number &&
-          expDatatype !== LiteralDataType.String
-        ) {
+        if (expDatatype !== LiteralDataType.Number) {
           throw Error(
-            "Only exp whose datatype is number or string can be used in accessing exp in BoxMemberPath"
+            "Only exp whose datatype is number can be used in accessing exp in BoxMemberPath"
           );
         }
-
         return leftDataType.baseType;
       } else {
         throw new Error(
           "Left datatype can only be Array Datatype in BoxMemberPath"
         );
       }
+    } else if (path.type === "DotMemberPath") {
+      const leftDataType = this.getDataTypeOfAssignmentPath(path.leftPath);
+
+      if (isObjectDatatype(leftDataType)) {
+        const keyName = path.rightPath;
+
+        const keyType = leftDataType.keys[keyName];
+
+        if (keyType === undefined) {
+          throw Error(`There is no key with name ${keyName}`);
+        }
+
+        return keyType;
+      } else {
+        throw Error("Left datatype can only be object in DotMemberPath");
+      }
     } else {
-      throw Error(
-        "It is not still supported to getDataType of reassignment path whose type is DotMemberPath"
-      );
+      throw Error("Unreachable");
     }
   }
 
@@ -488,4 +499,8 @@ const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
 
 const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
   return typeof datatype === "object" && datatype.type === "ArrayDataType";
+};
+
+const isObjectDatatype = (dataType: DataType): dataType is ObjectDatatype => {
+  return typeof dataType === "object" && dataType.type === "ObjectDataType";
 };
