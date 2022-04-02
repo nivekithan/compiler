@@ -916,3 +916,29 @@ test("Testing function declaration", () => {
     },
   ]);
 });
+
+test("Testing exporting function declaraton", () => {
+  const input = `
+  export function some(a : number) {
+    doSomething(a);
+  };`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      arguments: [["a", LiteralDataType.Number]],
+      name: "some",
+      returnType: LiteralDataType.NotCalculated,
+      export: true,
+      blocks: [
+        {
+          type: "FunctionCall",
+          arguments: [{ type: "identifier", name: "a" }],
+          left: { type: "identifier", name: "doSomething" },
+        },
+      ],
+    },
+  ]);
+});

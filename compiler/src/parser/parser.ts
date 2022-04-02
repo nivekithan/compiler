@@ -167,7 +167,7 @@ export class ParserFactory {
   /**
    * Expects the curToken to be Keyword.Expect
    */
-  parseExportDeclaration(): VariableDeclaration {
+  parseExportDeclaration(): Ast {
     this.assertCurToken(KeywordTokens.Export);
     this.next(); // consumes Export
 
@@ -175,7 +175,8 @@ export class ParserFactory {
 
     if (
       nextAst.type === "constVariableDeclaration" ||
-      nextAst.type === "letVariableDeclaration"
+      nextAst.type === "letVariableDeclaration" ||
+      nextAst.type === "FunctionDeclaration"
     ) {
       if (nextAst.export) {
         throw Error("Cannot export already exported variable declaration");
