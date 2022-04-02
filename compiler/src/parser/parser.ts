@@ -322,13 +322,17 @@ export class ParserFactory {
       );
     }
 
-    this.assertCurToken(Token.CurveOpenBracket);
-    this.next(); // consumes (
+    let condExp: Expression | undefined = undefined;
 
-    const condExp = this.parseExpression();
+    if (blockType !== "ElseBlockDeclaration") {
+      this.assertCurToken(Token.CurveOpenBracket);
+      this.next(); // consumes (
 
-    this.assertCurToken(Token.CurveCloseBracket);
-    this.next(); // consumes )
+      condExp = this.parseExpression();
+
+      this.assertCurToken(Token.CurveCloseBracket);
+      this.next(); // consumes )
+    }
 
     this.assertCurToken(Token.AngleOpenBracket);
     this.next(); // consumes {
@@ -348,7 +352,11 @@ export class ParserFactory {
     this.next(); // consumes }
     this.skipSemiColon();
 
-    return { type: blockType, condition: condExp, blocks: asts };
+    if (condExp !== undefined) {
+      return { type: blockType, blocks: asts, condition: condExp };
+    } else {
+      return {type : "ElseBlockDeclaration", blocks : asts};
+    }
   }
 
   /**

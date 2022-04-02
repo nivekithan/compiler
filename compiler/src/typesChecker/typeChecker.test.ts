@@ -769,3 +769,191 @@ test("Testing function call", () => {
     },
   ]);
 });
+
+test("Typecheck if block declaration", () => {
+  const input = `
+  if (true) {
+    const a = 1;
+  } else if (true) {
+    const a = 1;
+  } else if (true) {
+    const a = 1;
+  } else {
+    const a = 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "IfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+    {
+      type: "ElseIfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+    {
+      type: "ElseIfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+    {
+      type: "ElseBlockDeclaration",
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+  ]);
+});
+
+test("Typecheck if block declaration without else if block", () => {
+  const input = `
+  if (true) {
+    const a = 1;
+  } else {
+    const a = 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "IfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+    {
+      type: "ElseBlockDeclaration",
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+  ]);
+});
+
+test("Typecheck if block declaration without else block", () => {
+  const input = `
+  if (true) {
+    const a = 1;
+  } else if (true) {
+    const a = 1;
+  } else if (true) {
+    const a = 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "IfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+    {
+      type: "ElseIfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+    {
+      type: "ElseIfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+  ]);
+});
+
+test("Typecheck if block declaration without both else and else if block", () => {
+  const input = `
+  if (true) {
+    const a = 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "IfBlockDeclaration",
+      condition: { type: "boolean", value: true },
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "number", value: 1 },
+          export: false,
+          identifierName: "a",
+        },
+      ],
+    },
+  ]);
+});

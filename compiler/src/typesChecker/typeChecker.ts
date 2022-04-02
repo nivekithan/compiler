@@ -64,6 +64,8 @@ class TypeCheckerFactory {
         this.typeCheckFunctionDeclaration();
       } else if (curAst.type === "ReturnExpression") {
         this.typeCheckReturnExpression();
+      } else if (curAst.type === "IfBlockDeclaration") {
+        this.typeCheckIsBlockDeclaration();
       } else if (
         curAst.type === KeywordTokens.Break ||
         curAst.type === KeywordTokens.Continue
@@ -79,6 +81,79 @@ class TypeCheckerFactory {
    */
   typeCheckIsBlockDeclaration() {
     const curAst = this.getCurAst();
+
+    if (curAst === null || curAst.type !== "IfBlockDeclaration")
+      throw Error("Expected curAst to be of type if Block declaration");
+
+    const ifCondDatatype = this.getDataTypeOfExpression(curAst.condition);
+
+    if (ifCondDatatype !== LiteralDataType.Boolean)
+      throw Error(
+        `Expected ifCondDatatype to be only LiteralDatatype.Boolean but instead got ${ifCondDatatype}`
+      );
+
+    const IfBlockClosure = new Closure(this.closure, {
+      isInsideLoop: false,
+    });
+
+    const IfBlockTypeChecker = new TypeCheckerFactory(
+      curAst.blocks,
+      IfBlockClosure
+    );
+
+    IfBlockTypeChecker.typeCheck();
+
+    this.next(); // consumes IfBlock
+
+    const whileBlockCond = () => {
+      const curAst = this.getCurAst();
+
+      return curAst !== null && curAst.type === "ElseIfBlockDeclaration";
+    };
+
+    while (whileBlockCond()) {
+      const curAst = this.getCurAst();
+
+      if (curAst === null || curAst.type !== "ElseIfBlockDeclaration")
+        throw Error("Unreachable");
+
+      const elseIfCondDatatype = this.getDataTypeOfExpression(curAst.condition);
+
+      if (elseIfCondDatatype !== LiteralDataType.Boolean)
+        throw Error(
+          `Expected datatype of else if condition to be boolean but instead got ${elseIfCondDatatype}`
+        );
+
+      const ElseIfBlockClosure = new Closure(this.closure, {
+        isInsideLoop: false,
+      });
+
+      const ElseIfBlockTypeChecker = new TypeCheckerFactory(
+        curAst.blocks,
+        ElseIfBlockClosure
+      );
+
+      ElseIfBlockTypeChecker.typeCheck();
+
+      this.next(); // consumes else if block
+    }
+
+    const nextAst = this.getCurAst();
+
+    if (nextAst !== null && nextAst.type === "ElseBlockDeclaration") {
+      const ElseBlockClosure = new Closure(this.closure, {
+        isInsideLoop: false,
+      });
+
+      const ElseBlockTypeChecker = new TypeCheckerFactory(
+        nextAst.blocks,
+        ElseBlockClosure
+      );
+
+      ElseBlockTypeChecker.typeCheck();
+
+      this.next(); // consumes else block
+    }
   }
 
   /**

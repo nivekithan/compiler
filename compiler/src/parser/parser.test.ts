@@ -694,7 +694,7 @@ test("Testing else if block", () => {
 
 test("Testing else block", () => {
   const input = `
-  else (1) {
+  else {
     doSomething();
   }`;
 
@@ -703,7 +703,6 @@ test("Testing else block", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "ElseBlockDeclaration",
-      condition: { type: "number", value: 1 },
       blocks: [
         {
           type: "FunctionCall",

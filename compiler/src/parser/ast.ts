@@ -46,7 +46,6 @@ export type IfBlockDeclaration = {
 
 export type ElseBlockDeclaration = {
   type: "ElseBlockDeclaration";
-  condition: Expression;
   blocks: Ast[];
 };
 
