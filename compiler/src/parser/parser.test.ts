@@ -890,3 +890,29 @@ test("Testing parsing Grouped type", () => {
     },
   ]);
 });
+
+test("Testing function declaration", () => {
+  const input = `
+  function some(a : number) {
+    doSomething(a);
+  };`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      arguments: [["a", LiteralDataType.Number]],
+      name: "some",
+      returnType: LiteralDataType.NotCalculated,
+      export: false,
+      blocks: [
+        {
+          type: "FunctionCall",
+          arguments: [{ type: "identifier", name: "a" }],
+          left: { type: "identifier", name: "doSomething" },
+        },
+      ],
+    },
+  ]);
+});

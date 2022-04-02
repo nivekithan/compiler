@@ -59,6 +59,8 @@ export class ParserFactory {
     if (curToken === KeywordTokens.While) return this.parseWhileLoop();
     if (curToken === KeywordTokens.Do) return this.parseDoWhileLoop();
     if (curToken === KeywordTokens.Export) return this.parseExportDeclaration();
+    if (curToken === KeywordTokens.Function)
+      return this.parseFunctionDeclaration();
 
     if (
       curToken === KeywordTokens.Break ||
@@ -79,6 +81,87 @@ export class ParserFactory {
     this.skipSemiColon();
 
     return nakedExp;
+  }
+
+  /**
+   * Expects curAst to be of type FunctionDeclaration
+   */
+  parseFunctionDeclaration(): Ast {
+    this.assertCurToken(KeywordTokens.Function);
+    this.next(); // consumes function
+
+    const functionIdentifier = this.getCurToken();
+
+    if (functionIdentifier === null || !isIdentifier(functionIdentifier))
+      throw Error("Expected identifier name after the function");
+
+    this.next(); // consumes identifier
+
+    const functionName = functionIdentifier.value;
+
+    this.assertCurToken(Token.CurveOpenBracket);
+    this.next();
+
+    const functionArguments: [string, DataType][] = [];
+
+    while (this.getCurToken() !== Token.CurveCloseBracket) {
+      const argumentIdentifier = this.getCurToken();
+
+      if (argumentIdentifier === null || !isIdentifier(argumentIdentifier))
+        throw Error("Expected argument name");
+
+      const argumentName = argumentIdentifier.value;
+
+      this.next(); // consumes Identifier
+
+      this.assertCurToken(Token.Colon);
+      this.next(); // consumes :
+
+      const argumentType = this.parseType();
+
+      functionArguments.push([argumentName, argumentType]);
+
+      if (this.isCurToken(Token.Comma)) {
+        this.next(); // consumes ,
+      } else {
+        this.assertCurToken(Token.CurveCloseBracket);
+      }
+    }
+
+    this.next(); // consumes )
+
+    const isColon = this.isCurToken(Token.Colon);
+
+    let returnType: DataType = LiteralDataType.NotCalculated;
+
+    if (isColon) {
+      this.next(); // consumes :
+
+      returnType = this.parseType();
+    }
+
+    this.assertCurToken(Token.AngleOpenBracket);
+    this.next(); // consumes {
+
+    const asts: Ast[] = [];
+
+    while (this.getCurToken() !== Token.AngleCloseBracket) {
+      const ast = this.getNextAst();
+      asts.push(ast);
+    }
+
+    this.next(); // consumes }
+
+    this.skipSemiColon();
+
+    return {
+      type: "FunctionDeclaration",
+      arguments: functionArguments,
+      blocks: asts,
+      name: functionName,
+      returnType,
+      export: false,
+    };
   }
 
   /**

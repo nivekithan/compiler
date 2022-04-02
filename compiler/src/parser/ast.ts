@@ -11,6 +11,7 @@ export type Ast =
   | CondBlockDeclaration
   | WhileLoopDeclaration
   | DoWhileLoopDeclaration
+  | FunctionDeclaration
   | { type: "EOF" };
 
 export type WhileLoopDeclaration = {
@@ -264,4 +265,13 @@ export type ArrayDatatype = {
 export type ObjectDatatype = {
   type: "ObjectDataType";
   keys: { [name: string]: DataType | undefined };
+};
+
+export type FunctionDeclaration = {
+  type: "FunctionDeclaration";
+  name: string;
+  arguments: [string, DataType][];
+  returnType: DataType;
+  blocks: Ast[];
+  export: boolean;
 };
