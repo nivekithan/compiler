@@ -737,3 +737,35 @@ test("Testing return exp inside loop inside function declaration", () => {
     },
   ]);
 });
+
+test("Testing function call", () => {
+  const input = `
+  function a() {
+    return 1;
+  }
+  const b : number = a();`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      name: "a",
+      arguments: [],
+      export: false,
+      returnType: LiteralDataType.Number,
+      blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      export: false,
+      identifierName: "b",
+      exp: {
+        type: "FunctionCall",
+        arguments: [],
+        left: { type: "identifier", name: "a" },
+      },
+    },
+  ]);
+});

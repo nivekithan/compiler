@@ -243,7 +243,8 @@ export type DataType =
   | LiteralDataType
   | IdentifierDatatype
   | ArrayDatatype
-  | ObjectDatatype;
+  | ObjectDatatype
+  | FunctionDatatype;
 
 export enum LiteralDataType {
   Boolean = "Boolean",
@@ -268,6 +269,12 @@ export type ObjectDatatype = {
   keys: { [name: string]: DataType | undefined };
 };
 
+export type FunctionDatatype = {
+  type: "FunctionDataType";
+  arguments: { [index: string]: DataType | undefined };
+  returnType: DataType;
+};
+
 export type FunctionDeclaration = {
   type: "FunctionDeclaration";
   name: string;
@@ -279,5 +286,5 @@ export type FunctionDeclaration = {
 
 export type ReturnExp = {
   type: "ReturnExpression";
-  exp: Expression | null; 
+  exp: Expression | null;
 };

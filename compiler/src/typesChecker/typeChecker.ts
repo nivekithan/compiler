@@ -5,6 +5,7 @@ import {
   Ast,
   DataType,
   Expression,
+  FunctionDatatype,
   LiteralDataType,
   MinusUninaryExp,
   ObjectDatatype,
@@ -73,6 +74,12 @@ class TypeCheckerFactory {
       }
     }
   }
+  /**
+   * Expects the curAst to be of type ifBlockDeclaration
+   */
+  typeCheckIsBlockDeclaration() {
+    const curAst = this.getCurAst();
+  }
 
   /**
    * Expects the curAst to be of type FunctionDeclaration
@@ -84,6 +91,21 @@ class TypeCheckerFactory {
       throw new Error(
         `Expect curAst to be of type FunctionDeclaration but instead got ${curAst?.type}`
       );
+
+    const argumentDatatypes = curAst.arguments.reduce(
+      (argDatatypes: { [index: string]: DataType | undefined }, curr) => {
+        const argName = curr[0];
+        const argType = curr[1];
+
+        if (argDatatypes[argName] !== undefined)
+          throw Error(`There is already a argument with name ${argName}`);
+
+        argDatatypes[argName] = argType;
+
+        return argDatatypes;
+      },
+      {}
+    );
 
     const FunctionClosure = new Closure(this.closure, {
       functionInfo: {
@@ -104,7 +126,18 @@ class TypeCheckerFactory {
 
     curAst.returnType = typeCheckedReturnType;
 
-    this.next();
+    this.next(); // consume Function Declaration
+
+    this.closure.insertVariableInfo({
+      name: curAst.name,
+      isExported: curAst.export,
+      isDeclaredConst: true,
+      dataType: {
+        type: "FunctionDataType",
+        arguments: argumentDatatypes,
+        returnType: curAst.returnType,
+      },
+    });
   }
 
   /**
@@ -521,6 +554,30 @@ class TypeCheckerFactory {
           "Expected both leftDatatype and rightDatatype to be equal and be number"
         );
       }
+    } else if (exp.type === "FunctionCall") {
+      const leftDatatype = this.getDataTypeOfExpression(exp.left);
+
+      if (isFunctionDatatype(leftDatatype)) {
+        const passedArgumentsDatatype = exp.arguments.reduce(
+          (acc: DataType[], curr) => {
+            acc.push(this.getDataTypeOfExpression(curr));
+            return acc;
+          },
+          []
+        );
+
+        const requiredArgumentsDatatype = Object.values(leftDatatype.arguments);
+
+        if (deepEqual(passedArgumentsDatatype, requiredArgumentsDatatype)) {
+          return leftDatatype.returnType;
+        } else {
+          throw Error("Passed arguments and required arguments does not match");
+        }
+      } else {
+        throw Error(
+          `Expected the type of datatype of left in function call to be Function datatype but instead got ${leftDatatype}`
+        );
+      }
     } else {
       throw Error(
         `Finding datatype for this expression is not yet supported \n ${exp} `
@@ -579,4 +636,10 @@ const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
 
 const isObjectDatatype = (dataType: DataType): dataType is ObjectDatatype => {
   return typeof dataType === "object" && dataType.type === "ObjectDataType";
+};
+
+const isFunctionDatatype = (
+  datatype: DataType
+): datatype is FunctionDatatype => {
+  return typeof datatype === "object" && datatype.type === "FunctionDataType";
 };
