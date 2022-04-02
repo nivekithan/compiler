@@ -118,6 +118,10 @@ export class Closure {
     functionClosure.functionInfo.returnType = dataType;
   }
 
+  isTopLevel(): boolean {
+    return this.higherClosure === null;
+  }
+
   private getFunctionClosure(): Closure | null {
     if (this.functionInfo.insideFunctionDeclaration) return this;
 

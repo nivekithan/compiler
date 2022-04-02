@@ -167,6 +167,9 @@ class TypeCheckerFactory {
         `Expect curAst to be of type FunctionDeclaration but instead got ${curAst?.type}`
       );
 
+    if (!this.closure.isTopLevel())
+      throw Error("Can only declare function at top level");
+
     const argumentDatatypes = curAst.arguments.reduce(
       (argDatatypes: { [index: string]: DataType | undefined }, curr) => {
         const argName = curr[0];
@@ -345,6 +348,9 @@ class TypeCheckerFactory {
       throw Error(
         `Expected current ast to be of constVariableDeclaration or letVariableDeclaration but instead got ${curAst}`
       );
+
+    if (curAst.export && !this.closure.isTopLevel())
+      throw Error("Can only declare a variable as export at top level");
 
     const expectedDatatype = curAst.datatype;
     const expressionDatatype = this.getDataTypeOfExpression(curAst.exp);

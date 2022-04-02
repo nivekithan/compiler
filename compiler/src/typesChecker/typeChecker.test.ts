@@ -957,3 +957,27 @@ test("Typecheck if block declaration without both else and else if block", () =>
     },
   ]);
 });
+
+test("Testing declaring function at other than top level", () => {
+  const input = `
+  if (true) {
+    function declaration a() {
+      return 1;
+    }
+  }`;
+
+  const getOutput = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(getOutput).toThrow();
+});
+
+test("Testing declaring export variable at other than top level", () => {
+  const input = `
+  if (true) {
+    export const a  = 1;
+  }`;
+
+  const getOutput = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(getOutput).toThrow();
+});

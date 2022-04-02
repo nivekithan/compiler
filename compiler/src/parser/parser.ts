@@ -355,7 +355,7 @@ export class ParserFactory {
     if (condExp !== undefined) {
       return { type: blockType, blocks: asts, condition: condExp };
     } else {
-      return {type : "ElseBlockDeclaration", blocks : asts};
+      return { type: "ElseBlockDeclaration", blocks: asts };
     }
   }
 
