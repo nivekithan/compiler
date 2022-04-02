@@ -17,7 +17,12 @@ import { Closure } from "./closure";
  * Mutates the passed ast
  */
 export const typeCheckAst = (asts: Ast[]): Ast[] => {
-  const TypeChecker = new TypeCheckerFactory(asts, new Closure(null, false));
+  const TypeChecker = new TypeCheckerFactory(
+    asts,
+    new Closure(null, {
+      isInsideLoop: false,
+    })
+  );
   TypeChecker.typeCheck();
   return asts;
 };
@@ -54,6 +59,10 @@ class TypeCheckerFactory {
         this.typeCheckWhileLoopDeclaration();
       } else if (curAst.type === "DoWhileLoopDeclaration") {
         this.typeCheckDoWhileLoopDeclaration();
+      } else if (curAst.type === "FunctionDeclaration") {
+        this.typeCheckFunctionDeclaration();
+      } else if (curAst.type === "ReturnExpression") {
+        this.typeCheckReturnExpression();
       } else if (
         curAst.type === KeywordTokens.Break ||
         curAst.type === KeywordTokens.Continue
@@ -63,6 +72,69 @@ class TypeCheckerFactory {
         throw Error(`Cannot typecheck ast of type ${curAst.type}`);
       }
     }
+  }
+
+  /**
+   * Expects the curAst to be of type FunctionDeclaration
+   */
+  typeCheckFunctionDeclaration() {
+    const curAst = this.getCurAst();
+
+    if (curAst === null || curAst.type !== "FunctionDeclaration")
+      throw new Error(
+        `Expect curAst to be of type FunctionDeclaration but instead got ${curAst?.type}`
+      );
+
+    const FunctionClosure = new Closure(this.closure, {
+      functionInfo: {
+        insideFunctionDeclaration: true,
+        returnType: curAst.returnType,
+      },
+      isInsideLoop: false,
+    });
+
+    const TypeCheckerForFunction = new TypeCheckerFactory(
+      curAst.blocks,
+      FunctionClosure
+    );
+
+    TypeCheckerForFunction.typeCheck();
+
+    const typeCheckedReturnType = FunctionClosure.functionInfo.returnType;
+
+    curAst.returnType = typeCheckedReturnType;
+
+    this.next();
+  }
+
+  /**
+   * Expects the curAst to be return Expression
+   */
+  typeCheckReturnExpression() {
+    const curAst = this.getCurAst();
+
+    if (curAst === null || curAst.type !== "ReturnExpression")
+      throw Error("Expected curAst to be of type Return Expression");
+
+    if (curAst.exp === null)
+      throw Error("It is not still supported for return exp to be null");
+
+    const datatype = this.getDataTypeOfExpression(curAst.exp);
+
+    const returnType = this.closure.getReturnType();
+
+    if (returnType === null)
+      throw Error(
+        "Cannot use return expression outside of function declaration"
+      );
+
+    if (returnType === LiteralDataType.NotCalculated) {
+      this.closure.setReturnType(datatype);
+    } else if (!deepEqual(returnType, datatype, { strict: true })) {
+      throw Error("Expected both returnType and datatype of exp to be equal");
+    }
+
+    this.next(); // consumes RetrunExpression
   }
 
   /**
@@ -104,7 +176,9 @@ class TypeCheckerFactory {
         "Expected condition of do while loop to be of LiteralDatatype.Boolean"
       );
 
-    const LowerOrderClosure = new Closure(this.closure, true);
+    const LowerOrderClosure = new Closure(this.closure, {
+      isInsideLoop: true,
+    });
     const DoWhileBlockTypeChecker = new TypeCheckerFactory(
       curAst.blocks,
       LowerOrderClosure
@@ -133,7 +207,9 @@ class TypeCheckerFactory {
         "Expected condition of while loop to be of LiteralDatatype.Boolean"
       );
 
-    const LowerOrderClosure = new Closure(this.closure, true);
+    const LowerOrderClosure = new Closure(this.closure, {
+      isInsideLoop: true,
+    });
     const WhileBlockTypeChecker = new TypeCheckerFactory(
       curAst.blocks,
       LowerOrderClosure

@@ -1,5 +1,5 @@
 import clone = require("clone");
-import { DataType } from "../parser/ast";
+import { DataType, Expression, LiteralDataType } from "../parser/ast";
 
 export type ClosureVariable = {
   name: string;
@@ -16,15 +16,37 @@ type StoredVariable = {
   isExported: boolean;
 };
 
+type FunctionClosureInfo = {
+  insideFunctionDeclaration: boolean;
+  returnType: DataType;
+};
+
+export type ClosureOpts = {
+  isInsideLoop: boolean;
+  functionInfo?: FunctionClosureInfo;
+};
 export class Closure {
   higherClosure: Closure | null;
 
   database: { [index: string]: StoredVariable | undefined };
   insideLoop: boolean;
+  functionInfo: FunctionClosureInfo;
 
-  constructor(higherClosure: Closure | null, isInsideLoop: boolean) {
+  constructor(
+    higherClosure: Closure | null,
+    { isInsideLoop, functionInfo }: ClosureOpts
+  ) {
     this.insideLoop = isInsideLoop;
     this.higherClosure = higherClosure;
+
+    this.functionInfo =
+      functionInfo === undefined
+        ? {
+            insideFunctionDeclaration: false,
+            returnType: LiteralDataType.NotCalculated,
+          }
+        : functionInfo;
+
     this.database = {};
   }
 
@@ -67,5 +89,40 @@ export class Closure {
     } else {
       return this.higherClosure.isInsideLoop();
     }
+  }
+
+  isInsideFunctionDeclaration(): boolean {
+    const closure = this.getFunctionClosure();
+
+    if (closure === null) return false;
+
+    return true;
+  }
+
+  getReturnType(): DataType | null {
+    const functionClosure = this.getFunctionClosure();
+
+    if (functionClosure === null) return null;
+
+    return functionClosure.functionInfo.returnType;
+  }
+
+  setReturnType(dataType: DataType) {
+    const functionClosure = this.getFunctionClosure();
+
+    if (functionClosure === null)
+      throw Error(
+        "Can only call this function inside when isInsideFunctionDelcaration is true"
+      );
+
+    functionClosure.functionInfo.returnType = dataType;
+  }
+
+  private getFunctionClosure(): Closure | null {
+    if (this.functionInfo.insideFunctionDeclaration) return this;
+
+    if (this.higherClosure === null) return null;
+
+    return this.higherClosure.getFunctionClosure();
   }
 }

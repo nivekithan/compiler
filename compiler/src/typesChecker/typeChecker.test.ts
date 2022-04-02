@@ -655,3 +655,85 @@ test("Testing Continue outside loop", () => {
 
   expect(output).toThrow();
 });
+
+test("Typechecking function declaration with implicit datatype", () => {
+  const input = `
+  function a() {
+    return 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      name: "a",
+      arguments: [],
+      export: false,
+      returnType: LiteralDataType.Number,
+      blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
+    },
+  ]);
+});
+
+test("Typechecking function declaration with explicit datatype", () => {
+  const input = `
+  function a() : number {
+    return 1;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      name: "a",
+      arguments: [],
+      export: false,
+      returnType: LiteralDataType.Number,
+      blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
+    },
+  ]);
+});
+
+test("Typechecking function declaration with different return exp datatype", () => {
+  const input = `
+  function a() {
+    return 1;
+    return false;
+  }`;
+
+  const output = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toThrow();
+});
+
+test("Testing return exp inside loop inside function declaration", () => {
+  const input = `
+  function a() {
+    while (true) {
+     return 1;
+    }
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      arguments: [],
+      export: false,
+      name: "a",
+      returnType: LiteralDataType.Number,
+      blocks: [
+        {
+          type: "WhileLoopDeclaration",
+          condition: { type: "boolean", value: true },
+          blocks: [
+            { type: "ReturnExpression", exp: { type: "number", value: 1 } },
+          ],
+        },
+      ],
+    },
+  ]);
+});
