@@ -808,6 +808,41 @@ export class ParserFactory {
 
       this.next(); // consumes )
       return groupedType;
+    } else if (curToken === Token.AngleOpenBracket) {
+      this.next(); // consumes {
+
+      const keys: { [name: string]: DataType | undefined } = {};
+
+      while (this.getCurToken() !== Token.AngleCloseBracket) {
+        const curAst = this.getCurToken();
+
+        if (curAst !== null && isIdentifier(curAst)) {
+          const identifierName = curAst.value;
+
+          this.next(); // consumes identifier
+
+          this.assertCurToken(Token.Colon);
+          this.next(); // consumes :
+
+          const datatype = this.parseType();
+
+          if (keys[identifierName] !== undefined)
+            throw Error(`There is already an key with name ${identifierName}`);
+
+          keys[identifierName] = datatype;
+
+          const isComma = this.isCurToken(Token.Comma);
+
+          if (isComma) {
+            this.next(); // consumes ,
+          } else {
+            this.assertCurToken(Token.AngleCloseBracket);
+          }
+        }
+      }
+
+      this.next(); // consumes }
+      return { type: "ObjectDataType", keys };
     }
 
     return null;

@@ -854,6 +854,26 @@ test("Testing Array datatype", () => {
   ]);
 });
 
+test("Testing object datatype", () => {
+  const input = `
+  const a : {b : boolean} = {b : true}`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: {
+        type: "ObjectDataType",
+        keys: { b: LiteralDataType.Boolean },
+      },
+      exp: { type: "object", keys: [["b", { type: "boolean", value: true }]] },
+      export: false,
+      identifierName: "a",
+    },
+  ]);
+});
+
 test("Testing parsing Grouped type", () => {
   const input = `
   const a : ((string)[]) = "a"`;

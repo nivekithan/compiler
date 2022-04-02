@@ -237,7 +237,11 @@ export type FunctionCall = {
   arguments: Expression[];
 };
 
-export type DataType = LiteralDataType | IdentifierDatatype | ArrayDatatype;
+export type DataType =
+  | LiteralDataType
+  | IdentifierDatatype
+  | ArrayDatatype
+  | ObjectDatatype;
 
 export enum LiteralDataType {
   Boolean = "Boolean",
@@ -255,4 +259,9 @@ export type IdentifierDatatype = {
 export type ArrayDatatype = {
   type: "ArrayDataType";
   baseType: DataType;
+};
+
+export type ObjectDatatype = {
+  type: "ObjectDataType";
+  keys: { [name: string]: DataType | undefined };
 };
