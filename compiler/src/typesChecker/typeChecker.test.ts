@@ -981,3 +981,35 @@ test("Testing declaring export variable at other than top level", () => {
 
   expect(getOutput).toThrow();
 });
+
+test("Using arguments in function declaration", () => {
+  const input = `
+  function f(a : number, b : number) {
+    return a + b;
+  }`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      export: false,
+      name: "f",
+      returnType: LiteralDataType.Number,
+      arguments: [
+        ["a", LiteralDataType.Number],
+        ["b", LiteralDataType.Number],
+      ],
+      blocks: [
+        {
+          type: "ReturnExpression",
+          exp: {
+            type: Token.Plus,
+            left: { type: "identifier", name: "a" },
+            right: { type: "identifier", name: "b" },
+          },
+        },
+      ],
+    },
+  ]);
+});

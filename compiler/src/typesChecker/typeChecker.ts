@@ -193,6 +193,17 @@ class TypeCheckerFactory {
       isInsideLoop: false,
     });
 
+    Object.entries(argumentDatatypes).forEach(([argName, argDatatype]) => {
+      if (argDatatype === undefined) throw Error("Impossible");
+
+      FunctionClosure.insertVariableInfo({
+        dataType: argDatatype,
+        isDeclaredConst: false,
+        isExported: false,
+        name: argName,
+      });
+    });
+
     const TypeCheckerForFunction = new TypeCheckerFactory(
       curAst.blocks,
       FunctionClosure
