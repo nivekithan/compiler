@@ -10,7 +10,8 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
     const b = 1;
     const c = true;
     const d = false;
-    const e = [1];`;
+    const e = [1];
+    const f = {a : 1};`;
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
@@ -51,6 +52,16 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
       },
       identifierName: "e",
       exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      export: false,
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: {
+        type: "ObjectDataType",
+        keys: { a: LiteralDataType.Number },
+      },
+      identifierName: "f",
+      exp: { type: "object", keys: [["a", { type: "number", value: 1 }]] },
       export: false,
     },
   ]);
@@ -61,7 +72,8 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       const b : number = 1;
       const c : boolean = true;
       const d : boolean = false;
-      const e : number[] = [1]`;
+      const e : number[] = [1];
+      const f : {a : number} = {a : 1};`;
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
@@ -102,6 +114,16 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       },
       identifierName: "e",
       exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      export: false,
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: {
+        type: "ObjectDataType",
+        keys: { a: LiteralDataType.Number },
+      },
+      identifierName: "f",
+      exp: { type: "object", keys: [["a", { type: "number", value: 1 }]] },
       export: false,
     },
   ]);
@@ -594,8 +616,6 @@ test("Testing Break outside loop", () => {
 
   expect(output).toThrow();
 });
-
-
 
 test("Testing Continue outside loop", () => {
   const input = `

@@ -53,7 +53,10 @@ class TypeCheckerFactory {
         this.typeCheckWhileLoopDeclaration();
       } else if (curAst.type === "DoWhileLoopDeclaration") {
         this.typeCheckDoWhileLoopDeclaration();
-      } else if (curAst.type === KeywordTokens.Break || curAst.type === KeywordTokens.Continue) {
+      } else if (
+        curAst.type === KeywordTokens.Break ||
+        curAst.type === KeywordTokens.Continue
+      ) {
         this.typeCheckCondFlowStatement();
       } else {
         throw Error(`Cannot typecheck ast of type ${curAst.type}`);
@@ -272,6 +275,22 @@ class TypeCheckerFactory {
       return LiteralDataType.Boolean;
     } else if (exp.type === "string") {
       return LiteralDataType.String;
+    } else if (exp.type === "object") {
+      const keys = exp.keys.reduce(
+        (keys: { [name: string]: DataType }, curValue) => {
+          const keyName = curValue[0];
+          const keyExp = curValue[1];
+
+          if (keys[keyName] !== undefined)
+            throw Error(`There is already a key with name ${keyName}`);
+
+          keys[keyName] = this.getDataTypeOfExpression(keyExp);
+          return keys;
+        },
+        {}
+      );
+
+      return { type: "ObjectDataType", keys };
     } else if (exp.type === "array") {
       let baseDataType: DataType | null = null;
 
