@@ -1013,3 +1013,102 @@ test("Using arguments in function declaration", () => {
     },
   ]);
 });
+
+test("Testing hoisting function declaration", () => {
+  const input = `
+  
+  const a = b();
+
+  function b() {
+    return 1;
+  }
+  `;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      exp: {
+        type: "FunctionCall",
+        left: { type: "identifier", name: "b" },
+        arguments: [],
+      },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "FunctionDeclaration",
+      arguments: [],
+      blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
+      export: false,
+      name: "b",
+      returnType: LiteralDataType.Number,
+    },
+  ]);
+});
+
+test("Testing using variable declared in top level inside another lower level closure", () => {
+  const input = `
+  
+  function a() {
+    const b = c;
+    const d = b ;
+    return d;
+  }
+
+  const c = 1;
+  `;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      arguments: [],
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "identifier", name: "c" },
+          export: false,
+          identifierName: "b",
+        },
+        {
+          type: "constVariableDeclaration",
+          datatype: LiteralDataType.Number,
+          exp: { type: "identifier", name: "b" },
+          export: false,
+          identifierName: "d",
+        },
+        { type: "ReturnExpression", exp: { type: "identifier", name: "d" } },
+      ],
+      export: false,
+      name: "a",
+      returnType: LiteralDataType.Number,
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      exp: {
+        type: "number",
+        value: 1,
+      },
+      export: false,
+      identifierName: "c",
+    },
+  ]);
+});
+
+test("Testing hoisting other than function declaration", () => {
+  const input = `
+  
+  const a = b;
+  const b = 1
+  `;
+
+  const getOutput = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(getOutput).toThrow();
+});

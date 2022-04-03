@@ -243,7 +243,8 @@ export type DataType =
   | IdentifierDatatype
   | ArrayDatatype
   | ObjectDatatype
-  | FunctionDatatype;
+  | FunctionDatatype
+  | UnknownVariable;
 
 export enum LiteralDataType {
   Boolean = "Boolean",
@@ -252,6 +253,11 @@ export enum LiteralDataType {
   Unknown = "Unknown",
   NotCalculated = "NotCalculated",
 }
+
+export type UnknownVariable = {
+  type: "UnknownVariable";
+  varName: string;
+};
 
 export type IdentifierDatatype = {
   type: "IdentifierDatatype";

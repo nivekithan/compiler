@@ -32,12 +32,17 @@ export class Closure {
   insideLoop: boolean;
   functionInfo: FunctionClosureInfo;
 
+  varInfoHooks: { [name: string]: (() => void)[] | undefined };
+  returnTypeHooks: (() => void)[];
+
   constructor(
     higherClosure: Closure | null,
     { isInsideLoop, functionInfo }: ClosureOpts
   ) {
     this.insideLoop = isInsideLoop;
     this.higherClosure = higherClosure;
+    this.varInfoHooks = {};
+    this.returnTypeHooks = [];
 
     this.functionInfo =
       functionInfo === undefined
@@ -50,9 +55,48 @@ export class Closure {
     this.database = {};
   }
 
+  addHookForVariableInfo(varName: string, callback: () => void) {
+    if (this.varInfoHooks[varName] === undefined) {
+      this.varInfoHooks[varName] = [callback];
+    } else {
+      this.varInfoHooks[varName]?.push(callback);
+    }
+  }
+
+  addHookForReturnType(callback: () => void) {
+    if (!this.functionInfo.insideFunctionDeclaration) {
+      throw Error("Cannot add Hook in closure which is not a function closure");
+    }
+
+    this.returnTypeHooks.push(callback);
+  }
+
+  getClosureWithVarName(varName: string): Closure | null {
+    const varInfo = this.database[varName];
+
+    if (varInfo !== undefined) {
+      return this;
+    } else {
+      if (this.higherClosure === null) {
+        return null;
+      }
+
+      return this.higherClosure.getClosureWithVarName(varName);
+    }
+  }
+
+  getTopClosure(): Closure {
+    if (this.higherClosure === null) {
+      return this;
+    } else {
+      return this.higherClosure.getTopClosure();
+    }
+  }
+
   insertVariableInfo(info: StoredVariable) {
     if (this.database[info.name] === undefined) {
       this.database[info.name] = info;
+      this.callHooksForVarInfo(info.name);
     } else {
       throw Error(`Variable with name ${info.name} is already present`);
     }
@@ -78,6 +122,15 @@ export class Closure {
     } else {
       const clonedInfo = clone(varInfo);
       return { ...clonedInfo, presentInCurrentClosure: true };
+    }
+  }
+
+  updateVariableInfo(info: StoredVariable) {
+    if (this.database[info.name] !== undefined) {
+      this.database[info.name] = info;
+      this.callHooksForVarInfo(info.name);
+    } else {
+      throw Error(`There is no variable with name ${info.name}`);
     }
   }
 
@@ -116,6 +169,7 @@ export class Closure {
       );
 
     functionClosure.functionInfo.returnType = dataType;
+    this.callHooksForReturnType();
   }
 
   isTopLevel(): boolean {
@@ -128,5 +182,23 @@ export class Closure {
     if (this.higherClosure === null) return null;
 
     return this.higherClosure.getFunctionClosure();
+  }
+
+  private callHooksForReturnType() {
+    const copiedHookForReturnType = clone(this.returnTypeHooks);
+    this.returnTypeHooks = [];
+
+    copiedHookForReturnType.forEach((s) => s());
+  }
+
+  private callHooksForVarInfo(name: string) {
+    const varInfoHooks = this.varInfoHooks[name];
+
+    if (varInfoHooks !== undefined) {
+      const copiedHooks = clone(varInfoHooks);
+      this.varInfoHooks[name] = [];
+
+      copiedHooks.forEach((s) => s());
+    }
   }
 }
