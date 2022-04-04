@@ -1112,3 +1112,142 @@ test("Testing hoisting other than function declaration", () => {
 
   expect(getOutput).toThrow();
 });
+
+test("Test hoisting function declaration in reassignment", () => {
+  const input = `
+  let a = 1;
+  a = b();
+
+  function b() {
+    return 1;
+  }
+  `;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "letVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      exp: { type: "number", value: 1 },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "ReAssignment",
+      assignmentOperator: Token.Assign,
+      path: { type: "IdentifierPath", name: "a" },
+      exp: {
+        type: "FunctionCall",
+        left: { type: "identifier", name: "b" },
+        arguments: [],
+      },
+    },
+    {
+      type: "FunctionDeclaration",
+      arguments: [],
+      blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
+      export: false,
+      name: "b",
+      returnType: LiteralDataType.Number,
+    },
+  ]);
+});
+
+test("[Reassignment] Testing using variable declared in top level inside another lower level closure", () => {
+  const input = `
+  
+  function a() {
+    const b = [c];
+    const d = {e : b[0]} ;
+    return d.e;
+  }
+
+  let c = 1;
+  `;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "FunctionDeclaration",
+      arguments: [],
+      blocks: [
+        {
+          type: "constVariableDeclaration",
+          datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
+          exp: { type: "array", exps: [{ type: "identifier", name: "c" }] },
+          export: false,
+          identifierName: "b",
+        },
+        {
+          type: "constVariableDeclaration",
+          datatype: {
+            type: "ObjectDataType",
+            keys: { e: LiteralDataType.Number },
+          },
+          exp: {
+            type: "object",
+            keys: [
+              [
+                "e",
+                {
+                  type: "BoxMemberAccess",
+                  left: { type: "identifier", name: "b" },
+                  right: { type: "number", value: 0 },
+                },
+              ],
+            ],
+          },
+          export: false,
+          identifierName: "d",
+        },
+        {
+          type: "ReturnExpression",
+          exp: {
+            type: "DotMemberAccess",
+            left: { type: "identifier", name: "d" },
+            right: "e",
+          },
+        },
+      ],
+      export: false,
+      name: "a",
+      returnType: LiteralDataType.Number,
+    },
+    {
+      type: "letVariableDeclaration",
+      datatype: LiteralDataType.Number,
+      exp: {
+        type: "number",
+        value: 1,
+      },
+      export: false,
+      identifierName: "c",
+    },
+  ]);
+});
+
+test("[Reassignment] Testing hoisting other than function declaration", () => {
+  const input = `
+  
+  let a = 1;
+  a = b;
+  const b = 1
+  `;
+
+  const getOutput = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(getOutput).toThrow();
+});
+
+test("Declaring a function with argname should throw error", () => {
+  const input = `
+  function a(b : number ,b : number) {
+    return 1;
+  }`;
+
+  const getOutput = () => typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(getOutput).toThrow();
+})

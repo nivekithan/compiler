@@ -6,6 +6,7 @@ import {
   DataType,
   Expression,
   FunctionDatatype,
+  IdentifierDatatype,
   LiteralDataType,
   MinusUninaryExp,
   ObjectDatatype,
@@ -554,8 +555,8 @@ class TypeCheckerFactory {
   /**
    * Expects the curAst to be of type a ReAssignment
    */
-  typeCheckReAssignment() {
-    const curAst = this.getCurAst();
+  typeCheckReAssignment(ast?: Ast) {
+    const curAst: Ast | null = ast === undefined ? this.getCurAst() : ast;
 
     if (curAst === null || curAst.type !== "ReAssignment")
       throw Error(
@@ -579,20 +580,104 @@ class TypeCheckerFactory {
 
     const dataTypeOfPath = this.getDataTypeOfAssignmentPath(path);
 
+    if (isUnknownVariable(dataTypeOfPath)) {
+      const varClosureHook = () => {
+        this.typeCheckReAssignment(curAst);
+      };
+
+      const topClosureHook = () => {
+        const varInfo = this.closure.getVariableInfo(dataTypeOfPath.varName);
+
+        if (varInfo === null || !isFunctionDatatype(varInfo.dataType)) {
+          throw Error("Hoisting is only supported for function declaration");
+        }
+
+        varClosureHook();
+      };
+
+      const VarClosure = this.closure.getClosureWithVarName(
+        dataTypeOfPath.varName
+      );
+
+      if (VarClosure === null) {
+        const TopClosure = this.closure.getTopClosure();
+
+        if (TopClosure === this.closure) {
+          TopClosure.addHookForVariableInfo(
+            dataTypeOfPath.varName,
+            topClosureHook
+          );
+        } else {
+          TopClosure.addHookForVariableInfo(
+            dataTypeOfPath.varName,
+            varClosureHook
+          );
+        }
+      } else {
+        VarClosure.addHookForVariableInfo(
+          dataTypeOfPath.varName,
+          varClosureHook
+        );
+      }
+    }
+
     const expDataType = this.getDataTypeOfExpression(curAst.exp);
 
-    if (!deepEqual(dataTypeOfPath, expDataType, { strict: true })) {
+    if (isUnknownVariable(expDataType)) {
+      const varClosureHook = () => {
+        this.typeCheckReAssignment(curAst);
+      };
+
+      const topClosureHook = () => {
+        const varInfo = this.closure.getVariableInfo(expDataType.varName);
+
+        if (varInfo === null || !isFunctionDatatype(varInfo.dataType)) {
+          throw Error("Hoisting is only supported for function declaration");
+        }
+
+        varClosureHook();
+      };
+
+      const VarClosure = this.closure.getClosureWithVarName(
+        expDataType.varName
+      );
+
+      if (VarClosure === null) {
+        const TopClosure = this.closure.getTopClosure();
+
+        if (TopClosure === this.closure) {
+          TopClosure.addHookForVariableInfo(
+            expDataType.varName,
+            topClosureHook
+          );
+        } else {
+          TopClosure.addHookForVariableInfo(
+            expDataType.varName,
+            varClosureHook
+          );
+        }
+      } else {
+        VarClosure.addHookForVariableInfo(expDataType.varName, varClosureHook);
+      }
+    }
+
+    if (
+      !deepEqual(dataTypeOfPath, expDataType, { strict: true }) &&
+      !(isUnknownVariable(dataTypeOfPath) || isUnknownVariable(expDataType))
+    ) {
       throw Error(
         `Cannot reassign a variable of datatype ${dataTypeOfPath} with exp whose datatype is ${expDataType} `
       );
     }
 
-    if (curAst.assignmentOperator !== Token.Assign) {
-      if (dataTypeOfPath !== LiteralDataType.Number)
-        throw Error(`Expected datatype to be number`);
-    }
+    if (
+      curAst.assignmentOperator !== Token.Assign &&
+      dataTypeOfPath !== LiteralDataType.Number &&
+      !isUnknownVariable(dataTypeOfPath)
+    )
+      throw Error(`Expected datatype to be number`);
 
-    this.next(); // consumes ReAssignment
+    ast === undefined ? this.next() : null; // consumes ReAssignment
   }
 
   getDataTypeOfAssignmentPath(path: ReAssignmentPath): DataType {
@@ -601,7 +686,11 @@ class TypeCheckerFactory {
       const identInfo = this.closure.getVariableInfo(identifierName);
 
       if (identInfo === null)
-        throw Error(`There is no variable defined with name ${identifierName}`);
+        return { type: "UnknownVariable", varName: identifierName };
+
+      if (isUnknownVariable(identInfo.dataType)) {
+        return { type: "UnknownVariable", varName: identifierName };
+      }
 
       return identInfo.dataType;
     } else if (path.type === "BoxMemberPath") {
@@ -610,12 +699,18 @@ class TypeCheckerFactory {
       if (isArrayDatatype(leftDataType)) {
         const expDatatype = this.getDataTypeOfExpression(path.accessExp);
 
+        if (isUnknownVariable(expDatatype)) {
+          return { type: "UnknownVariable", varName: expDatatype.varName };
+        }
+
         if (expDatatype !== LiteralDataType.Number) {
           throw Error(
             "Only exp whose datatype is number can be used in accessing exp in BoxMemberPath"
           );
         }
         return leftDataType.baseType;
+      } else if (isUnknownVariable(leftDataType)) {
+        return { type: "UnknownVariable", varName: leftDataType.varName };
       } else {
         throw new Error(
           "Left datatype can only be Array Datatype in BoxMemberPath"
@@ -633,7 +728,13 @@ class TypeCheckerFactory {
           throw Error(`There is no key with name ${keyName}`);
         }
 
+        if (isUnknownVariable(keyType)) {
+          return { type: "UnknownVariable", varName: keyType.varName };
+        }
+
         return keyType;
+      } else if (isUnknownVariable(leftDataType)) {
+        return { type: "UnknownVariable", varName: leftDataType.varName };
       } else {
         throw Error("Left datatype can only be object in DotMemberPath");
       }
@@ -686,7 +787,13 @@ class TypeCheckerFactory {
         const expType = this.getDataTypeOfExpression(exp);
 
         if (baseDataType === null) {
+
           baseDataType = expType;
+          if (isUnknownVariable(expType)) {
+            unknownVariableName = expType.varName;
+            return;
+          }
+
         } else {
           if (isUnknownVariable(baseDataType)) {
             unknownVariableName = baseDataType.varName;
@@ -707,6 +814,8 @@ class TypeCheckerFactory {
 
       if (baseDataType === null)
         throw Error("Expected atleast one expression in array");
+
+
 
       if (unknownVariableName !== null) {
         return { type: "UnknownVariable", varName: unknownVariableName };
@@ -941,6 +1050,61 @@ class TypeCheckerFactory {
           `Expected the type of datatype of left in function call to be Function datatype but instead got ${leftDatatype}`
         );
       }
+    } else if (exp.type === "BoxMemberAccess") {
+      const leftDatatype = this.getDataTypeOfExpression(exp.left);
+
+      if (isUnknownVariable(leftDatatype)) {
+        return { type: "UnknownVariable", varName: leftDatatype.varName };
+      }
+
+      const memberAccessDatatype = this.getDataTypeOfExpression(exp.right);
+
+      if (isUnknownVariable(memberAccessDatatype)) {
+        return {
+          type: "UnknownVariable",
+          varName: memberAccessDatatype.varName,
+        };
+      }
+
+      if (memberAccessDatatype !== LiteralDataType.Number)
+        throw Error(
+          "It is not supported to memberAcessDatatype to be anything other than number"
+        );
+
+      if (isArrayDatatype(leftDatatype)) {
+        return leftDatatype.baseType;
+      } else {
+        throw Error(
+          `Expected left datatype to be Array but instead got ${leftDatatype}`
+        );
+      }
+    } else if (exp.type === "DotMemberAccess") {
+      const leftDatatype = this.getDataTypeOfExpression(exp.left);
+
+      if (isUnknownVariable(leftDatatype)) {
+        return { type: "UnknownVariable", varName: leftDatatype.varName };
+      }
+
+      if (isObjectDatatype(leftDatatype)) {
+        const keyDatatype = leftDatatype.keys[exp.right];
+
+        if (keyDatatype === undefined) {
+          throw Error(`There is no key with name ${exp.right}`);
+        }
+
+        if (isUnknownVariable(keyDatatype)) {
+          return {
+            type: "UnknownVariable",
+            varName: keyDatatype.varName,
+          };
+        }
+
+        return keyDatatype;
+      } else {
+        throw Error(
+          `Expected left datatype to be object but instead got ${leftDatatype}`
+        );
+      }
     } else {
       throw Error(
         `Finding datatype for this expression is not yet supported \n ${exp} `
@@ -1011,4 +1175,10 @@ const isUnknownVariable = (
   datatype: DataType
 ): datatype is UnknownVariableDatatype => {
   return typeof datatype === "object" && datatype.type === "UnknownVariable";
+};
+
+const isIdentifierDatatype = (
+  datatype: DataType
+): datatype is IdentifierDatatype => {
+  return typeof datatype === "object" && datatype.type === "IdentifierDatatype";
 };
