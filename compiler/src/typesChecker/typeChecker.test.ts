@@ -1,7 +1,9 @@
+import { resolve } from "path";
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { Ast, LiteralDataType } from "../parser/ast";
 import { convertToAst } from "../parser/parser";
+import { DepImporter } from "./depImporter";
 import { typeCheckAst } from "./typeChecker";
 
 test("Typechecking variableDeclaration with implicit datatype", () => {
@@ -1250,4 +1252,32 @@ test("Declaring a function with argname should throw error", () => {
   const getOutput = () => typeCheckAst(convertToAst(convertToTokens(input)));
 
   expect(getOutput).toThrow();
-})
+});
+
+test("Typechecking import declaration", () => {
+  const input = `
+  import {a, b} from "./someFile"`;
+
+  const TestImporter = new DepImporter("/curDir", {
+    [resolve("/curDir", "./someFile")]: {
+      a: LiteralDataType.Number,
+      b: LiteralDataType.Number,
+    },
+  });
+
+  const output = typeCheckAst(
+    convertToAst(convertToTokens(input)),
+    TestImporter
+  );
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "importDeclaration",
+      from: "./someFile",
+      importedIdentifires: [
+        { type: "identifier", dataType: LiteralDataType.Number, name: "a" },
+        { type: "identifier", dataType: LiteralDataType.Number, name: "b" },
+      ],
+    },
+  ]);
+});

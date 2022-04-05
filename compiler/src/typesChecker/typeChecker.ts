@@ -15,16 +15,18 @@ import {
   UnknownVariable as UnknownVariableDatatype,
 } from "../parser/ast";
 import { Closure } from "./closure";
+import { DepImporter } from "./depImporter";
 
 /**
  * Mutates the passed ast
  */
-export const typeCheckAst = (asts: Ast[]): Ast[] => {
+export const typeCheckAst = (asts: Ast[], depImporter?: DepImporter): Ast[] => {
   const TypeChecker = new TypeCheckerFactory(
     asts,
     new Closure(null, {
       isInsideLoop: false,
-    })
+    }),
+    depImporter
   );
   TypeChecker.typeCheck();
   return asts;
@@ -39,11 +41,13 @@ class TypeCheckerFactory {
   curPos: number | null;
 
   closure: Closure;
+  depImporter: DepImporter | null;
 
-  constructor(asts: Ast[], closure: Closure) {
+  constructor(asts: Ast[], closure: Closure, depImporter?: DepImporter) {
     this.asts = asts;
     this.curPos = 0;
     this.closure = closure;
+    this.depImporter = depImporter === undefined ? null : depImporter;
   }
 
   typeCheck() {
@@ -69,6 +73,8 @@ class TypeCheckerFactory {
         this.typeCheckReturnExpression();
       } else if (curAst.type === "IfBlockDeclaration") {
         this.typeCheckIsBlockDeclaration();
+      } else if (curAst.type === "importDeclaration") {
+        this.typeCheckImportDeclaration();
       } else if (
         curAst.type === KeywordTokens.Break ||
         curAst.type === KeywordTokens.Continue
@@ -79,6 +85,50 @@ class TypeCheckerFactory {
       }
     }
   }
+
+  /**
+   * Expects the curAst to be of type ImportDeclaration
+   */
+  typeCheckImportDeclaration(ast?: Ast) {
+    const curAst = this.getCurAst();
+
+    if (curAst === null || curAst.type !== "importDeclaration")
+      throw new Error(
+        `Expected curAst to be of type importDeclaration but instead got ${curAst}`
+      );
+
+    const depImporter = this.depImporter;
+
+    if (depImporter === null)
+      throw new Error(
+        `DepImporter should not be null for parsing importDeclaration`
+      );
+
+    if (this.closure.higherClosure !== null)
+      throw new Error(`Can only use import declaration at top level`);
+
+    const fromFileName = curAst.from;
+
+    curAst.importedIdentifires.forEach((s, i) => {
+      const identifierName = s.name;
+      const datatype = depImporter.getDatatypeFrom(
+        identifierName,
+        fromFileName
+      );
+
+      curAst.importedIdentifires[i].dataType = datatype;
+
+      this.closure.insertVariableInfo({
+        dataType: datatype,
+        isDeclaredConst: true,
+        isExported: false,
+        name: identifierName,
+      });
+    });
+
+    ast === undefined ? this.next() : null;
+  }
+
   /**
    * Expects the curAst to be of type ifBlockDeclaration
    */
@@ -787,13 +837,11 @@ class TypeCheckerFactory {
         const expType = this.getDataTypeOfExpression(exp);
 
         if (baseDataType === null) {
-
           baseDataType = expType;
           if (isUnknownVariable(expType)) {
             unknownVariableName = expType.varName;
             return;
           }
-
         } else {
           if (isUnknownVariable(baseDataType)) {
             unknownVariableName = baseDataType.varName;
@@ -814,8 +862,6 @@ class TypeCheckerFactory {
 
       if (baseDataType === null)
         throw Error("Expected atleast one expression in array");
-
-
 
       if (unknownVariableName !== null) {
         return { type: "UnknownVariable", varName: unknownVariableName };
