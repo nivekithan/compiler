@@ -127,7 +127,7 @@ export type Expression =
 export type StringLiteralExp = { type: "string"; value: string };
 export type NumberLiteralExp = { type: "number"; value: number };
 export type BooleanLiteralExp = { type: "boolean"; value: boolean };
-export type IdentifierExp = { type: "identifier"; name: string };
+export type IdentifierExp = { type: "identifier"; name: string, datatype : DataType };
 export type ObjectLiteralExp = { type: "object"; keys: [string, Expression][] };
 export type ArrayLiteralExp = { type: "array"; exps: Expression[] };
 

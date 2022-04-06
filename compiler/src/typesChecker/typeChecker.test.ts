@@ -1,4 +1,6 @@
+import { FunctionType } from "llvm-bindings";
 import { resolve } from "path";
+import { listenerCount } from "process";
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { Ast, LiteralDataType } from "../parser/ast";
@@ -182,7 +184,14 @@ test("Identifier typechecking", () => {
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Boolean,
-      exp: { type: Token.Bang, argument: { type: "identifier", name: "a" } },
+      exp: {
+        type: Token.Bang,
+        argument: {
+          type: "identifier",
+          name: "a",
+          datatype: LiteralDataType.Boolean,
+        },
+      },
       export: false,
       identifierName: "b",
     },
@@ -766,7 +775,15 @@ test("Testing function call", () => {
       exp: {
         type: "FunctionCall",
         arguments: [],
-        left: { type: "identifier", name: "a" },
+        left: {
+          type: "identifier",
+          name: "a",
+          datatype: {
+            type: "FunctionDataType",
+            arguments: {},
+            returnType: LiteralDataType.Number,
+          },
+        },
       },
     },
   ]);
@@ -1007,8 +1024,16 @@ test("Using arguments in function declaration", () => {
           type: "ReturnExpression",
           exp: {
             type: Token.Plus,
-            left: { type: "identifier", name: "a" },
-            right: { type: "identifier", name: "b" },
+            left: {
+              type: "identifier",
+              name: "a",
+              datatype: LiteralDataType.Number,
+            },
+            right: {
+              type: "identifier",
+              name: "b",
+              datatype: LiteralDataType.Number,
+            },
           },
         },
       ],
@@ -1034,7 +1059,15 @@ test("Testing hoisting function declaration", () => {
       datatype: LiteralDataType.Number,
       exp: {
         type: "FunctionCall",
-        left: { type: "identifier", name: "b" },
+        left: {
+          type: "identifier",
+          name: "b",
+          datatype: {
+            type: "FunctionDataType",
+            arguments: {},
+            returnType: LiteralDataType.Number,
+          },
+        },
         arguments: [],
       },
       export: false,
@@ -1073,18 +1106,33 @@ test("Testing using variable declared in top level inside another lower level cl
         {
           type: "constVariableDeclaration",
           datatype: LiteralDataType.Number,
-          exp: { type: "identifier", name: "c" },
+          exp: {
+            type: "identifier",
+            name: "c",
+            datatype: LiteralDataType.Number,
+          },
           export: false,
           identifierName: "b",
         },
         {
           type: "constVariableDeclaration",
           datatype: LiteralDataType.Number,
-          exp: { type: "identifier", name: "b" },
+          exp: {
+            type: "identifier",
+            name: "b",
+            datatype: LiteralDataType.Number,
+          },
           export: false,
           identifierName: "d",
         },
-        { type: "ReturnExpression", exp: { type: "identifier", name: "d" } },
+        {
+          type: "ReturnExpression",
+          exp: {
+            type: "identifier",
+            name: "d",
+            datatype: LiteralDataType.Number,
+          },
+        },
       ],
       export: false,
       name: "a",
@@ -1141,7 +1189,15 @@ test("Test hoisting function declaration in reassignment", () => {
       path: { type: "IdentifierPath", name: "a" },
       exp: {
         type: "FunctionCall",
-        left: { type: "identifier", name: "b" },
+        left: {
+          type: "identifier",
+          name: "b",
+          datatype: {
+            type: "FunctionDataType",
+            arguments: {},
+            returnType: LiteralDataType.Number,
+          },
+        },
         arguments: [],
       },
     },
@@ -1178,7 +1234,16 @@ test("[Reassignment] Testing using variable declared in top level inside another
         {
           type: "constVariableDeclaration",
           datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
-          exp: { type: "array", exps: [{ type: "identifier", name: "c" }] },
+          exp: {
+            type: "array",
+            exps: [
+              {
+                type: "identifier",
+                name: "c",
+                datatype: LiteralDataType.Number,
+              },
+            ],
+          },
           export: false,
           identifierName: "b",
         },
@@ -1195,7 +1260,14 @@ test("[Reassignment] Testing using variable declared in top level inside another
                 "e",
                 {
                   type: "BoxMemberAccess",
-                  left: { type: "identifier", name: "b" },
+                  left: {
+                    type: "identifier",
+                    name: "b",
+                    datatype: {
+                      type: "ArrayDataType",
+                      baseType: LiteralDataType.Number,
+                    },
+                  },
                   right: { type: "number", value: 0 },
                 },
               ],
@@ -1208,7 +1280,14 @@ test("[Reassignment] Testing using variable declared in top level inside another
           type: "ReturnExpression",
           exp: {
             type: "DotMemberAccess",
-            left: { type: "identifier", name: "d" },
+            left: {
+              type: "identifier",
+              name: "d",
+              datatype: {
+                type: "ObjectDataType",
+                keys: { e: LiteralDataType.Number },
+              },
+            },
             right: "e",
           },
         },

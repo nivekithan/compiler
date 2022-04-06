@@ -636,7 +636,7 @@ export class ParserFactory {
       return curToken;
     } else if (isIdentifier(curToken)) {
       this.next(); // consumes Identifier
-      return { type: "identifier", name: curToken.value };
+      return { type: "identifier", name: curToken.value, datatype : LiteralDataType.NotCalculated };
     } else if (isNumberLiteral(curToken)) {
       this.next(); // consumes NumberLiteral
       return { type: "number", value: curToken.value };

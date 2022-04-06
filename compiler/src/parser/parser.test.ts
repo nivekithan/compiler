@@ -1,3 +1,4 @@
+import { listenerCount } from "process";
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { typeCheckAst } from "../typesChecker/typeChecker";
@@ -105,7 +106,11 @@ test("Const variable declaration", () => {
     {
       type: "constVariableDeclaration",
       identifierName: "b",
-      exp: { type: "identifier", name: "someOtherVar" },
+      exp: {
+        type: "identifier",
+        name: "someOtherVar",
+        datatype: LiteralDataType.NotCalculated,
+      },
       datatype: LiteralDataType.NotCalculated,
       export: false,
     },
@@ -372,7 +377,11 @@ test("Box Member Access Test", () => {
       datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "BoxMemberAccess",
-        left: { type: "identifier", name: "b" },
+        left: {
+          type: "identifier",
+          name: "b",
+          datatype: LiteralDataType.NotCalculated,
+        },
         right: { type: "number", value: 1 },
       },
       export: false,
@@ -393,7 +402,11 @@ test("Dot Member Access Test", () => {
       datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "DotMemberAccess",
-        left: { type: "identifier", name: "b" },
+        left: {
+          type: "identifier",
+          name: "b",
+          datatype: LiteralDataType.NotCalculated,
+        },
         right: "c",
       },
       export: false,
@@ -416,7 +429,11 @@ test("Function Call test", () => {
       datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "FunctionCall",
-        left: { type: "identifier", name: "b" },
+        left: {
+          type: "identifier",
+          name: "b",
+          datatype: LiteralDataType.NotCalculated,
+        },
         arguments: [
           { type: "number", value: 1 },
           { type: "number", value: 2 },
@@ -431,7 +448,11 @@ test("Function Call test", () => {
       datatype: LiteralDataType.NotCalculated,
       exp: {
         type: "FunctionCall",
-        left: { type: "identifier", name: "d" },
+        left: {
+          type: "identifier",
+          name: "d",
+          datatype: LiteralDataType.NotCalculated,
+        },
         arguments: [
           { type: "number", value: 1 },
           { type: "number", value: 2 },
@@ -622,12 +643,20 @@ test("Testing naked Expressions", () => {
     { type: "number", value: 1 },
     {
       type: "FunctionCall",
-      left: { type: "identifier", name: "a" },
+      left: {
+        type: "identifier",
+        name: "a",
+        datatype: LiteralDataType.NotCalculated,
+      },
       arguments: [{ type: "number", value: 2 }],
     },
     {
       type: Token.StrictNotEqual,
-      left: { type: "identifier", name: "b" },
+      left: {
+        type: "identifier",
+        name: "b",
+        datatype: LiteralDataType.NotCalculated,
+      },
       right: { type: "number", value: 2 },
     },
   ]);
@@ -661,7 +690,11 @@ test("Testing if block", () => {
       blocks: [
         {
           type: "FunctionCall",
-          left: { type: "identifier", name: "doSomething" },
+          left: {
+            type: "identifier",
+            name: "doSomething",
+            datatype: LiteralDataType.NotCalculated,
+          },
           arguments: [],
         },
       ],
@@ -684,7 +717,11 @@ test("Testing else if block", () => {
       blocks: [
         {
           type: "FunctionCall",
-          left: { type: "identifier", name: "doSomething" },
+          left: {
+            type: "identifier",
+            name: "doSomething",
+            datatype: LiteralDataType.NotCalculated,
+          },
           arguments: [],
         },
       ],
@@ -706,7 +743,11 @@ test("Testing else block", () => {
       blocks: [
         {
           type: "FunctionCall",
-          left: { type: "identifier", name: "doSomething" },
+          left: {
+            type: "identifier",
+            name: "doSomething",
+            datatype: LiteralDataType.NotCalculated,
+          },
           arguments: [],
         },
       ],
@@ -729,7 +770,11 @@ test("Testing while loop declaration", () => {
       blocks: [
         {
           type: "FunctionCall",
-          left: { type: "identifier", name: "doSomething" },
+          left: {
+            type: "identifier",
+            name: "doSomething",
+            datatype: LiteralDataType.NotCalculated,
+          },
           arguments: [],
         },
       ],
@@ -752,7 +797,11 @@ test("Testing Do While loop Declaration", () => {
       blocks: [
         {
           type: "FunctionCall",
-          left: { type: "identifier", name: "doSomething" },
+          left: {
+            type: "identifier",
+            name: "doSomething",
+            datatype: LiteralDataType.NotCalculated,
+          },
           arguments: [],
         },
       ],
@@ -908,8 +957,18 @@ test("Testing function declaration", () => {
       blocks: [
         {
           type: "FunctionCall",
-          arguments: [{ type: "identifier", name: "a" }],
-          left: { type: "identifier", name: "doSomething" },
+          arguments: [
+            {
+              type: "identifier",
+              name: "a",
+              datatype: LiteralDataType.NotCalculated,
+            },
+          ],
+          left: {
+            type: "identifier",
+            name: "doSomething",
+            datatype: LiteralDataType.NotCalculated,
+          },
         },
       ],
     },
@@ -934,8 +993,18 @@ test("Testing exporting function declaraton", () => {
       blocks: [
         {
           type: "FunctionCall",
-          arguments: [{ type: "identifier", name: "a" }],
-          left: { type: "identifier", name: "doSomething" },
+          arguments: [
+            {
+              type: "identifier",
+              name: "a",
+              datatype: LiteralDataType.NotCalculated,
+            },
+          ],
+          left: {
+            type: "identifier",
+            name: "doSomething",
+            datatype: LiteralDataType.NotCalculated,
+          },
         },
       ],
     },

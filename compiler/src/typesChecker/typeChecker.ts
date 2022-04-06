@@ -1,4 +1,5 @@
 import deepEqual = require("deep-equal");
+import { type } from "os";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import {
   ArrayDatatype,
@@ -869,17 +870,27 @@ class TypeCheckerFactory {
 
       return { type: "ArrayDataType", baseType: baseDataType };
     } else if (exp.type === "identifier") {
-      const varInfo = this.closure.getVariableInfo(exp.name);
+      if (
+        exp.datatype === LiteralDataType.NotCalculated ||
+        isUnknownVariable(exp.datatype)
+      ) {
+        const varInfo = this.closure.getVariableInfo(exp.name);
 
-      if (varInfo === null) {
-        return { type: "UnknownVariable", varName: exp.name };
+        if (varInfo === null) {
+          return { type: "UnknownVariable", varName: exp.name };
+        }
+
+        if (isUnknownVariable(varInfo.dataType)) {
+          exp.datatype = { type: "UnknownVariable", varName: exp.name };
+          return { type: "UnknownVariable", varName: exp.name };
+        }
+
+        exp.datatype = varInfo.dataType;
+
+        return exp.datatype;
+      } else {
+        return exp.datatype;
       }
-
-      if (isUnknownVariable(varInfo.dataType)) {
-        return { type: "UnknownVariable", varName: exp.name };
-      }
-
-      return varInfo.dataType;
     } else if (exp.type === Token.Plus) {
       if (isPlusUninaryExp(exp)) {
         const argumentExp = this.getDataTypeOfExpression(exp.argument);
