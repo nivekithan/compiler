@@ -1,4 +1,4 @@
-import { FunctionType } from "llvm-bindings";
+import { FunctionType, PtrToIntInst } from "llvm-bindings";
 import { resolve } from "path";
 import { listenerCount } from "process";
 import { convertToTokens } from "../lexer/lexer";
@@ -1357,6 +1357,54 @@ test("Typechecking import declaration", () => {
         { type: "identifier", dataType: LiteralDataType.Number, name: "a" },
         { type: "identifier", dataType: LiteralDataType.Number, name: "b" },
       ],
+    },
+  ]);
+});
+
+test("Typechecking strict equality and strict not equality", () => {
+  const input = `
+  const a = 1 === 1;
+  const b = "1" !== "1";
+  const c = true === false;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Boolean,
+      exp: {
+        type: Token.StrictEquality,
+        left: { type: "number", value: 1 },
+        right: { type: "number", value: 1 },
+        datatype: LiteralDataType.Number,
+      },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Boolean,
+      exp: {
+        type: Token.StrictNotEqual,
+        left: { type: "string", value: "1" },
+        right: { type: "string", value: "1" },
+        datatype: LiteralDataType.String,
+      },
+      export: false,
+      identifierName: "b",
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.Boolean,
+      exp: {
+        type: Token.StrictEquality,
+        left: { type: "boolean", value: true },
+        right: { type: "boolean", value: false },
+        datatype: LiteralDataType.Boolean,
+      },
+      export: false,
+      identifierName: "c",
     },
   ]);
 });

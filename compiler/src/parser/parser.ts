@@ -808,7 +808,7 @@ export class ParserFactory {
   ): BinaryExp {
     this.next(); // consumes token
     const nextExp = this.parseExpression(this.getNonPrefixPrecedence(token));
-    return { type: token, left, right: nextExp };
+    return { type: token, left, right: nextExp,  };
   }
 
   getPrefixPrecedence(token: Tokens): number {

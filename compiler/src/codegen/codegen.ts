@@ -26,6 +26,7 @@ import llvm, {
   Value,
 } from "llvm-bindings";
 import { Token } from "../lexer/tokens";
+import { TLLVMFunction } from "./function";
 
 export const convertToLLVMModule = (asts: Ast[]): string => {
   const ModuleCodeGen = new CodeGen(asts, "main");
@@ -43,7 +44,7 @@ export class CodeGen {
   llvmModule: Module;
   llvmIrBuilder: IRBuilder;
 
-  llvmMainFn: LLVMFunction;
+  llvmMainFn: TLLVMFunction;
 
   constructor(typeCheckedAst: Ast[], moduleName: string) {
     this.asts = typeCheckedAst;
@@ -63,7 +64,8 @@ export class CodeGen {
       "main",
       this.llvmModule
     );
-    this.llvmMainFn = mainFn;
+    const TMainFn = new TLLVMFunction(mainFn);
+    this.llvmMainFn = TMainFn;
     const entryBasicBlock = BasicBlock.Create(
       this.llvmContext,
       "entry",
@@ -110,7 +112,11 @@ export class CodeGen {
         const leftValue = this.getExpValue(exp.left);
         const rightValue = this.getExpValue(exp.right);
 
-        return this.llvmIrBuilder.CreateFAdd(leftValue, rightValue);
+        return this.llvmIrBuilder.CreateFAdd(
+          leftValue,
+          rightValue,
+          this.llvmMainFn.getTempName()
+        );
       }
     } else if (exp.type === Token.Minus) {
       if (isMinusUninaryExp(exp)) {
@@ -120,7 +126,79 @@ export class CodeGen {
         const leftvalue = this.getExpValue(exp.left);
         const rightValue = this.getExpValue(exp.right);
 
-        return this.llvmIrBuilder.CreateFSub(leftvalue, rightValue);
+        return this.llvmIrBuilder.CreateFSub(
+          leftvalue,
+          rightValue,
+          this.llvmMainFn.getTempName()
+        );
+      }
+    } else if (exp.type === Token.Star) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      return this.llvmIrBuilder.CreateFMul(
+        leftValue,
+        rightValue,
+        this.llvmMainFn.getTempName()
+      );
+    } else if (exp.type === Token.Slash) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      return this.llvmIrBuilder.CreateFDiv(
+        leftValue,
+        rightValue,
+        this.llvmMainFn.getTempName()
+      );
+    } else if (exp.type === Token.StrictEquality) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      const comparingDatatype = exp.datatype;
+
+      if (comparingDatatype === undefined) {
+        throw Error(
+          "Expected typeCheckAst to make sure Datatype not be undefined"
+        );
+      }
+
+      if (comparingDatatype === LiteralDataType.Number) {
+        return this.llvmIrBuilder.CreateFCmpOEQ(
+          leftValue,
+          rightValue,
+          this.llvmMainFn.getTempName()
+        );
+      } else if (comparingDatatype === LiteralDataType.Boolean) {
+        return this.llvmIrBuilder.CreateICmpEQ(
+          leftValue,
+          rightValue,
+          this.llvmMainFn.getTempName()
+        );
+      }
+    } else if (exp.type === Token.StrictNotEqual) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      const comparingDatatype = exp.datatype;
+
+      if (comparingDatatype === undefined) {
+        throw Error(
+          "Expected typecheckAst to make sure Datatype not be undefined"
+        );
+      }
+
+      if (comparingDatatype === LiteralDataType.Number) {
+        return this.llvmIrBuilder.CreateFCmpONE(
+          leftValue,
+          rightValue,
+          this.llvmMainFn.getTempName()
+        );
+      } else if (comparingDatatype === LiteralDataType.Boolean) {
+        return this.llvmIrBuilder.CreateICmpNE(
+          leftValue,
+          rightValue,
+          this.llvmMainFn.getTempName()
+        );
       }
     }
 
@@ -138,7 +216,7 @@ export class CodeGen {
   }
 
   dumpModule() {
-    llvm.verifyFunction(this.llvmMainFn);
+    llvm.verifyFunction(this.llvmMainFn.getLLVMFunction());
     llvm.verifyModule(this.llvmModule);
     return this.llvmModule.print();
   }

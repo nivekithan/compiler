@@ -1,3 +1,4 @@
+import clone = require("clone");
 import deepEqual = require("deep-equal");
 import { type } from "os";
 import { KeywordTokens, Token } from "../lexer/tokens";
@@ -1020,6 +1021,8 @@ class TypeCheckerFactory {
       const rightDataType = this.getDataTypeOfExpression(exp.right);
 
       if (leftDataType === rightDataType) {
+        exp.datatype = clone(leftDataType);
+
         return LiteralDataType.Boolean;
       } else {
         if (isUnknownVariable(leftDataType)) {

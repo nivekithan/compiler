@@ -11,12 +11,17 @@ test("Testing const variable declaration", () => {
     const c = +1;
     const d = -1;
     const e = 1 + 1;
-    const f = 1 - 2;`;
+    const f = 1 - 2;
+    const g = 1 * 2;
+    const h = 2 / 2;
+    const i = 1 === 1;
+    const j = true === false;
+    const k = 1 !== 1;
+    const l = true !== false;`;
 
   const output = convertToLLVMModule(
     typeCheckAst(convertToAst(convertToTokens(input)))
   );
-
 
   expect(output).toMatchInlineSnapshot(`
 "; ModuleID = 'main'
@@ -36,6 +41,18 @@ entry:
   store double 2.000000e+00, double* %e, align 8
   %f = alloca double, align 8
   store double -1.000000e+00, double* %f, align 8
+  %g = alloca double, align 8
+  store double 2.000000e+00, double* %g, align 8
+  %h = alloca double, align 8
+  store double 1.000000e+00, double* %h, align 8
+  %i = alloca i1, align 1
+  store i1 true, i1* %i, align 1
+  %j = alloca i1, align 1
+  store i1 false, i1* %j, align 1
+  %k = alloca i1, align 1
+  store i1 false, i1* %k, align 1
+  %l = alloca i1, align 1
+  store i1 true, i1* %l, align 1
   ret void
 }
 "
