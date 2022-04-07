@@ -18,8 +18,6 @@ import llvm, {
   IRBuilder,
   LLVMContext,
   Module,
-  ReturnInst,
-  Type,
   UndefValue,
   Value,
 } from "llvm-bindings";
@@ -42,7 +40,7 @@ export class CodeGen {
   llvmModule: Module;
   llvmIrBuilder: IRBuilder;
 
-  llvmMainFn: TLLVMFunction;
+  currentFn: TLLVMFunction;
 
   constructor(typeCheckedAst: Ast[], moduleName: string) {
     this.asts = typeCheckedAst;
@@ -63,7 +61,7 @@ export class CodeGen {
       this.llvmModule
     );
     const TMainFn = new TLLVMFunction(mainFn);
-    this.llvmMainFn = TMainFn;
+    this.currentFn = TMainFn;
     const entryBasicBlock = BasicBlock.Create(
       this.llvmContext,
       "entry",
@@ -74,30 +72,104 @@ export class CodeGen {
 
   consume() {
     while (this.getCurAst() !== null) {
-      const curAst = this.getCurAst();
-
-      if (curAst === null) throw Error(`Unreachable`);
-
-      if (curAst.type === "constVariableDeclaration") {
-        const varType = this.getLLVMType(curAst.datatype);
-
-        const allocatedVar = this.llvmIrBuilder.CreateAlloca(
-          varType,
-          null,
-          curAst.identifierName
-        );
-
-        const value = this.getExpValue(curAst.exp);
-
-        this.llvmIrBuilder.CreateStore(value, allocatedVar);
-
-        this.llvmMainFn.insertVarName(curAst.identifierName, allocatedVar);
-      }
-
-      this.next();
+      this.consumeAst(this.getCurAst());
     }
 
     this.llvmIrBuilder.CreateRet(null as unknown as Value);
+  }
+
+  consumeAst(curAst: Ast | null) {
+    if (curAst === null) throw Error("Does not expect curAst to be null");
+
+    if (curAst.type === "constVariableDeclaration") {
+      this.consumeVariableDeclaration(curAst);
+    } else if (curAst.type === "FunctionDeclaration") {
+      this.consumeFunctionDeclaration(curAst);
+    } else if (curAst.type === "ReturnExpression") {
+      this.consumeReturnExp(curAst);
+    }
+  }
+
+  /**
+   * Expects the curAst to be constVariableDeclaration
+   */
+
+  consumeVariableDeclaration(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== "constVariableDeclaration")
+      throw Error(`Unreachable`);
+
+    const varType = this.getLLVMType(curAst.datatype);
+
+    const allocatedVar = this.llvmIrBuilder.CreateAlloca(
+      varType,
+      null,
+      curAst.identifierName
+    );
+
+    const value = this.getExpValue(curAst.exp);
+
+    this.llvmIrBuilder.CreateStore(value, allocatedVar);
+
+    this.currentFn.insertVarName(curAst.identifierName, allocatedVar);
+
+    this.next();
+  }
+
+  /**
+   * Expects the curAst to be functionDeclaration
+   */
+
+  consumeFunctionDeclaration(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== "FunctionDeclaration")
+      throw Error(`Expected curAst to be of type functionDeclaration`);
+
+    const returnLLVMType = this.getLLVMType(curAst.returnType);
+    const fnArguments = curAst.arguments.map(([argName, argType]) => {
+      return this.getLLVMType(argType);
+    });
+    const fnType = FunctionType.get(returnLLVMType, fnArguments, false);
+    const fnValue = LLVMFunction.Create(
+      fnType,
+      LLVMFunction.LinkageTypes.ExternalLinkage,
+      curAst.name,
+      this.llvmModule
+    );
+    const TFnValue = new TLLVMFunction(fnValue);
+    const previousTFnValue = this.currentFn;
+    this.currentFn = TFnValue;
+
+    const entryBB = BasicBlock.Create(this.llvmContext, "entry", fnValue);
+    const previousInsertBlock = this.llvmIrBuilder.GetInsertBlock();
+
+    if (previousInsertBlock === null)
+      throw Error("Did not expect previousInsetBlock to be null");
+
+    this.llvmIrBuilder.SetInsertPoint(entryBB);
+
+    curAst.blocks.forEach((ast) => {
+      this.consumeAst(ast);
+    });
+
+    this.currentFn = previousTFnValue;
+    this.llvmIrBuilder.SetInsertPoint(previousInsertBlock);
+    this.next();
+  }
+  /**
+   * Expects the curAst to be of ReturnExpression
+   */
+  consumeReturnExp(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== "ReturnExpression")
+      throw new Error("Expected curAst to be of type ReturnExpression");
+
+    const returnExp = curAst.exp;
+
+    if (returnExp === null) {
+      this.llvmIrBuilder.CreateRet(null as unknown as Value);
+    } else {
+      this.llvmIrBuilder.CreateRet(this.getExpValue(returnExp));
+    }
+
+    this.next();
   }
 
   getExpValue(exp: Expression): Value {
@@ -106,7 +178,7 @@ export class CodeGen {
     } else if (exp.type === "boolean") {
       return this.llvmIrBuilder.getInt1(exp.value);
     } else if (exp.type === "identifier") {
-      const allocatedVarName = this.llvmMainFn.getVarInfo(exp.name);
+      const allocatedVarName = this.currentFn.getVarInfo(exp.name);
       const llvmType = this.getLLVMType(exp.datatype);
       return this.llvmIrBuilder.CreateLoad(llvmType, allocatedVarName);
     } else if (exp.type === Token.Plus) {
@@ -208,7 +280,7 @@ export class CodeGen {
   }
 
   dumpModule() {
-    llvm.verifyFunction(this.llvmMainFn.getLLVMFunction());
+    llvm.verifyFunction(this.currentFn.getLLVMFunction());
     llvm.verifyModule(this.llvmModule);
     return this.llvmModule.print();
   }

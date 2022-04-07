@@ -78,3 +78,44 @@ entry:
 "
 `);
 });
+
+test("Testing function declaration", () => {
+  const input = `
+  function a() {
+    const b = 1;
+    const c = b;
+    const d = c + 2;
+
+    return d;
+  }`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  ret void
+}
+
+define double @a() {
+entry:
+  %b = alloca double, align 8
+  store double 1.000000e+00, double* %b, align 8
+  %c = alloca double, align 8
+  %0 = load double, double* %b, align 8
+  store double %0, double* %c, align 8
+  %d = alloca double, align 8
+  %1 = load double, double* %c, align 8
+  %2 = fadd double %1, 2.000000e+00
+  store double %2, double* %d, align 8
+  %3 = load double, double* %d, align 8
+  ret double %3
+}
+"
+`);
+});
