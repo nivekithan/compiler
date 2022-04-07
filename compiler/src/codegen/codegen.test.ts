@@ -129,7 +129,9 @@ test("Calling a function", () => {
   const d = a();
 `;
 
-  const output = convertToLLVMModule(typeCheckAst(convertToAst(convertToTokens(input))));
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
 
   expect(output).toMatchInlineSnapshot(`
 "; ModuleID = 'main'
@@ -146,6 +148,46 @@ entry:
 define double @a() {
 entry:
   ret double 1.000000e+00
+}
+"
+`);
+});
+
+test("Calling a function with argument", () => {
+  const input = `
+  function a(b : number, c : number) {
+    return b + c;
+  };
+  
+  const d = a(1, 2);
+  `;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %d = alloca double, align 8
+  %0 = call double @a(double 1.000000e+00, double 2.000000e+00)
+  store double %0, double* %d, align 8
+  ret void
+}
+
+define double @a(double %0, double %1) {
+entry:
+  %b = alloca double, align 8
+  store double %0, double* %b, align 8
+  %c = alloca double, align 8
+  store double %1, double* %c, align 8
+  %2 = load double, double* %b, align 8
+  %3 = load double, double* %c, align 8
+  %4 = fadd double %2, %3
+  ret double %4
 }
 "
 `);

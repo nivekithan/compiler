@@ -141,8 +141,6 @@ export class CodeGen {
       this.llvmModule
     );
 
-    console.log(fnValue);
-
     this.addGlobalVar(curAst.name, fnValue);
 
     const TFnValue = new TLLVMFunction(fnValue, this.globalVarDatabases);
@@ -156,6 +154,16 @@ export class CodeGen {
       throw Error("Did not expect previousInsetBlock to be null");
 
     this.llvmIrBuilder.SetInsertPoint(entryBB);
+
+    curAst.arguments.forEach(([argName], i) => {
+      const arg = fnValue.getArg(i);
+      const argType = arg.getType();
+
+      const allocaArg = this.llvmIrBuilder.CreateAlloca(argType, null, argName);
+      this.llvmIrBuilder.CreateStore(arg, allocaArg);
+
+      TFnValue.insertVarName(argName, allocaArg);
+    });
 
     curAst.blocks.forEach((ast) => {
       this.consumeAst(ast);
@@ -206,10 +214,7 @@ export class CodeGen {
       const fnArgs = exp.arguments.map((exp) => {
         return this.getExpValue(exp);
       });
-      return this.llvmIrBuilder.CreateCall(
-        leftValue as LLVMFunction,
-        fnArgs
-      );
+      return this.llvmIrBuilder.CreateCall(leftValue as LLVMFunction, fnArgs);
     } else if (exp.type === Token.Plus) {
       if (isPlusUninaryExp(exp)) {
         return this.getExpValue(exp.argument);
