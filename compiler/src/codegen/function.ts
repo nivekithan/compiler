@@ -1,32 +1,38 @@
-import { AllocaInst, Function as LLVMFunction } from "llvm-bindings";
+import { unlink } from "fs";
+import { AllocaInst, Function as LLVMFunction, Value } from "llvm-bindings";
 
 export class TLLVMFunction {
   llvmFunction: LLVMFunction;
 
-  varDatabase: { [varName: string]: AllocaInst | undefined };
+  localVarDatabase: { [varName: string]: Value | undefined };
+  globalVarDatabase: { [varName: string]: Value | undefined };
 
-  constructor(llvmFunction: LLVMFunction) {
+  constructor(
+    llvmFunction: LLVMFunction,
+    globalVarDatabase: { [varName: string]: Value | undefined }
+  ) {
     this.llvmFunction = llvmFunction;
-    this.varDatabase = {};
+    this.localVarDatabase = {};
+    this.globalVarDatabase = globalVarDatabase;
   }
 
   getLLVMFunction(): LLVMFunction {
     return this.llvmFunction;
   }
 
-  insertVarName(varName: string, pointerValue: AllocaInst) {
-    if (this.varDatabase[varName] === undefined) {
-      this.varDatabase[varName] = pointerValue;
+  insertVarName(varName: string, pointerValue: Value) {
+    if (this.localVarDatabase[varName] === undefined) {
+      this.localVarDatabase[varName] = pointerValue;
     } else {
       throw Error(`There is already a variable with name ${varName}`);
     }
   }
 
-  getVarInfo(varName: string) {
-    const inst = this.varDatabase[varName];
+  getVarInfo(varName: string): Value | null {
+    const inst = this.localVarDatabase[varName];
 
     if (inst === undefined) {
-      throw Error(`There is no variable with name ${varName}`);
+      return null;
     } else {
       return inst;
     }

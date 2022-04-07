@@ -8,6 +8,7 @@ import {
   PlusUninaryExp,
 } from "../parser/ast";
 import llvm, {
+  AddrSpaceCastInst,
   BasicBlock,
   Constant,
   ConstantFP,
@@ -18,6 +19,7 @@ import llvm, {
   IRBuilder,
   LLVMContext,
   Module,
+  PointerType,
   UndefValue,
   Value,
 } from "llvm-bindings";
@@ -42,6 +44,8 @@ export class CodeGen {
 
   currentFn: TLLVMFunction;
 
+  globalVarDatabases: { [varName: string]: LLVMFunction | undefined };
+
   constructor(typeCheckedAst: Ast[], moduleName: string) {
     this.asts = typeCheckedAst;
     this.curPos = 0;
@@ -52,6 +56,8 @@ export class CodeGen {
     this.llvmModule = new Module(moduleName, this.llvmContext);
     this.llvmIrBuilder = new IRBuilder(this.llvmContext);
 
+    this.globalVarDatabases = {};
+
     const voidType = this.llvmIrBuilder.getVoidTy();
     const mainFnType = FunctionType.get(voidType, [], false);
     const mainFn = LLVMFunction.Create(
@@ -60,7 +66,7 @@ export class CodeGen {
       "main",
       this.llvmModule
     );
-    const TMainFn = new TLLVMFunction(mainFn);
+    const TMainFn = new TLLVMFunction(mainFn, this.globalVarDatabases);
     this.currentFn = TMainFn;
     const entryBasicBlock = BasicBlock.Create(
       this.llvmContext,
@@ -73,6 +79,7 @@ export class CodeGen {
   consume() {
     while (this.getCurAst() !== null) {
       this.consumeAst(this.getCurAst());
+      this.next();
     }
 
     this.llvmIrBuilder.CreateRet(null as unknown as Value);
@@ -111,8 +118,6 @@ export class CodeGen {
     this.llvmIrBuilder.CreateStore(value, allocatedVar);
 
     this.currentFn.insertVarName(curAst.identifierName, allocatedVar);
-
-    this.next();
   }
 
   /**
@@ -127,6 +132,7 @@ export class CodeGen {
     const fnArguments = curAst.arguments.map(([argName, argType]) => {
       return this.getLLVMType(argType);
     });
+
     const fnType = FunctionType.get(returnLLVMType, fnArguments, false);
     const fnValue = LLVMFunction.Create(
       fnType,
@@ -134,7 +140,12 @@ export class CodeGen {
       curAst.name,
       this.llvmModule
     );
-    const TFnValue = new TLLVMFunction(fnValue);
+
+    console.log(fnValue);
+
+    this.addGlobalVar(curAst.name, fnValue);
+
+    const TFnValue = new TLLVMFunction(fnValue, this.globalVarDatabases);
     const previousTFnValue = this.currentFn;
     this.currentFn = TFnValue;
 
@@ -152,7 +163,6 @@ export class CodeGen {
 
     this.currentFn = previousTFnValue;
     this.llvmIrBuilder.SetInsertPoint(previousInsertBlock);
-    this.next();
   }
   /**
    * Expects the curAst to be of ReturnExpression
@@ -164,12 +174,10 @@ export class CodeGen {
     const returnExp = curAst.exp;
 
     if (returnExp === null) {
-      this.llvmIrBuilder.CreateRet(null as unknown as Value);
+      this.llvmIrBuilder.CreateRetVoid();
     } else {
       this.llvmIrBuilder.CreateRet(this.getExpValue(returnExp));
     }
-
-    this.next();
   }
 
   getExpValue(exp: Expression): Value {
@@ -179,8 +187,29 @@ export class CodeGen {
       return this.llvmIrBuilder.getInt1(exp.value);
     } else if (exp.type === "identifier") {
       const allocatedVarName = this.currentFn.getVarInfo(exp.name);
+
+      if (allocatedVarName === null) {
+        const value = this.getGlobalVar(exp.name);
+
+        if (value === null)
+          throw new Error(`There is no variable with name ${exp.name}`);
+
+        return value;
+      }
+
       const llvmType = this.getLLVMType(exp.datatype);
+
       return this.llvmIrBuilder.CreateLoad(llvmType, allocatedVarName);
+    } else if (exp.type === "FunctionCall") {
+      const leftValue = this.getExpValue(exp.left);
+
+      const fnArgs = exp.arguments.map((exp) => {
+        return this.getExpValue(exp);
+      });
+      return this.llvmIrBuilder.CreateCall(
+        leftValue as LLVMFunction,
+        fnArgs
+      );
     } else if (exp.type === Token.Plus) {
       if (isPlusUninaryExp(exp)) {
         return this.getExpValue(exp.argument);
@@ -266,17 +295,56 @@ export class CodeGen {
       return this.llvmIrBuilder.CreateFCmpOLE(leftValue, rightValue);
     }
 
-    throw Error("Something");
+    throw Error(
+      `It is not yet supported to generate code for expression.type === ${exp.type}`
+    );
   }
 
-  getLLVMType(type: DataType) {
-    if (type === LiteralDataType.Number) {
+  getLLVMType(dataType: DataType): llvm.Type {
+    if (dataType === LiteralDataType.Number) {
       return this.llvmIrBuilder.getDoubleTy();
-    } else if (type === LiteralDataType.Boolean) {
+    } else if (dataType === LiteralDataType.Boolean) {
       return this.llvmIrBuilder.getInt1Ty();
+    } else if (typeof dataType === "object") {
+      if (dataType.type === "FunctionDataType") {
+        const returnType = this.getLLVMType(dataType.returnType);
+        const args = Object.values(dataType.arguments).map((dataType) => {
+          if (dataType === undefined) throw Error("Unreachable");
+
+          return this.getLLVMType(dataType);
+        });
+
+        if (args.length === 0) {
+          return PointerType.get(FunctionType.get(returnType, false), 0);
+        } else {
+          return PointerType.get(FunctionType.get(returnType, args, false), 0);
+        }
+      }
     }
 
     throw Error("something");
+  }
+
+  addGlobalVar(varName: string, value: LLVMFunction) {
+    const globalValue = this.globalVarDatabases[varName];
+
+    if (globalValue === undefined) {
+      this.globalVarDatabases[varName] = value;
+    } else {
+      throw new Error(
+        `There is already a variable defined with var name ${varName}`
+      );
+    }
+  }
+
+  getGlobalVar(varName: string): LLVMFunction | null {
+    const globalValue = this.globalVarDatabases[varName];
+
+    if (globalValue === undefined) {
+      return null;
+    } else {
+      return globalValue;
+    }
   }
 
   dumpModule() {

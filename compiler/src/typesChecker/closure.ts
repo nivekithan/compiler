@@ -103,7 +103,6 @@ export class Closure {
   }
 
   getVariableInfo(name: string): ClosureVariable | null {
-    // console.log(this.database);
     const varInfo = this.database[name];
 
     if (varInfo === undefined) {

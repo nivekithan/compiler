@@ -119,3 +119,34 @@ entry:
 "
 `);
 });
+
+test("Calling a function", () => {
+  const input = `
+  function a() {
+    return 1;
+  }
+
+  const d = a();
+`;
+
+  const output = convertToLLVMModule(typeCheckAst(convertToAst(convertToTokens(input))));
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %d = alloca double, align 8
+  %0 = call double @a()
+  store double %0, double* %d, align 8
+  ret void
+}
+
+define double @a() {
+entry:
+  ret double 1.000000e+00
+}
+"
+`);
+});
