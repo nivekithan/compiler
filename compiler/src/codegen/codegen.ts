@@ -215,6 +215,12 @@ export class CodeGen {
         return this.getExpValue(exp);
       });
       return this.llvmIrBuilder.CreateCall(leftValue as LLVMFunction, fnArgs);
+    } else if (exp.type === Token.Bang) {
+      const argValue = this.getExpValue(exp.argument);
+      return this.llvmIrBuilder.CreateXor(
+        argValue,
+        this.llvmIrBuilder.getInt1(true)
+      );
     } else if (exp.type === Token.Plus) {
       if (isPlusUninaryExp(exp)) {
         return this.getExpValue(exp.argument);
