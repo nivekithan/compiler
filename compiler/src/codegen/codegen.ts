@@ -90,6 +90,8 @@ export class CodeGen {
 
     if (curAst.type === "constVariableDeclaration") {
       this.consumeVariableDeclaration(curAst);
+    } else if (curAst.type === "letVariableDeclaration") {
+      this.consumeVariableDeclaration(curAst);
     } else if (curAst.type === "FunctionDeclaration") {
       this.consumeFunctionDeclaration(curAst);
     } else if (curAst.type === "ReturnExpression") {
@@ -102,7 +104,11 @@ export class CodeGen {
    */
 
   consumeVariableDeclaration(curAst: Ast | null) {
-    if (curAst === null || curAst.type !== "constVariableDeclaration")
+    if (
+      curAst === null ||
+      (curAst.type !== "constVariableDeclaration" &&
+        curAst.type !== "letVariableDeclaration")
+    )
       throw Error(`Unreachable`);
 
     const varType = this.getLLVMType(curAst.datatype);

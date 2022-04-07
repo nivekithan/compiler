@@ -197,3 +197,26 @@ entry:
 "
 `);
 });
+
+test("Testing letVariable declaration", () => {
+  const input = `
+  let a =1;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca double, align 8
+  store double 1.000000e+00, double* %a, align 8
+  ret void
+}
+"
+`);
+
+});
