@@ -8,8 +8,6 @@ import {
   PlusUninaryExp,
 } from "../parser/ast";
 import llvm, {
-  APFloat,
-  APInt,
   BasicBlock,
   Constant,
   ConstantFP,
@@ -200,6 +198,26 @@ export class CodeGen {
           this.llvmMainFn.getTempName()
         );
       }
+    } else if (exp.type === Token.GreaterThan) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      return this.llvmIrBuilder.CreateFCmpOGT(leftValue, rightValue);
+    } else if (exp.type === Token.GreaterThanOrEqual) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      return this.llvmIrBuilder.CreateFCmpOGE(leftValue, rightValue);
+    } else if (exp.type === Token.LessThan) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      return this.llvmIrBuilder.CreateFCmpOLT(leftValue, rightValue);
+    } else if (exp.type === Token.LessThanOrEqual) {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      return this.llvmIrBuilder.CreateFCmpOLE(leftValue, rightValue);
     }
 
     throw Error("Something");
