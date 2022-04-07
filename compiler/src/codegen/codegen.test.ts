@@ -218,5 +218,66 @@ entry:
 }
 "
 `);
+});
 
+test("Test reassignment", () => {
+  const input = `
+  let a = true;
+  a = false;
+  
+  let b = 1
+  b = 2;
+  
+  let c = 1;
+  c += 1;
+  
+  let d = 2;
+  d -= 1;
+  
+  let e = 2;
+  e *= 1;
+  
+  let f = 2;
+  f /= 1;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca i1, align 1
+  store i1 true, i1* %a, align 1
+  store i1 false, i1* %a, align 1
+  %b = alloca double, align 8
+  store double 1.000000e+00, double* %b, align 8
+  store double 2.000000e+00, double* %b, align 8
+  %c = alloca double, align 8
+  store double 1.000000e+00, double* %c, align 8
+  %0 = load double, double* %c, align 8
+  %1 = fadd double %0, 1.000000e+00
+  store double %1, double* %c, align 8
+  %d = alloca double, align 8
+  store double 2.000000e+00, double* %d, align 8
+  %2 = load double, double* %d, align 8
+  %3 = fsub double %2, 1.000000e+00
+  store double %3, double* %d, align 8
+  %e = alloca double, align 8
+  store double 2.000000e+00, double* %e, align 8
+  %4 = load double, double* %e, align 8
+  %5 = fmul double %4, 1.000000e+00
+  store double %5, double* %e, align 8
+  %f = alloca double, align 8
+  store double 2.000000e+00, double* %f, align 8
+  %6 = load double, double* %f, align 8
+  %7 = fdiv double %6, 1.000000e+00
+  store double %7, double* %f, align 8
+  ret void
+}
+"
+`);
 });

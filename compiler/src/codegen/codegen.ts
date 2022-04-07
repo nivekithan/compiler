@@ -96,6 +96,68 @@ export class CodeGen {
       this.consumeFunctionDeclaration(curAst);
     } else if (curAst.type === "ReturnExpression") {
       this.consumeReturnExp(curAst);
+    } else if (curAst.type === "ReAssignment") {
+      this.consumeReassignment(curAst);
+    } else {
+      throw Error(`It is still not supported for compiling ast ${curAst.type}`);
+    }
+  }
+
+  /**
+   * Expects the curAst to be of Reassignment
+   *
+   */
+
+  consumeReassignment(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== "ReAssignment")
+      throw Error(
+        `Expected curAst to be of type ConsumeReaassignment but instead got ${curAst?.type}`
+      );
+
+    const leftPath = curAst.path;
+
+    if (leftPath.type !== "IdentifierPath")
+      throw Error(
+        "Its not yet supported for reassignment path to be anything other than IdentifierPath"
+      );
+
+    const varInfo = this.currentFn.getVarInfo(leftPath.name);
+
+    if (varInfo === null)
+      throw Error(`There is no variable with name ${leftPath.name}`);
+
+    const expValue = this.getExpValue(curAst.exp);
+
+    if (curAst.assignmentOperator === Token.Assign) {
+      this.llvmIrBuilder.CreateStore(expValue, varInfo);
+    } else if (curAst.assignmentOperator === Token.PlusAssign) {
+      const loadVar = this.llvmIrBuilder.CreateLoad(
+        this.llvmIrBuilder.getDoubleTy(),
+        varInfo
+      );
+      const addValue = this.llvmIrBuilder.CreateFAdd(loadVar, expValue);
+      this.llvmIrBuilder.CreateStore(addValue, varInfo);
+    } else if (curAst.assignmentOperator === Token.MinusAssign) {
+      const loadVar = this.llvmIrBuilder.CreateLoad(
+        this.llvmIrBuilder.getDoubleTy(),
+        varInfo
+      );
+      const minusValue = this.llvmIrBuilder.CreateFSub(loadVar, expValue);
+      this.llvmIrBuilder.CreateStore(minusValue, varInfo);
+    } else if (curAst.assignmentOperator === Token.StarAssign) {
+      const loadVar = this.llvmIrBuilder.CreateLoad(
+        this.llvmIrBuilder.getDoubleTy(),
+        varInfo
+      );
+      const starValue = this.llvmIrBuilder.CreateFMul(loadVar, expValue);
+      this.llvmIrBuilder.CreateStore(starValue, varInfo);
+    } else if (curAst.assignmentOperator == Token.SlashAssign) {
+      const loadVar = this.llvmIrBuilder.CreateLoad(
+        this.llvmIrBuilder.getDoubleTy(),
+        varInfo
+      );
+      const slashValue = this.llvmIrBuilder.CreateFDiv(loadVar, expValue);
+      this.llvmIrBuilder.CreateStore(slashValue, varInfo);
     }
   }
 
