@@ -90,6 +90,8 @@ export class CodeGen {
         const value = this.getExpValue(curAst.exp);
 
         this.llvmIrBuilder.CreateStore(value, allocatedVar);
+
+        this.llvmMainFn.insertVarName(curAst.identifierName, allocatedVar);
       }
 
       this.next();
@@ -103,6 +105,10 @@ export class CodeGen {
       return ConstantFP.get(this.llvmIrBuilder.getDoubleTy(), exp.value);
     } else if (exp.type === "boolean") {
       return this.llvmIrBuilder.getInt1(exp.value);
+    } else if (exp.type === "identifier") {
+      const allocatedVarName = this.llvmMainFn.getVarInfo(exp.name);
+      const llvmType = this.getLLVMType(exp.datatype);
+      return this.llvmIrBuilder.CreateLoad(llvmType, allocatedVarName);
     } else if (exp.type === Token.Plus) {
       if (isPlusUninaryExp(exp)) {
         return this.getExpValue(exp.argument);
@@ -110,11 +116,7 @@ export class CodeGen {
         const leftValue = this.getExpValue(exp.left);
         const rightValue = this.getExpValue(exp.right);
 
-        return this.llvmIrBuilder.CreateFAdd(
-          leftValue,
-          rightValue,
-          this.llvmMainFn.getTempName()
-        );
+        return this.llvmIrBuilder.CreateFAdd(leftValue, rightValue);
       }
     } else if (exp.type === Token.Minus) {
       if (isMinusUninaryExp(exp)) {
@@ -124,30 +126,18 @@ export class CodeGen {
         const leftvalue = this.getExpValue(exp.left);
         const rightValue = this.getExpValue(exp.right);
 
-        return this.llvmIrBuilder.CreateFSub(
-          leftvalue,
-          rightValue,
-          this.llvmMainFn.getTempName()
-        );
+        return this.llvmIrBuilder.CreateFSub(leftvalue, rightValue);
       }
     } else if (exp.type === Token.Star) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
-      return this.llvmIrBuilder.CreateFMul(
-        leftValue,
-        rightValue,
-        this.llvmMainFn.getTempName()
-      );
+      return this.llvmIrBuilder.CreateFMul(leftValue, rightValue);
     } else if (exp.type === Token.Slash) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
-      return this.llvmIrBuilder.CreateFDiv(
-        leftValue,
-        rightValue,
-        this.llvmMainFn.getTempName()
-      );
+      return this.llvmIrBuilder.CreateFDiv(leftValue, rightValue);
     } else if (exp.type === Token.StrictEquality) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
@@ -161,17 +151,9 @@ export class CodeGen {
       }
 
       if (comparingDatatype === LiteralDataType.Number) {
-        return this.llvmIrBuilder.CreateFCmpOEQ(
-          leftValue,
-          rightValue,
-          this.llvmMainFn.getTempName()
-        );
+        return this.llvmIrBuilder.CreateFCmpOEQ(leftValue, rightValue);
       } else if (comparingDatatype === LiteralDataType.Boolean) {
-        return this.llvmIrBuilder.CreateICmpEQ(
-          leftValue,
-          rightValue,
-          this.llvmMainFn.getTempName()
-        );
+        return this.llvmIrBuilder.CreateICmpEQ(leftValue, rightValue);
       }
     } else if (exp.type === Token.StrictNotEqual) {
       const leftValue = this.getExpValue(exp.left);
@@ -186,17 +168,9 @@ export class CodeGen {
       }
 
       if (comparingDatatype === LiteralDataType.Number) {
-        return this.llvmIrBuilder.CreateFCmpONE(
-          leftValue,
-          rightValue,
-          this.llvmMainFn.getTempName()
-        );
+        return this.llvmIrBuilder.CreateFCmpONE(leftValue, rightValue);
       } else if (comparingDatatype === LiteralDataType.Boolean) {
-        return this.llvmIrBuilder.CreateICmpNE(
-          leftValue,
-          rightValue,
-          this.llvmMainFn.getTempName()
-        );
+        return this.llvmIrBuilder.CreateICmpNE(leftValue, rightValue);
       }
     } else if (exp.type === Token.GreaterThan) {
       const leftValue = this.getExpValue(exp.left);

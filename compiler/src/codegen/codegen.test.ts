@@ -21,7 +21,9 @@ test("Testing const variable declaration", () => {
     const m = 1 > 1;
     const n = 1 >= 1;
     const o = 1 < 1;
-    const p = 1 <= 1;`;
+    const p = 1 <= 1;
+    const q = a;
+    const r = b;`;
 
   const output = convertToLLVMModule(
     typeCheckAst(convertToAst(convertToTokens(input)))
@@ -65,6 +67,12 @@ entry:
   store i1 false, i1* %o, align 1
   %p = alloca i1, align 1
   store i1 true, i1* %p, align 1
+  %q = alloca double, align 8
+  %0 = load double, double* %a, align 8
+  store double %0, double* %q, align 8
+  %r = alloca i1, align 1
+  %1 = load i1, i1* %b, align 1
+  store i1 %1, i1* %r, align 1
   ret void
 }
 "
