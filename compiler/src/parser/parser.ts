@@ -636,7 +636,11 @@ export class ParserFactory {
       return curToken;
     } else if (isIdentifier(curToken)) {
       this.next(); // consumes Identifier
-      return { type: "identifier", name: curToken.value, datatype : LiteralDataType.NotCalculated };
+      return {
+        type: "identifier",
+        name: curToken.value,
+        datatype: LiteralDataType.NotCalculated,
+      };
     } else if (isNumberLiteral(curToken)) {
       this.next(); // consumes NumberLiteral
       return { type: "number", value: curToken.value };
@@ -711,14 +715,13 @@ export class ParserFactory {
 
       this.next(); // consumes ]
 
-      return { type: "array", exps };
+      return { type: "array", exps, datatype: LiteralDataType.NotCalculated };
     }
 
     return null;
   }
 
   parseNonPrefixExp(left: Expression): Expression | null {
-    debugger;
     const curToken = this.getCurToken();
 
     if (curToken === null) return null;
@@ -808,7 +811,7 @@ export class ParserFactory {
   ): BinaryExp {
     this.next(); // consumes token
     const nextExp = this.parseExpression(this.getNonPrefixPrecedence(token));
-    return { type: token, left, right: nextExp,  };
+    return { type: token, left, right: nextExp };
   }
 
   getPrefixPrecedence(token: Tokens): number {
@@ -973,8 +976,15 @@ export class ParserFactory {
 
       this.assertCurToken(Token.BoxCloseBracket);
       this.next(); // consumes ]
-
-      return { type: "ArrayDataType", baseType: left };
+      /**
+       * Since there is no way to mention number of elements in
+       * an array in a way that typescript server wont shout errors
+       * this function should always return NotCalculated Datatype
+       * or else the datatype returned by this function will always fail
+       * deepEqual check in typechecker
+       */
+      // return { type: "ArrayDataType", baseType: left };
+      return LiteralDataType.NotCalculated;
     }
 
     return null;

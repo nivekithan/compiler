@@ -1,4 +1,5 @@
 import {
+  ArrayDatatype,
   Ast,
   DataType,
   Expression,
@@ -9,6 +10,7 @@ import {
 } from "../parser/ast";
 import llvm, {
   AddrSpaceCastInst,
+  ArrayType,
   BasicBlock,
   Constant,
   ConstantFP,
@@ -25,6 +27,7 @@ import llvm, {
 } from "llvm-bindings";
 import { Token } from "../lexer/tokens";
 import { TLLVMFunction } from "./function";
+import { type } from "os";
 
 export const convertToLLVMModule = (asts: Ast[]): string => {
   const ModuleCodeGen = new CodeGen(asts, "main");
@@ -283,6 +286,40 @@ export class CodeGen {
         return this.getExpValue(exp);
       });
       return this.llvmIrBuilder.CreateCall(leftValue as LLVMFunction, fnArgs);
+    } else if (exp.type === "array") {
+      const arrayDatatype = exp.datatype;
+
+      if (!isArrayDatatype(arrayDatatype))
+        throw Error(
+          "Expected typechecker to make sure that only ArrayDatatype is allowed in array"
+        );
+
+      const noOfElements = arrayDatatype.numberOfElements;
+
+      if (noOfElements === undefined) {
+        throw Error(
+          "Expected typechecker to make sure that numberOfElements is number"
+        );
+      }
+
+      const baseType = this.getLLVMType(arrayDatatype.baseType);
+      const arrayType = ArrayType.get(baseType, noOfElements);
+      const allocatedValue = this.llvmIrBuilder.CreateAlloca(arrayType);
+
+      exp.exps.forEach((exp, i) => {
+        const insideElementPointer = this.llvmIrBuilder.CreateGEP(
+          arrayType,
+          allocatedValue,
+          [this.llvmIrBuilder.getInt64(0), this.llvmIrBuilder.getInt32(i)]
+        );
+
+        this.llvmIrBuilder.CreateStore(
+          insideElementPointer,
+          this.getExpValue(exp)
+        );
+      });
+
+      return allocatedValue;
     } else if (exp.type === Token.Bang) {
       const argValue = this.getExpValue(exp.argument);
       return this.llvmIrBuilder.CreateXor(
@@ -398,6 +435,16 @@ export class CodeGen {
         } else {
           return PointerType.get(FunctionType.get(returnType, args, false), 0);
         }
+      } else if (dataType.type === "ArrayDataType") {
+        const baseElement = this.getLLVMType(dataType.baseType);
+        const numberOfElements = dataType.numberOfElements;
+
+        if (numberOfElements === undefined)
+          throw Error(
+            "Expected typecheck to make sure that numberOfElements can never be undefined"
+          );
+
+        return PointerType.get(ArrayType.get(baseElement, numberOfElements), 0);
       }
     }
 
@@ -475,4 +522,8 @@ const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
   }
 
   return false;
+};
+
+const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
+  return typeof datatype === "object" && datatype.type === "ArrayDataType";
 };

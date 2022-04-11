@@ -133,7 +133,11 @@ export type IdentifierExp = {
   datatype: DataType;
 };
 export type ObjectLiteralExp = { type: "object"; keys: [string, Expression][] };
-export type ArrayLiteralExp = { type: "array"; exps: Expression[] };
+export type ArrayLiteralExp = {
+  type: "array";
+  exps: Expression[];
+  datatype: DataType;
+};
 
 export type UninaryExp = PlusUninaryExp | MinusUninaryExp | BangUninaryExp;
 
@@ -197,13 +201,13 @@ export type StrictEqualityBinaryExp = {
   type: Token.StrictEquality;
   left: Expression;
   right: Expression;
-  datatype ?: DataType;
+  datatype?: DataType;
 };
 export type StrictNotEqualBinaryExp = {
   type: Token.StrictNotEqual;
   left: Expression;
   right: Expression;
-  datatype ?: DataType;
+  datatype?: DataType;
 };
 export type LessThanBinaryExp = {
   type: Token.LessThan;
@@ -273,6 +277,7 @@ export type IdentifierDatatype = {
 export type ArrayDatatype = {
   type: "ArrayDataType";
   baseType: DataType;
+  numberOfElements?: number; // Counting starts of 1
 };
 
 export type ObjectDatatype = {

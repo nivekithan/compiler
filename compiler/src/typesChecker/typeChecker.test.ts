@@ -53,9 +53,18 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
       datatype: {
         type: "ArrayDataType",
         baseType: LiteralDataType.Number,
+        numberOfElements: 1,
       },
       identifierName: "e",
-      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      exp: {
+        type: "array",
+        exps: [{ type: "number", value: 1 }],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: LiteralDataType.Number,
+          numberOfElements: 1,
+        },
+      },
       export: false,
     },
     {
@@ -115,9 +124,18 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       datatype: {
         type: "ArrayDataType",
         baseType: LiteralDataType.Number,
+        numberOfElements: 1,
       },
       identifierName: "e",
-      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      exp: {
+        type: "array",
+        exps: [{ type: "number", value: 1 }],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: LiteralDataType.Number,
+          numberOfElements: 1,
+        },
+      },
       export: false,
     },
     {
@@ -232,8 +250,20 @@ test("Testing reassignment of Array element", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
-      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      datatype: {
+        type: "ArrayDataType",
+        baseType: LiteralDataType.Number,
+        numberOfElements: 1,
+      },
+      exp: {
+        type: "array",
+        exps: [{ type: "number", value: 1 }],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: LiteralDataType.Number,
+          numberOfElements: 1,
+        },
+      },
       export: false,
       identifierName: "a",
     },
@@ -289,8 +319,20 @@ test("Testing reassignment with PlusAssign operator", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
-      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      datatype: {
+        type: "ArrayDataType",
+        baseType: LiteralDataType.Number,
+        numberOfElements: 1,
+      },
+      exp: {
+        type: "array",
+        exps: [{ type: "number", value: 1 }],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: LiteralDataType.Number,
+          numberOfElements: 1,
+        },
+      },
       export: false,
       identifierName: "a",
     },
@@ -317,8 +359,20 @@ test("Testing reassignment with MinusAssign operator", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
-      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      datatype: {
+        type: "ArrayDataType",
+        baseType: LiteralDataType.Number,
+        numberOfElements: 1,
+      },
+      exp: {
+        type: "array",
+        exps: [{ type: "number", value: 1 }],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: LiteralDataType.Number,
+          numberOfElements: 1,
+        },
+      },
       export: false,
       identifierName: "a",
     },
@@ -345,8 +399,20 @@ test("Testing reassignment with StarAssign operator", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
-      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      datatype: {
+        type: "ArrayDataType",
+        baseType: LiteralDataType.Number,
+        numberOfElements: 1,
+      },
+      exp: {
+        type: "array",
+        exps: [{ type: "number", value: 1 }],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: LiteralDataType.Number,
+          numberOfElements: 1,
+        },
+      },
       export: false,
       identifierName: "a",
     },
@@ -373,8 +439,20 @@ test("Testing reassignment with SlashAssign operator", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
-      exp: { type: "array", exps: [{ type: "number", value: 1 }] },
+      datatype: {
+        type: "ArrayDataType",
+        baseType: LiteralDataType.Number,
+        numberOfElements: 1,
+      },
+      exp: {
+        type: "array",
+        exps: [{ type: "number", value: 1 }],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: LiteralDataType.Number,
+          numberOfElements: 1,
+        },
+      },
       export: false,
       identifierName: "a",
     },
@@ -1233,7 +1311,11 @@ test("[Reassignment] Testing using variable declared in top level inside another
       blocks: [
         {
           type: "constVariableDeclaration",
-          datatype: { type: "ArrayDataType", baseType: LiteralDataType.Number },
+          datatype: {
+            type: "ArrayDataType",
+            baseType: LiteralDataType.Number,
+            numberOfElements: 1,
+          },
           exp: {
             type: "array",
             exps: [
@@ -1243,6 +1325,11 @@ test("[Reassignment] Testing using variable declared in top level inside another
                 datatype: LiteralDataType.Number,
               },
             ],
+            datatype: {
+              type: "ArrayDataType",
+              baseType: LiteralDataType.Number,
+              numberOfElements: 1,
+            },
           },
           export: false,
           identifierName: "b",
@@ -1266,6 +1353,7 @@ test("[Reassignment] Testing using variable declared in top level inside another
                     datatype: {
                       type: "ArrayDataType",
                       baseType: LiteralDataType.Number,
+                      numberOfElements: 1,
                     },
                   },
                   right: { type: "number", value: 0 },

@@ -832,6 +832,7 @@ class TypeCheckerFactory {
 
       return { type: "ObjectDataType", keys };
     } else if (exp.type === "array") {
+      debugger;
       let baseDataType: DataType | null = null;
       let unknownVariableName: string | null = null;
 
@@ -866,10 +867,22 @@ class TypeCheckerFactory {
         throw Error("Expected atleast one expression in array");
 
       if (unknownVariableName !== null) {
-        return { type: "UnknownVariable", varName: unknownVariableName };
+        const datatype: DataType = {
+          type: "UnknownVariable",
+          varName: unknownVariableName,
+        };
+        exp.datatype = datatype;
+        return datatype;
       }
 
-      return { type: "ArrayDataType", baseType: baseDataType };
+      const datatype: DataType = {
+        type: "ArrayDataType",
+        baseType: baseDataType,
+        numberOfElements: exp.exps.length,
+      };
+
+      exp.datatype = datatype;
+      return datatype;
     } else if (exp.type === "identifier") {
       if (
         exp.datatype === LiteralDataType.NotCalculated ||

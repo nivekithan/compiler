@@ -517,8 +517,10 @@ test("Testing Array literal expression", () => {
               { type: "boolean", value: false },
               { type: "boolean", value: true },
             ],
+            datatype: LiteralDataType.NotCalculated,
           },
         ],
+        datatype: LiteralDataType.NotCalculated,
       },
       export: false,
     },
@@ -885,7 +887,10 @@ test("Testing exporting non supported statement", () => {
   expect(getOutput).toThrow();
 });
 
-test("Testing Array datatype", () => {
+/**
+ * Making sure explicit Array datatype is ignored
+ */
+test("Testing Array datatype is ignored", () => {
   const input = `
   const a : string[] = "a"`;
 
@@ -894,7 +899,7 @@ test("Testing Array datatype", () => {
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ArrayDataType", baseType: LiteralDataType.String },
+      datatype: LiteralDataType.NotCalculated,
       exp: { type: "string", value: "a" },
       export: false,
       identifierName: "a",
@@ -924,14 +929,14 @@ test("Testing object datatype", () => {
 
 test("Testing parsing Grouped type", () => {
   const input = `
-  const a : ((string)[]) = "a"`;
+  const a : ((string)) = "a"`;
 
   const output = convertToAst(convertToTokens(input));
 
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ArrayDataType", baseType: LiteralDataType.String },
+      datatype: LiteralDataType.String,
       exp: { type: "string", value: "a" },
       export: false,
       identifierName: "a",
