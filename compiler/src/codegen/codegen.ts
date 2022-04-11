@@ -314,8 +314,8 @@ export class CodeGen {
         );
 
         this.llvmIrBuilder.CreateStore(
-          insideElementPointer,
-          this.getExpValue(exp)
+          this.getExpValue(exp),
+          insideElementPointer
         );
       });
 
@@ -409,6 +409,25 @@ export class CodeGen {
       const rightValue = this.getExpValue(exp.right);
 
       return this.llvmIrBuilder.CreateFCmpOLE(leftValue, rightValue);
+    } else if (exp.type === "BoxMemberAccess") {
+      const leftValue = this.getExpValue(exp.left);
+      const rightValue = this.getExpValue(exp.right);
+
+      const convertedToIntValue = this.llvmIrBuilder.CreateFPToSI(
+        rightValue,
+        this.llvmIrBuilder.getInt32Ty()
+      );
+
+      const pointerToElement = this.llvmIrBuilder.CreateGEP(
+        leftValue.getType().getPointerElementType(),
+        leftValue,
+        [this.llvmIrBuilder.getInt64(0), convertedToIntValue]
+      );
+
+      return this.llvmIrBuilder.CreateLoad(
+        pointerToElement.getType().getPointerElementType(),
+        pointerToElement
+      );
     }
 
     throw Error(

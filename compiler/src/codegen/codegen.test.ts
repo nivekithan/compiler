@@ -25,7 +25,8 @@ test("Testing const variable declaration", () => {
     const q = a;
     const r = b;
     const s = !r;
-    const t = [1, 2];`;
+    const t = [1, 2];
+    const u = t[1];`;
 
   const output = convertToLLVMModule(
     typeCheckAst(convertToAst(convertToTokens(input)))
@@ -82,10 +83,15 @@ entry:
   %t = alloca [2 x double]*, align 8
   %4 = alloca [2 x double], align 8
   %5 = getelementptr [2 x double], [2 x double]* %4, i64 0, i32 0
-  store double* %5, double 1.000000e+00, align 8
+  store double 1.000000e+00, double* %5, align 8
   %6 = getelementptr [2 x double], [2 x double]* %4, i64 0, i32 1
-  store double* %6, double 2.000000e+00, align 8
+  store double 2.000000e+00, double* %6, align 8
   store [2 x double]* %4, [2 x double]** %t, align 8
+  %u = alloca double, align 8
+  %7 = load [2 x double]*, [2 x double]** %t, align 8
+  %8 = getelementptr [2 x double], [2 x double]* %7, i64 0, i32 1
+  %9 = load double, double* %8, align 8
+  store double %9, double* %u, align 8
   ret void
 }
 "
