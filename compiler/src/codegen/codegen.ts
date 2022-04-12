@@ -3,9 +3,11 @@ import {
   Ast,
   DataType,
   Expression,
+  FunctionDatatype,
   LiteralDataType,
   MinusBinaryExp,
   MinusUninaryExp,
+  ObjectDatatype,
   PlusUninaryExp,
 } from "../parser/ast";
 import llvm, {
@@ -22,12 +24,12 @@ import llvm, {
   LLVMContext,
   Module,
   PointerType,
+  StructType,
   UndefValue,
   Value,
 } from "llvm-bindings";
 import { Token } from "../lexer/tokens";
 import { TLLVMFunction } from "./function";
-import { type } from "os";
 
 export const convertToLLVMModule = (asts: Ast[]): string => {
   const ModuleCodeGen = new CodeGen(asts, "main");
@@ -320,6 +322,42 @@ export class CodeGen {
       });
 
       return allocatedValue;
+    } else if (exp.type === "object") {
+      const objectDatatype = exp.datatype;
+
+      if (!isObjectDatatype(objectDatatype)) {
+        throw Error(
+          "Expected typechecker to make sure that datatype to be always objectDatatype"
+        );
+      }
+
+      const elementType = Object.values(objectDatatype.keys).map((value) => {
+        if (value === undefined)
+          throw Error("Did not expect undefined as value in keys");
+
+        return this.getLLVMType(value);
+      });
+
+      const structType = StructType.get(this.llvmContext, elementType);
+      const allocatedValue = this.llvmIrBuilder.CreateAlloca(structType);
+
+      exp.keys.forEach(([_, exp], i) => {
+        if (exp === undefined)
+          throw Error("Did not expect undefined as values in keys");
+
+        const insideElementPointer = this.llvmIrBuilder.CreateGEP(
+          structType,
+          allocatedValue,
+          [this.llvmIrBuilder.getInt64(0), this.llvmIrBuilder.getInt32(i)]
+        );
+
+        this.llvmIrBuilder.CreateStore(
+          this.getExpValue(exp),
+          insideElementPointer
+        );
+      });
+
+      return allocatedValue;
     } else if (exp.type === Token.Bang) {
       const argValue = this.getExpValue(exp.argument);
       return this.llvmIrBuilder.CreateXor(
@@ -428,6 +466,34 @@ export class CodeGen {
         pointerToElement.getType().getPointerElementType(),
         pointerToElement
       );
+    } else if (exp.type === "DotMemberAccess") {
+      const leftValue = this.getExpValue(exp.left);
+
+      const leftDatatype = getDatatypeOfExp(exp.left);
+
+      if (!isObjectDatatype(leftDatatype)) {
+        throw Error(
+          "Expected typechecker to make sure that leftDatatype is ObjectDatatype"
+        );
+      }
+
+      const elementIndex = Object.keys(leftDatatype.keys).findIndex(
+        (value) => value === exp.right
+      );
+
+      const pointerToElement = this.llvmIrBuilder.CreateGEP(
+        leftValue.getType().getPointerElementType(),
+        leftValue,
+        [
+          this.llvmIrBuilder.getInt64(0),
+          this.llvmIrBuilder.getInt32(elementIndex),
+        ]
+      );
+
+      return this.llvmIrBuilder.CreateLoad(
+        pointerToElement.getType().getPointerElementType(),
+        pointerToElement
+      );
     }
 
     throw Error(
@@ -464,6 +530,20 @@ export class CodeGen {
           );
 
         return PointerType.get(ArrayType.get(baseElement, numberOfElements), 0);
+      } else if (dataType.type === "ObjectDataType") {
+        const elementType = Object.values(dataType.keys).map(
+          (elementDatatype) => {
+            if (elementDatatype === undefined)
+              throw Error("Did not expect undefined in keys");
+
+            return this.getLLVMType(elementDatatype);
+          }
+        );
+
+        return PointerType.get(
+          StructType.get(this.llvmContext, elementType),
+          0
+        );
       }
     }
 
@@ -521,6 +601,51 @@ export class CodeGen {
   }
 }
 
+const getDatatypeOfExp = (exp: Expression): DataType => {
+  if (exp.type === "string") return LiteralDataType.String;
+  if (exp.type === "number") return LiteralDataType.Number;
+  if (exp.type === "boolean") return LiteralDataType.Number;
+  if (exp.type === "identifier") return exp.datatype;
+  if (exp.type === "FunctionCall") {
+    const leftDatatype = getDatatypeOfExp(exp.left);
+
+    if (isFunctionDatatype(leftDatatype)) {
+      return leftDatatype.returnType;
+    } else {
+      throw Error("Expected leftDatatype to be function datatype");
+    }
+  }
+
+  if (exp.type === "array") return exp.datatype;
+  if (exp.type === "object") return exp.datatype;
+  if (exp.type === "DotMemberAccess") {
+    const leftDatatype = getDatatypeOfExp(exp.left);
+
+    if (isObjectDatatype(leftDatatype)) {
+      const elementDatatype = leftDatatype.keys[exp.right];
+
+      if (elementDatatype === undefined)
+        throw Error("Did not expect elementDatatype to be undefined");
+
+      return elementDatatype;
+    } else {
+      throw Error("Expected leftDatatype to ObjectDatatype ");
+    }
+  }
+
+  if (exp.type === "BoxMemberAccess") {
+    const leftDatatype = getDatatypeOfExp(exp.left);
+
+    if (isArrayDatatype(leftDatatype)) {
+      return leftDatatype.baseType;
+    } else {
+      throw Error("Expected leftDatatype to be Array");
+    }
+  }
+
+  throw Error(`It is not supported for getting datatype for exp ${exp.type}`);
+};
+
 const isPlusUninaryExp = (exp: Expression): exp is PlusUninaryExp => {
   if (
     exp.type === Token.Plus &&
@@ -545,4 +670,14 @@ const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
 
 const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
   return typeof datatype === "object" && datatype.type === "ArrayDataType";
+};
+
+const isObjectDatatype = (datatype: DataType): datatype is ObjectDatatype => {
+  return typeof datatype === "object" && datatype.type === "ObjectDataType";
+};
+
+const isFunctionDatatype = (
+  datatype: DataType
+): datatype is FunctionDatatype => {
+  return typeof datatype === "object" && datatype.type === "FunctionDataType";
 };
