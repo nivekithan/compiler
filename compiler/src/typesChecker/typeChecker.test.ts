@@ -74,7 +74,14 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
         keys: { a: LiteralDataType.Number },
       },
       identifierName: "f",
-      exp: { type: "object", keys: [["a", { type: "number", value: 1 }]] },
+      exp: {
+        type: "object",
+        keys: [["a", { type: "number", value: 1 }]],
+        datatype: {
+          type: "ObjectDataType",
+          keys: { a: LiteralDataType.Number },
+        },
+      },
       export: false,
     },
   ]);
@@ -89,6 +96,7 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       const f : {a : number} = {a : 1};`;
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
 
   expect(output).toEqual<Ast[]>([
     {
@@ -145,7 +153,14 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
         keys: { a: LiteralDataType.Number },
       },
       identifierName: "f",
-      exp: { type: "object", keys: [["a", { type: "number", value: 1 }]] },
+      exp: {
+        type: "object",
+        keys: [["a", { type: "number", value: 1 }]],
+        datatype: {
+          type: "ObjectDataType",
+          keys: { a: LiteralDataType.Number },
+        },
+      },
       export: false,
     },
   ]);
@@ -292,7 +307,14 @@ test("Testing reassignment of object key", () => {
     {
       type: "constVariableDeclaration",
       datatype: { type: "ObjectDataType", keys: { b: LiteralDataType.Number } },
-      exp: { type: "object", keys: [["b", { type: "number", value: 1 }]] },
+      exp: {
+        type: "object",
+        keys: [["b", { type: "number", value: 1 }]],
+        datatype: {
+          type: "ObjectDataType",
+          keys: { b: LiteralDataType.Number },
+        },
+      },
       export: false,
       identifierName: "a",
     },
@@ -1360,6 +1382,10 @@ test("[Reassignment] Testing using variable declared in top level inside another
                 },
               ],
             ],
+            datatype: {
+              type: "ObjectDataType",
+              keys: { e: LiteralDataType.Number },
+            },
           },
           export: false,
           identifierName: "d",

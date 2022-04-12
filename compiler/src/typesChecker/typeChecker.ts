@@ -830,7 +830,13 @@ class TypeCheckerFactory {
         return { type: "UnknownVariable", varName: unknownVariable };
       }
 
-      return { type: "ObjectDataType", keys };
+      const datatype: DataType = {
+        type: "ObjectDataType",
+        keys,
+      };
+
+      exp.datatype = datatype;
+      return datatype;
     } else if (exp.type === "array") {
       debugger;
       let baseDataType: DataType | null = null;

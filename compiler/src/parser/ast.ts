@@ -132,7 +132,11 @@ export type IdentifierExp = {
   name: string;
   datatype: DataType;
 };
-export type ObjectLiteralExp = { type: "object"; keys: [string, Expression][] };
+export type ObjectLiteralExp = {
+  type: "object";
+  keys: [string, Expression][];
+  datatype: DataType;
+};
 export type ArrayLiteralExp = {
   type: "array";
   exps: Expression[];

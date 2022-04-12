@@ -693,7 +693,7 @@ export class ParserFactory {
 
       this.next(); // consumes }
 
-      return { type: "object", keys };
+      return { type: "object", keys, datatype: LiteralDataType.NotCalculated };
     } else if (curToken === Token.BoxOpenBracket) {
       this.next(); // consumes [
 
