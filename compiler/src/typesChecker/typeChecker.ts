@@ -750,6 +750,7 @@ class TypeCheckerFactory {
 
       if (isArrayDatatype(leftDataType)) {
         const expDatatype = this.getDataTypeOfExpression(path.accessExp);
+        path.leftBaseType = leftDataType.baseType;
 
         if (isUnknownVariable(expDatatype)) {
           return { type: "UnknownVariable", varName: expDatatype.varName };

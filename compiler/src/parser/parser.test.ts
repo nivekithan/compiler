@@ -563,6 +563,7 @@ test("Testing reassignment", () => {
           type: "BoxMemberPath",
           leftPath: { type: "IdentifierPath", name: "a" },
           accessExp: { type: "string", value: "a" },
+          leftBaseType: LiteralDataType.NotCalculated,
         },
         leftDataType: LiteralDataType.NotCalculated,
         rightPath: "b",

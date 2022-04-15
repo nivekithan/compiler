@@ -106,6 +106,7 @@ export type DotMemberPath = {
 export type BoxMemberPath = {
   type: "BoxMemberPath";
   leftPath: ReAssignmentPath;
+  leftBaseType: DataType;
   accessExp: Expression;
 };
 

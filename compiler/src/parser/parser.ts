@@ -585,7 +585,12 @@ export class ParserFactory {
           this.assertCurToken(Token.BoxCloseBracket);
           this.next(); // consumes ]
 
-          leftPath = { type: "BoxMemberPath", leftPath, accessExp: identExp };
+          leftPath = {
+            type: "BoxMemberPath",
+            leftPath,
+            accessExp: identExp,
+            leftBaseType: LiteralDataType.NotCalculated,
+          };
           continue;
         }
       }

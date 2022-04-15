@@ -338,3 +338,34 @@ entry:
 "
 `);
 });
+
+test("Test Array Reassignment", () => {
+  const input = `
+  const a = [1, 2];
+  a[1] = 2;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca [2 x double]*, align 8
+  %0 = alloca [2 x double], align 8
+  %1 = getelementptr [2 x double], [2 x double]* %0, i64 0, i32 0
+  store double 1.000000e+00, double* %1, align 8
+  %2 = getelementptr [2 x double], [2 x double]* %0, i64 0, i32 1
+  store double 2.000000e+00, double* %2, align 8
+  store [2 x double]* %0, [2 x double]** %a, align 8
+  %3 = load [2 x double]*, [2 x double]** %a, align 8
+  %4 = getelementptr [2 x double], [2 x double]* %3, i64 0, i32 1
+  store double 2.000000e+00, double* %4, align 8
+  ret void
+}
+"
+`);
+});

@@ -286,6 +286,27 @@ export class CodeGen {
       );
 
       return ObjectElementPointer;
+    } else if (assignmentPath.type === "BoxMemberPath") {
+      const leftPointer = this.getReassignmentPointer(assignmentPath.leftPath);
+
+      const floatIndexValue = this.getExpValue(assignmentPath.accessExp);
+      const convertedToInt = this.llvmIrBuilder.CreateFPToSI(
+        floatIndexValue,
+        this.llvmIrBuilder.getInt32Ty()
+      );
+
+      const deferenceLeft = this.llvmIrBuilder.CreateLoad(
+        leftPointer.getType().getPointerElementType(),
+        leftPointer
+      );
+
+      const arrayElementPointer = this.llvmIrBuilder.CreateGEP(
+        deferenceLeft.getType().getPointerElementType(),
+        deferenceLeft,
+        [this.llvmIrBuilder.getInt64(0), convertedToInt]
+      );
+
+      return arrayElementPointer;
     }
 
     throw Error("Not yet Implemented");
