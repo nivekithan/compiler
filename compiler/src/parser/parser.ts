@@ -565,6 +565,7 @@ export class ParserFactory {
             leftPath = {
               type: "DotMemberPath",
               leftPath,
+              leftDataType: LiteralDataType.NotCalculated,
               rightPath: identifierName,
             };
             this.next(); // consumes identifier

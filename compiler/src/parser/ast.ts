@@ -100,6 +100,7 @@ export type IdentifierPath = { type: "IdentifierPath"; name: string };
 export type DotMemberPath = {
   type: "DotMemberPath";
   leftPath: ReAssignmentPath;
+  leftDataType: DataType;
   rightPath: string;
 };
 export type BoxMemberPath = {

@@ -9,6 +9,7 @@ import {
   MinusUninaryExp,
   ObjectDatatype,
   PlusUninaryExp,
+  ReAssignmentPath,
 } from "../parser/ast";
 import llvm, {
   AddrSpaceCastInst,
@@ -120,49 +121,40 @@ export class CodeGen {
       );
 
     const leftPath = curAst.path;
-
-    if (leftPath.type !== "IdentifierPath")
-      throw Error(
-        "Its not yet supported for reassignment path to be anything other than IdentifierPath"
-      );
-
-    const varInfo = this.currentFn.getVarInfo(leftPath.name);
-
-    if (varInfo === null)
-      throw Error(`There is no variable with name ${leftPath.name}`);
+    const varPointer = this.getReassignmentPointer(leftPath);
 
     const expValue = this.getExpValue(curAst.exp);
 
     if (curAst.assignmentOperator === Token.Assign) {
-      this.llvmIrBuilder.CreateStore(expValue, varInfo);
+      this.llvmIrBuilder.CreateStore(expValue, varPointer);
     } else if (curAst.assignmentOperator === Token.PlusAssign) {
       const loadVar = this.llvmIrBuilder.CreateLoad(
         this.llvmIrBuilder.getDoubleTy(),
-        varInfo
+        varPointer
       );
       const addValue = this.llvmIrBuilder.CreateFAdd(loadVar, expValue);
-      this.llvmIrBuilder.CreateStore(addValue, varInfo);
+      this.llvmIrBuilder.CreateStore(addValue, varPointer);
     } else if (curAst.assignmentOperator === Token.MinusAssign) {
       const loadVar = this.llvmIrBuilder.CreateLoad(
         this.llvmIrBuilder.getDoubleTy(),
-        varInfo
+        varPointer
       );
       const minusValue = this.llvmIrBuilder.CreateFSub(loadVar, expValue);
-      this.llvmIrBuilder.CreateStore(minusValue, varInfo);
+      this.llvmIrBuilder.CreateStore(minusValue, varPointer);
     } else if (curAst.assignmentOperator === Token.StarAssign) {
       const loadVar = this.llvmIrBuilder.CreateLoad(
         this.llvmIrBuilder.getDoubleTy(),
-        varInfo
+        varPointer
       );
       const starValue = this.llvmIrBuilder.CreateFMul(loadVar, expValue);
-      this.llvmIrBuilder.CreateStore(starValue, varInfo);
+      this.llvmIrBuilder.CreateStore(starValue, varPointer);
     } else if (curAst.assignmentOperator == Token.SlashAssign) {
       const loadVar = this.llvmIrBuilder.CreateLoad(
         this.llvmIrBuilder.getDoubleTy(),
-        varInfo
+        varPointer
       );
       const slashValue = this.llvmIrBuilder.CreateFDiv(loadVar, expValue);
-      this.llvmIrBuilder.CreateStore(slashValue, varInfo);
+      this.llvmIrBuilder.CreateStore(slashValue, varPointer);
     }
   }
 
@@ -259,6 +251,44 @@ export class CodeGen {
     } else {
       this.llvmIrBuilder.CreateRet(this.getExpValue(returnExp));
     }
+  }
+
+  getReassignmentPointer(assignmentPath: ReAssignmentPath): Value {
+    if (assignmentPath.type === "IdentifierPath") {
+      const varInfo = this.currentFn.getVarInfo(assignmentPath.name);
+
+      if (varInfo === null)
+        throw Error(`There is no variable with name ${assignmentPath.name}`);
+
+      return varInfo;
+    } else if (assignmentPath.type === "DotMemberPath") {
+      const leftInfo = this.getReassignmentPointer(assignmentPath.leftPath);
+      const leftDatatype = assignmentPath.leftDataType;
+
+      if (!isObjectDatatype(leftDatatype))
+        throw Error(
+          "Expected typechecker to make sure that leftDatatype is object"
+        );
+
+      const index = Object.keys(leftDatatype.keys).indexOf(
+        assignmentPath.rightPath
+      );
+
+      const deReferenceLeft = this.llvmIrBuilder.CreateLoad(
+        leftInfo.getType().getPointerElementType(),
+        leftInfo
+      );
+
+      const ObjectElementPointer = this.llvmIrBuilder.CreateGEP(
+        deReferenceLeft.getType().getPointerElementType(),
+        deReferenceLeft,
+        [this.llvmIrBuilder.getInt64(0), this.llvmIrBuilder.getInt32(index)]
+      );
+
+      return ObjectElementPointer;
+    }
+
+    throw Error("Not yet Implemented");
   }
 
   getExpValue(exp: Expression): Value {

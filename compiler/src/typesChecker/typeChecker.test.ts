@@ -97,7 +97,6 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
@@ -324,6 +323,10 @@ test("Testing reassignment of object key", () => {
       path: {
         type: "DotMemberPath",
         leftPath: { type: "IdentifierPath", name: "a" },
+        leftDataType: {
+          type: "ObjectDataType",
+          keys: { b: LiteralDataType.Number },
+        },
         rightPath: "b",
       },
       exp: { type: "number", value: 2 },

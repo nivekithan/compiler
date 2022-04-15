@@ -248,7 +248,7 @@ entry:
 `);
 });
 
-test("Test reassignment", () => {
+test("Test identifier reassignment", () => {
   const input = `
   let a = true;
   a = false;
@@ -304,6 +304,35 @@ entry:
   %6 = load double, double* %f, align 8
   %7 = fdiv double %6, 1.000000e+00
   store double %7, double* %f, align 8
+  ret void
+}
+"
+`);
+});
+
+test("Test object reassignment", () => {
+  const input = `
+  const a = {b : 1};
+  a.b = 2;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca { double }*, align 8
+  %0 = alloca { double }, align 8
+  %1 = getelementptr { double }, { double }* %0, i64 0, i32 0
+  store double 1.000000e+00, double* %1, align 8
+  store { double }* %0, { double }** %a, align 8
+  %2 = load { double }*, { double }** %a, align 8
+  %3 = getelementptr { double }, { double }* %2, i64 0, i32 0
+  store double 2.000000e+00, double* %3, align 8
   ret void
 }
 "

@@ -549,6 +549,7 @@ test("Testing reassignment", () => {
       path: {
         type: "DotMemberPath",
         leftPath: { type: "IdentifierPath", name: "b" },
+        leftDataType: LiteralDataType.NotCalculated,
         rightPath: "a",
       },
       exp: { type: "number", value: 2 },
@@ -563,6 +564,7 @@ test("Testing reassignment", () => {
           leftPath: { type: "IdentifierPath", name: "a" },
           accessExp: { type: "string", value: "a" },
         },
+        leftDataType: LiteralDataType.NotCalculated,
         rightPath: "b",
       },
       exp: { type: "number", value: 1 },

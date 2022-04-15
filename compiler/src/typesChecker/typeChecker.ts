@@ -770,7 +770,7 @@ class TypeCheckerFactory {
       }
     } else if (path.type === "DotMemberPath") {
       const leftDataType = this.getDataTypeOfAssignmentPath(path.leftPath);
-
+      path.leftDataType = leftDataType;
       if (isObjectDatatype(leftDataType)) {
         const keyName = path.rightPath;
 
