@@ -14,6 +14,7 @@ import {
   ObjectDatatype,
   PlusUninaryExp,
   ReAssignmentPath,
+  TypeCheckedIfBlockDeclaration,
   UnknownVariable as UnknownVariableDatatype,
 } from "../parser/ast";
 import { Closure } from "./closure";
@@ -158,7 +159,13 @@ class TypeCheckerFactory {
 
     IfBlockTypeChecker.typeCheck();
 
-    this.next(); // consumes IfBlock
+    const typeCheckedIfBlock: TypeCheckedIfBlockDeclaration = {
+      type: "typeCheckedIfBlockDeclaration",
+      ifBlock: curAst,
+      elseIfBlocks: [],
+    };
+
+    this.removeCurAst(); // removes ifBlock from array
 
     const whileBlockCond = () => {
       const curAst = this.getCurAst();
@@ -190,7 +197,9 @@ class TypeCheckerFactory {
 
       ElseIfBlockTypeChecker.typeCheck();
 
-      this.next(); // consumes else if block
+      typeCheckedIfBlock.elseIfBlocks.push(curAst);
+
+      this.removeCurAst(); // removes else if block
     }
 
     const nextAst = this.getCurAst();
@@ -207,8 +216,13 @@ class TypeCheckerFactory {
 
       ElseBlockTypeChecker.typeCheck();
 
-      this.next(); // consumes else block
+      typeCheckedIfBlock.elseBlock = nextAst;
+
+      this.removeCurAst(); // removes else block
     }
+
+    this.addAst(typeCheckedIfBlock);
+    this.next(); // consumes typeCheckedIfBlock;
   }
 
   /**
@@ -1211,6 +1225,32 @@ class TypeCheckerFactory {
       }
 
       return ast;
+    }
+  }
+  // Removes the curAst
+  // Will not work if the curAst is null and if we are removing the last element
+  // then it will set the curPos to null 
+  removeCurAst() {
+    if (this.curPos === null) {
+      throw Error("Cannot call removeCurAst when curPos is null");
+    } else {
+      const value = this.curPos;
+      if (value === this.asts.length - 1) {
+        this.curPos = null;
+      }
+
+      this.asts.splice(value, 1);
+    }
+  }
+  // If the curPos is null then it will add ast at the end of array and set the curPos to asts.length - 1
+  // If not then the curPos won't change
+  addAst(ast: Ast) {
+    const value = this.curPos;
+
+    if (value === null) {
+      this.curPos = this.asts.push(ast) - 1;
+    } else {
+      this.asts.splice(value, 0, ast);
     }
   }
 }

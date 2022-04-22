@@ -913,55 +913,60 @@ test("Typecheck if block declaration", () => {
 
   expect(output).toEqual<Ast[]>([
     {
-      type: "IfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
+      type: "typeCheckedIfBlockDeclaration",
+      ifBlock: {
+        type: "IfBlockDeclaration",
+        condition: { type: "boolean", value: true },
+        blocks: [
+          {
+            type: "constVariableDeclaration",
+            datatype: LiteralDataType.Number,
+            exp: { type: "number", value: 1 },
+            export: false,
+            identifierName: "a",
+          },
+        ],
+      },
+      elseIfBlocks: [
         {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
+          type: "ElseIfBlockDeclaration",
+          condition: { type: "boolean", value: true },
+          blocks: [
+            {
+              type: "constVariableDeclaration",
+              datatype: LiteralDataType.Number,
+              exp: { type: "number", value: 1 },
+              export: false,
+              identifierName: "a",
+            },
+          ],
+        },
+        {
+          type: "ElseIfBlockDeclaration",
+          condition: { type: "boolean", value: true },
+          blocks: [
+            {
+              type: "constVariableDeclaration",
+              datatype: LiteralDataType.Number,
+              exp: { type: "number", value: 1 },
+              export: false,
+              identifierName: "a",
+            },
+          ],
         },
       ],
-    },
-    {
-      type: "ElseIfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
-        {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
-        },
-      ],
-    },
-    {
-      type: "ElseIfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
-        {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
-        },
-      ],
-    },
-    {
-      type: "ElseBlockDeclaration",
-      blocks: [
-        {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
-        },
-      ],
+      elseBlock: {
+        type: "ElseBlockDeclaration",
+        blocks: [
+          {
+            type: "constVariableDeclaration",
+            datatype: LiteralDataType.Number,
+            exp: { type: "number", value: 1 },
+            export: false,
+            identifierName: "a",
+          },
+        ],
+      },
     },
   ]);
 });
@@ -978,29 +983,33 @@ test("Typecheck if block declaration without else if block", () => {
 
   expect(output).toEqual<Ast[]>([
     {
-      type: "IfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
-        {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
-        },
-      ],
-    },
-    {
-      type: "ElseBlockDeclaration",
-      blocks: [
-        {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
-        },
-      ],
+      type: "typeCheckedIfBlockDeclaration",
+      ifBlock: {
+        type: "IfBlockDeclaration",
+        condition: { type: "boolean", value: true },
+        blocks: [
+          {
+            type: "constVariableDeclaration",
+            datatype: LiteralDataType.Number,
+            exp: { type: "number", value: 1 },
+            export: false,
+            identifierName: "a",
+          },
+        ],
+      },
+      elseBlock: {
+        type: "ElseBlockDeclaration",
+        blocks: [
+          {
+            type: "constVariableDeclaration",
+            datatype: LiteralDataType.Number,
+            exp: { type: "number", value: 1 },
+            export: false,
+            identifierName: "a",
+          },
+        ],
+      },
+      elseIfBlocks: [],
     },
   ]);
 });
@@ -1019,41 +1028,46 @@ test("Typecheck if block declaration without else block", () => {
 
   expect(output).toEqual<Ast[]>([
     {
-      type: "IfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
+      type: "typeCheckedIfBlockDeclaration",
+      ifBlock: {
+        type: "IfBlockDeclaration",
+        condition: { type: "boolean", value: true },
+        blocks: [
+          {
+            type: "constVariableDeclaration",
+            datatype: LiteralDataType.Number,
+            exp: { type: "number", value: 1 },
+            export: false,
+            identifierName: "a",
+          },
+        ],
+      },
+      elseIfBlocks: [
         {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
+          type: "ElseIfBlockDeclaration",
+          condition: { type: "boolean", value: true },
+          blocks: [
+            {
+              type: "constVariableDeclaration",
+              datatype: LiteralDataType.Number,
+              exp: { type: "number", value: 1 },
+              export: false,
+              identifierName: "a",
+            },
+          ],
         },
-      ],
-    },
-    {
-      type: "ElseIfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
         {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
-        },
-      ],
-    },
-    {
-      type: "ElseIfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
-        {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
+          type: "ElseIfBlockDeclaration",
+          condition: { type: "boolean", value: true },
+          blocks: [
+            {
+              type: "constVariableDeclaration",
+              datatype: LiteralDataType.Number,
+              exp: { type: "number", value: 1 },
+              export: false,
+              identifierName: "a",
+            },
+          ],
         },
       ],
     },
@@ -1070,17 +1084,21 @@ test("Typecheck if block declaration without both else and else if block", () =>
 
   expect(output).toEqual<Ast[]>([
     {
-      type: "IfBlockDeclaration",
-      condition: { type: "boolean", value: true },
-      blocks: [
-        {
-          type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
-          exp: { type: "number", value: 1 },
-          export: false,
-          identifierName: "a",
-        },
-      ],
+      type: "typeCheckedIfBlockDeclaration",
+      ifBlock: {
+        type: "IfBlockDeclaration",
+        condition: { type: "boolean", value: true },
+        blocks: [
+          {
+            type: "constVariableDeclaration",
+            datatype: LiteralDataType.Number,
+            exp: { type: "number", value: 1 },
+            export: false,
+            identifierName: "a",
+          },
+        ],
+      },
+      elseIfBlocks: [],
     },
   ]);
 });

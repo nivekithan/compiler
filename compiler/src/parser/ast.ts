@@ -36,7 +36,8 @@ export type ImportDeclaration = {
 export type CondBlockDeclaration =
   | IfBlockDeclaration
   | ElseBlockDeclaration
-  | ElseIfBlockDeclaration;
+  | ElseIfBlockDeclaration
+  | TypeCheckedIfBlockDeclaration;
 
 export type IfBlockDeclaration = {
   type: "IfBlockDeclaration";
@@ -53,6 +54,13 @@ export type ElseIfBlockDeclaration = {
   type: "ElseIfBlockDeclaration";
   condition: Expression;
   blocks: Ast[];
+};
+
+export type TypeCheckedIfBlockDeclaration = {
+  type: "typeCheckedIfBlockDeclaration";
+  ifBlock: IfBlockDeclaration;
+  elseIfBlocks: ElseIfBlockDeclaration[];
+  elseBlock?: ElseBlockDeclaration;
 };
 
 export type VariableDeclaration =
