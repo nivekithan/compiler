@@ -369,3 +369,90 @@ entry:
 "
 `);
 });
+
+test("If block Declaration with only if block", () => {
+  const input = `
+  const a = true;
+  
+  if (!a) {
+    const b = 1;
+  }
+  
+   const c = 2;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca i1, align 1
+  store i1 true, i1* %a, align 1
+  %0 = load i1, i1* %a, align 1
+  %1 = xor i1 %0, true
+  br i1 %1, label %2, label %3
+
+2:                                                ; preds = %entry
+  %\\"b:0\\" = alloca double, align 8
+  store double 1.000000e+00, double* %\\"b:0\\", align 8
+  br label %3
+
+3:                                                ; preds = %2, %entry
+  %c = alloca double, align 8
+  store double 2.000000e+00, double* %c, align 8
+  ret void
+}
+"
+`);
+});
+
+test("If block declaration with if and else block", () => {
+  const input = `
+const a = true;
+
+if (!a) {
+  const b = 1;
+}  else {
+  const c = 2;
+}
+
+const d = 1;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca i1, align 1
+  store i1 true, i1* %a, align 1
+  %0 = load i1, i1* %a, align 1
+  %1 = xor i1 %0, true
+  br i1 %1, label %2, label %3
+
+2:                                                ; preds = %entry
+  %\\"b:0\\" = alloca double, align 8
+  store double 1.000000e+00, double* %\\"b:0\\", align 8
+  br label %4
+
+3:                                                ; preds = %entry
+  %\\"c:1\\" = alloca double, align 8
+  store double 2.000000e+00, double* %\\"c:1\\", align 8
+  br label %4
+
+4:                                                ; preds = %3, %2
+  %d = alloca double, align 8
+  store double 1.000000e+00, double* %d, align 8
+  ret void
+}
+"
+`);
+});

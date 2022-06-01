@@ -72,7 +72,7 @@ export class CodeGen {
       "main",
       this.llvmModule
     );
-    const TMainFn = new TLLVMFunction(mainFn, this.globalVarDatabases);
+    const TMainFn = new TLLVMFunction(mainFn);
     this.currentFn = TMainFn;
     const entryBasicBlock = BasicBlock.Create(
       this.llvmContext,
@@ -104,9 +104,77 @@ export class CodeGen {
       this.consumeReturnExp(curAst);
     } else if (curAst.type === "ReAssignment") {
       this.consumeReassignment(curAst);
+    } else if (curAst.type === "typeCheckedIfBlockDeclaration") {
+      this.consumeTypeCheckedIfBlockDeclaration(curAst);
     } else {
       throw Error(`It is still not supported for compiling ast ${curAst.type}`);
     }
+  }
+
+  /**
+   * Expects the curAst to be of TypeCheckedIfBlockDeclaration
+   */
+
+  consumeTypeCheckedIfBlockDeclaration(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== "typeCheckedIfBlockDeclaration") {
+      throw Error(
+        `Expected curAst to be of type typeCheckedIfBlockDeclaration but instead got ${curAst?.type}`
+      );
+    }
+
+    const ifBlockCondExp = this.getExpValue(curAst.ifBlock.condition);
+
+    const ifBlockBB = BasicBlock.Create(
+      this.llvmContext,
+      undefined,
+      this.currentFn.getLLVMFunction()
+    );
+
+    const elseBlockBB = curAst.elseBlock
+      ? BasicBlock.Create(
+          this.llvmContext,
+          undefined,
+          this.currentFn.getLLVMFunction()
+        )
+      : undefined;
+
+    const outsideBlock = BasicBlock.Create(
+      this.llvmContext,
+      undefined,
+      this.currentFn.getLLVMFunction()
+    );
+
+    this.llvmIrBuilder.CreateCondBr(
+      ifBlockCondExp,
+      ifBlockBB,
+      elseBlockBB ? elseBlockBB : outsideBlock
+    );
+
+    this.llvmIrBuilder.SetInsertPoint(ifBlockBB);
+
+    this.currentFn.parsingChildContext();
+    for (const ifBlockAst of curAst.ifBlock.blocks) {
+      this.consumeAst(ifBlockAst);
+    }
+    this.llvmIrBuilder.CreateBr(outsideBlock);
+    this.currentFn.finishedParsingChildContext();
+
+    if (elseBlockBB) {
+      this.llvmIrBuilder.SetInsertPoint(elseBlockBB);
+
+      this.currentFn.parsingChildContext();
+
+      for (const elseBlockAst of curAst.elseBlock!.blocks) {
+        this.consumeAst(elseBlockAst);
+      }
+
+      this.llvmIrBuilder.CreateBr(outsideBlock);
+      this.currentFn.finishedParsingChildContext();
+    }
+
+    this.llvmIrBuilder.SetInsertPoint(outsideBlock);
+
+    // this.llvmIrBuilder.CreateStore(i);
   }
 
   /**
@@ -172,17 +240,21 @@ export class CodeGen {
 
     const varType = this.getLLVMType(curAst.datatype);
 
+    const resolvedIdentifierName = this.resolveIdentifierName(
+      curAst.identifierName
+    );
+
     const allocatedVar = this.llvmIrBuilder.CreateAlloca(
       varType,
       null,
-      curAst.identifierName
+      resolvedIdentifierName
     );
 
     const value = this.getExpValue(curAst.exp);
 
     this.llvmIrBuilder.CreateStore(value, allocatedVar);
 
-    this.currentFn.insertVarName(curAst.identifierName, allocatedVar);
+    this.currentFn.insertVarName(resolvedIdentifierName, allocatedVar);
   }
 
   /**
@@ -208,7 +280,7 @@ export class CodeGen {
 
     this.addGlobalVar(curAst.name, fnValue);
 
-    const TFnValue = new TLLVMFunction(fnValue, this.globalVarDatabases);
+    const TFnValue = new TLLVMFunction(fnValue);
     const previousTFnValue = this.currentFn;
     this.currentFn = TFnValue;
 
@@ -621,6 +693,12 @@ export class CodeGen {
     } else {
       return globalValue;
     }
+  }
+
+  // Adds the function context with the identifierName
+  resolveIdentifierName(varName: string) {
+    const resolvedName = `${varName}${this.currentFn.context}`;
+    return resolvedName;
   }
 
   dumpModule() {
