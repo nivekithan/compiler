@@ -130,6 +130,25 @@ export class CodeGen {
       this.currentFn.getLLVMFunction()
     );
 
+    const elseIfBlocksBBs = curAst.elseIfBlocks.map((value) => {
+      const elseIfBlockCondChecker = BasicBlock.Create(
+        this.llvmContext,
+        undefined,
+        this.currentFn.getLLVMFunction()
+      );
+
+      const elseIfBlockDeclaration = BasicBlock.Create(
+        this.llvmContext,
+        undefined,
+        this.currentFn.getLLVMFunction()
+      );
+
+      return {
+        condCheckerBB: elseIfBlockCondChecker,
+        decBB: elseIfBlockDeclaration,
+      };
+    });
+
     const elseBlockBB = curAst.elseBlock
       ? BasicBlock.Create(
           this.llvmContext,
@@ -144,10 +163,25 @@ export class CodeGen {
       this.currentFn.getLLVMFunction()
     );
 
+    const BBToGoAferIfBlockFailed = () => {
+      const isElseIfBlockPresent = elseIfBlocksBBs.length !== 0;
+      const isElseBlockPresent = elseBlockBB !== undefined;
+
+      if (isElseIfBlockPresent) {
+        return elseIfBlocksBBs[0].condCheckerBB;
+      }
+
+      if (isElseBlockPresent) {
+        return elseBlockBB;
+      }
+
+      return outsideBlock;
+    };
+
     this.llvmIrBuilder.CreateCondBr(
       ifBlockCondExp,
       ifBlockBB,
-      elseBlockBB ? elseBlockBB : outsideBlock
+      BBToGoAferIfBlockFailed()
     );
 
     this.llvmIrBuilder.SetInsertPoint(ifBlockBB);
@@ -158,6 +192,47 @@ export class CodeGen {
     }
     this.llvmIrBuilder.CreateBr(outsideBlock);
     this.currentFn.finishedParsingChildContext();
+
+    elseIfBlocksBBs.forEach(({ condCheckerBB, decBB }, i) => {
+      const elseIfBlockAst = curAst.elseIfBlocks[i];
+
+      this.llvmIrBuilder.SetInsertPoint(condCheckerBB);
+
+      const elseIfBlockCondition = this.getExpValue(elseIfBlockAst.condition);
+
+      const nextBBToGoIfCondFailed = () => {
+        const isThereAnotherElseIfBlock = elseIfBlocksBBs[i + 1] !== undefined;
+        const isThereElseBlock = elseBlockBB !== undefined;
+
+        if (isThereAnotherElseIfBlock) {
+          return elseIfBlocksBBs[i + 1].condCheckerBB;
+        }
+
+        if (isThereElseBlock) {
+          return elseBlockBB;
+        }
+
+        return outsideBlock;
+      };
+
+      this.llvmIrBuilder.CreateCondBr(
+        elseIfBlockCondition,
+        decBB,
+        nextBBToGoIfCondFailed()
+      );
+
+      this.llvmIrBuilder.SetInsertPoint(decBB);
+
+      this.currentFn.parsingChildContext();
+
+      for (const astInsideElseIfBlock of elseIfBlockAst.blocks) {
+        this.consumeAst(astInsideElseIfBlock);
+      }
+
+      this.llvmIrBuilder.CreateBr(outsideBlock);
+
+      this.currentFn.finishedParsingChildContext();
+    });
 
     if (elseBlockBB) {
       this.llvmIrBuilder.SetInsertPoint(elseBlockBB);

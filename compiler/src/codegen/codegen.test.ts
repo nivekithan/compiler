@@ -456,3 +456,134 @@ entry:
 "
 `);
 });
+
+test("If block declaration with if, else if and else block", () => {
+  const input = `
+const a = true;
+
+if (!a) {
+  const b = 1;
+} else if (2 === 1) {
+  const b = 2;
+} else if (a === false) {
+  const c = 1;
+} else {
+  const c = 2;
+}
+
+const d = 1;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca i1, align 1
+  store i1 true, i1* %a, align 1
+  %0 = load i1, i1* %a, align 1
+  %1 = xor i1 %0, true
+  br i1 %1, label %2, label %3
+
+2:                                                ; preds = %entry
+  %\\"b:0\\" = alloca double, align 8
+  store double 1.000000e+00, double* %\\"b:0\\", align 8
+  br label %10
+
+3:                                                ; preds = %entry
+  br i1 false, label %4, label %5
+
+4:                                                ; preds = %3
+  %\\"b:1\\" = alloca double, align 8
+  store double 2.000000e+00, double* %\\"b:1\\", align 8
+  br label %10
+
+5:                                                ; preds = %3
+  %6 = load i1, i1* %a, align 1
+  %7 = icmp eq i1 %6, false
+  br i1 %7, label %8, label %9
+
+8:                                                ; preds = %5
+  %\\"c:2\\" = alloca double, align 8
+  store double 1.000000e+00, double* %\\"c:2\\", align 8
+  br label %10
+
+9:                                                ; preds = %5
+  %\\"c:3\\" = alloca double, align 8
+  store double 2.000000e+00, double* %\\"c:3\\", align 8
+  br label %10
+
+10:                                               ; preds = %9, %8, %4, %2
+  %d = alloca double, align 8
+  store double 1.000000e+00, double* %d, align 8
+  ret void
+}
+"
+`);
+});
+
+test("If block declaration with if and else if blocks", () => {
+  const input = `
+const a = true;
+
+if (!a) {
+  const b = 1;
+} else if (2 === 1) {
+  const b = 2;
+} else if (a === false) {
+  const c = 1;
+} 
+
+const d = 1;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca i1, align 1
+  store i1 true, i1* %a, align 1
+  %0 = load i1, i1* %a, align 1
+  %1 = xor i1 %0, true
+  br i1 %1, label %2, label %3
+
+2:                                                ; preds = %entry
+  %\\"b:0\\" = alloca double, align 8
+  store double 1.000000e+00, double* %\\"b:0\\", align 8
+  br label %9
+
+3:                                                ; preds = %entry
+  br i1 false, label %4, label %5
+
+4:                                                ; preds = %3
+  %\\"b:1\\" = alloca double, align 8
+  store double 2.000000e+00, double* %\\"b:1\\", align 8
+  br label %9
+
+5:                                                ; preds = %3
+  %6 = load i1, i1* %a, align 1
+  %7 = icmp eq i1 %6, false
+  br i1 %7, label %8, label %9
+
+8:                                                ; preds = %5
+  %\\"c:2\\" = alloca double, align 8
+  store double 1.000000e+00, double* %\\"c:2\\", align 8
+  br label %9
+
+9:                                                ; preds = %8, %5, %4, %2
+  %d = alloca double, align 8
+  store double 1.000000e+00, double* %d, align 8
+  ret void
+}
+"
+`);
+});

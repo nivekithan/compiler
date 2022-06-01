@@ -853,7 +853,6 @@ class TypeCheckerFactory {
       exp.datatype = datatype;
       return datatype;
     } else if (exp.type === "array") {
-      debugger;
       let baseDataType: DataType | null = null;
       let unknownVariableName: string | null = null;
 
