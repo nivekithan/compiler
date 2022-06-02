@@ -9,6 +9,8 @@ export class TLLVMFunction {
   contextId = 0;
   context: string = "";
 
+  basicBlockTempCounter = 0;
+
   constructor(llvmFunction: LLVMFunction) {
     this.llvmFunction = llvmFunction;
     this.localVarDatabase = {};
@@ -62,5 +64,13 @@ export class TLLVMFunction {
 
     splitedContext.pop();
     this.context = splitedContext.join(":");
+  }
+
+  getBasicBlockTempName() {
+    const name = `BB.${this.basicBlockTempCounter}`;
+
+    this.basicBlockTempCounter++;
+
+    return name;
   }
 }

@@ -168,19 +168,19 @@ export class CodeGen {
 
     const whileLoopCondCheckerBB = BasicBlock.Create(
       this.llvmContext,
-      undefined,
+      this.currentFn.getBasicBlockTempName(),
       this.currentFn.getLLVMFunction()
     );
 
     const whileLoopDecBB = BasicBlock.Create(
       this.llvmContext,
-      undefined,
+      this.currentFn.getBasicBlockTempName(),
       this.currentFn.getLLVMFunction()
     );
 
     const outsideBlockBB = BasicBlock.Create(
       this.llvmContext,
-      undefined,
+      this.currentFn.getBasicBlockTempName(),
       this.currentFn.getLLVMFunction()
     );
 
@@ -232,20 +232,20 @@ export class CodeGen {
 
     const ifBlockBB = BasicBlock.Create(
       this.llvmContext,
-      undefined,
+      this.currentFn.getBasicBlockTempName(),
       this.currentFn.getLLVMFunction()
     );
 
     const elseIfBlocksBBs = curAst.elseIfBlocks.map((value) => {
       const elseIfBlockCondChecker = BasicBlock.Create(
         this.llvmContext,
-        undefined,
+        this.currentFn.getBasicBlockTempName(),
         this.currentFn.getLLVMFunction()
       );
 
       const elseIfBlockDeclaration = BasicBlock.Create(
         this.llvmContext,
-        undefined,
+        this.currentFn.getBasicBlockTempName(),
         this.currentFn.getLLVMFunction()
       );
 
@@ -258,14 +258,14 @@ export class CodeGen {
     const elseBlockBB = curAst.elseBlock
       ? BasicBlock.Create(
           this.llvmContext,
-          undefined,
+          this.currentFn.getBasicBlockTempName(),
           this.currentFn.getLLVMFunction()
         )
       : undefined;
 
     const outsideBlock = BasicBlock.Create(
       this.llvmContext,
-      undefined,
+      this.currentFn.getBasicBlockTempName(),
       this.currentFn.getLLVMFunction()
     );
 
@@ -910,19 +910,7 @@ export class CodeGen {
     }
   }
 
-  createBasicBlock(
-    context: LLVMContext,
-    name: string,
-    parent?: TLLVMFunction,
-    insertBefore?: BasicBlock
-  ): BasicBlock {
-    return BasicBlock.Create(
-      context,
-      name,
-      parent?.getLLVMFunction(),
-      insertBefore
-    );
-  }
+
 }
 
 const getDatatypeOfExp = (exp: Expression): DataType => {

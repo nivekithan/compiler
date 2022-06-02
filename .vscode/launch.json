@@ -21,7 +21,7 @@
             "--runInBand",
             "./compiler/src/parser/parser.test.ts",
             "-t",
-            "Function Call test"
+            "While loop declaration with continue and break"
           ],
           "console": "integratedTerminal",
           "internalConsoleOptions": "neverOpen",

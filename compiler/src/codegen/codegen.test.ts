@@ -394,14 +394,14 @@ entry:
   store i1 true, i1* %a, align 1
   %0 = load i1, i1* %a, align 1
   %1 = xor i1 %0, true
-  br i1 %1, label %2, label %3
+  br i1 %1, label %BB.0, label %BB.1
 
-2:                                                ; preds = %entry
+BB.0:                                             ; preds = %entry
   %\\"b:0\\" = alloca double, align 8
   store double 1.000000e+00, double* %\\"b:0\\", align 8
-  br label %3
+  br label %BB.1
 
-3:                                                ; preds = %2, %entry
+BB.1:                                             ; preds = %BB.0, %entry
   %c = alloca double, align 8
   store double 2.000000e+00, double* %c, align 8
   ret void
@@ -436,19 +436,19 @@ entry:
   store i1 true, i1* %a, align 1
   %0 = load i1, i1* %a, align 1
   %1 = xor i1 %0, true
-  br i1 %1, label %2, label %3
+  br i1 %1, label %BB.0, label %BB.1
 
-2:                                                ; preds = %entry
+BB.0:                                             ; preds = %entry
   %\\"b:0\\" = alloca double, align 8
   store double 1.000000e+00, double* %\\"b:0\\", align 8
-  br label %4
+  br label %BB.2
 
-3:                                                ; preds = %entry
+BB.1:                                             ; preds = %entry
   %\\"c:1\\" = alloca double, align 8
   store double 2.000000e+00, double* %\\"c:1\\", align 8
-  br label %4
+  br label %BB.2
 
-4:                                                ; preds = %3, %2
+BB.2:                                             ; preds = %BB.1, %BB.0
   %d = alloca double, align 8
   store double 1.000000e+00, double* %d, align 8
   ret void
@@ -487,37 +487,37 @@ entry:
   store i1 true, i1* %a, align 1
   %0 = load i1, i1* %a, align 1
   %1 = xor i1 %0, true
-  br i1 %1, label %2, label %3
+  br i1 %1, label %BB.0, label %BB.1
 
-2:                                                ; preds = %entry
+BB.0:                                             ; preds = %entry
   %\\"b:0\\" = alloca double, align 8
   store double 1.000000e+00, double* %\\"b:0\\", align 8
-  br label %10
+  br label %BB.6
 
-3:                                                ; preds = %entry
-  br i1 false, label %4, label %5
+BB.1:                                             ; preds = %entry
+  br i1 false, label %BB.2, label %BB.3
 
-4:                                                ; preds = %3
+BB.2:                                             ; preds = %BB.1
   %\\"b:1\\" = alloca double, align 8
   store double 2.000000e+00, double* %\\"b:1\\", align 8
-  br label %10
+  br label %BB.6
 
-5:                                                ; preds = %3
-  %6 = load i1, i1* %a, align 1
-  %7 = icmp eq i1 %6, false
-  br i1 %7, label %8, label %9
+BB.3:                                             ; preds = %BB.1
+  %2 = load i1, i1* %a, align 1
+  %3 = icmp eq i1 %2, false
+  br i1 %3, label %BB.4, label %BB.5
 
-8:                                                ; preds = %5
+BB.4:                                             ; preds = %BB.3
   %\\"c:2\\" = alloca double, align 8
   store double 1.000000e+00, double* %\\"c:2\\", align 8
-  br label %10
+  br label %BB.6
 
-9:                                                ; preds = %5
+BB.5:                                             ; preds = %BB.3
   %\\"c:3\\" = alloca double, align 8
   store double 2.000000e+00, double* %\\"c:3\\", align 8
-  br label %10
+  br label %BB.6
 
-10:                                               ; preds = %9, %8, %4, %2
+BB.6:                                             ; preds = %BB.5, %BB.4, %BB.2, %BB.0
   %d = alloca double, align 8
   store double 1.000000e+00, double* %d, align 8
   ret void
@@ -554,79 +554,34 @@ entry:
   store i1 true, i1* %a, align 1
   %0 = load i1, i1* %a, align 1
   %1 = xor i1 %0, true
-  br i1 %1, label %2, label %3
+  br i1 %1, label %BB.0, label %BB.1
 
-2:                                                ; preds = %entry
+BB.0:                                             ; preds = %entry
   %\\"b:0\\" = alloca double, align 8
   store double 1.000000e+00, double* %\\"b:0\\", align 8
-  br label %9
+  br label %BB.5
 
-3:                                                ; preds = %entry
-  br i1 false, label %4, label %5
+BB.1:                                             ; preds = %entry
+  br i1 false, label %BB.2, label %BB.3
 
-4:                                                ; preds = %3
+BB.2:                                             ; preds = %BB.1
   %\\"b:1\\" = alloca double, align 8
   store double 2.000000e+00, double* %\\"b:1\\", align 8
-  br label %9
+  br label %BB.5
 
-5:                                                ; preds = %3
-  %6 = load i1, i1* %a, align 1
-  %7 = icmp eq i1 %6, false
-  br i1 %7, label %8, label %9
+BB.3:                                             ; preds = %BB.1
+  %2 = load i1, i1* %a, align 1
+  %3 = icmp eq i1 %2, false
+  br i1 %3, label %BB.4, label %BB.5
 
-8:                                                ; preds = %5
+BB.4:                                             ; preds = %BB.3
   %\\"c:2\\" = alloca double, align 8
   store double 1.000000e+00, double* %\\"c:2\\", align 8
-  br label %9
+  br label %BB.5
 
-9:                                                ; preds = %8, %5, %4, %2
+BB.5:                                             ; preds = %BB.4, %BB.3, %BB.2, %BB.0
   %d = alloca double, align 8
   store double 1.000000e+00, double* %d, align 8
-  ret void
-}
-"
-`);
-});
-
-test("While loop declaration", () => {
-  const input = `
-
-let a = 1;
-
-while (a !== 5) {
-  a += 1;
-}
-
-const b = 2;`;
-
-  const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
-  );
-
-  expect(output).toMatchInlineSnapshot(`
-"; ModuleID = 'main'
-source_filename = \\"main\\"
-
-define void @main() {
-entry:
-  %a = alloca double, align 8
-  store double 1.000000e+00, double* %a, align 8
-  br label %0
-
-0:                                                ; preds = %3, %entry
-  %1 = load double, double* %a, align 8
-  %2 = fcmp one double %1, 5.000000e+00
-  br i1 %2, label %3, label %6
-
-3:                                                ; preds = %0
-  %4 = load double, double* %a, align 8
-  %5 = fadd double %4, 1.000000e+00
-  store double %5, double* %a, align 8
-  br label %0
-
-6:                                                ; preds = %0
-  %b = alloca double, align 8
-  store double 2.000000e+00, double* %b, align 8
   ret void
 }
 "
@@ -670,41 +625,41 @@ entry:
   %0 = load double, double* %a, align 8
   %1 = fsub double %0, 5.000000e+00
   store double %1, double* %b, align 8
-  br label %2
+  br label %BB.0
 
-2:                                                ; preds = %12, %15, %entry
-  %3 = load double, double* %a, align 8
-  %4 = fcmp ole double %3, 1.000000e+01
-  br i1 %4, label %5, label %8
+BB.0:                                             ; preds = %BB.4, %BB.5, %entry
+  %2 = load double, double* %a, align 8
+  %3 = fcmp ole double %2, 1.000000e+01
+  br i1 %3, label %BB.1, label %BB.2
 
-5:                                                ; preds = %2
-  %6 = load double, double* %a, align 8
-  %7 = fcmp oeq double %6, 5.000000e+00
-  br i1 %7, label %9, label %12
+BB.1:                                             ; preds = %BB.0
+  %4 = load double, double* %a, align 8
+  %5 = fcmp oeq double %4, 5.000000e+00
+  br i1 %5, label %BB.3, label %BB.4
 
-8:                                                ; preds = %16, %2
+BB.2:                                             ; preds = %BB.6, %BB.0
   %x = alloca double, align 8
   store double 1.000000e+01, double* %x, align 8
   ret void
 
-9:                                                ; preds = %5
-  %10 = load double, double* %b, align 8
-  %11 = fcmp oeq double %10, 6.000000e+00
-  br i1 %11, label %15, label %16
+BB.3:                                             ; preds = %BB.1
+  %6 = load double, double* %b, align 8
+  %7 = fcmp oeq double %6, 6.000000e+00
+  br i1 %7, label %BB.5, label %BB.6
 
-12:                                               ; preds = %16, %5
-  %13 = load double, double* %a, align 8
-  %14 = fsub double %13, 1.000000e+00
-  store double %14, double* %a, align 8
-  br label %2
+BB.4:                                             ; preds = %BB.6, %BB.1
+  %8 = load double, double* %a, align 8
+  %9 = fsub double %8, 1.000000e+00
+  store double %9, double* %a, align 8
+  br label %BB.0
 
-15:                                               ; preds = %9
-  br label %2
-  br label %16
+BB.5:                                             ; preds = %BB.3
+  br label %BB.0
+  br label %BB.6
 
-16:                                               ; preds = %15, %9
-  br label %8
-  br label %12
+BB.6:                                             ; preds = %BB.5, %BB.3
+  br label %BB.2
+  br label %BB.4
 }
 "
 `);
