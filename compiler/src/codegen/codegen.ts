@@ -114,6 +114,8 @@ export class CodeGen {
       this.consumeTypeCheckedIfBlockDeclaration(curAst);
     } else if (curAst.type === "WhileLoopDeclaration") {
       this.consumeWhileLoopDeclaration(curAst);
+    } else if (curAst.type === "DoWhileLoopDeclaration") {
+      this.consumeDoWhileLoopDeclaration(curAst);
     } else if (curAst.type === KeywordTokens.Continue) {
       this.consumeContinueStatement(curAst);
     } else if (curAst.type === KeywordTokens.Break) {
@@ -122,6 +124,59 @@ export class CodeGen {
       throw Error(`It is still not supported for compiling ast ${curAst.type}`);
     }
   }
+
+  /**
+   * Expects the curAst to be of type DoWhileLoopDeclaration
+   */
+
+  consumeDoWhileLoopDeclaration(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== "DoWhileLoopDeclaration") {
+      throw new Error(
+        `Expected curAst to be of type DoWhileLoopDeclaration but instead got ${curAst?.type}`
+      );
+    }
+
+    const doWhileDecBB = BasicBlock.Create(
+      this.llvmContext,
+      this.currentFn.getBasicBlockTempName(),
+      this.currentFn.getLLVMFunction()
+    );
+
+    const doWhileCondCheckerBB = BasicBlock.Create(
+      this.llvmContext,
+      this.currentFn.getBasicBlockTempName(),
+      this.currentFn.getLLVMFunction()
+    );
+
+    const outsideBlock = BasicBlock.Create(
+      this.llvmContext,
+      this.currentFn.getBasicBlockTempName(),
+      this.currentFn.getLLVMFunction()
+    );
+
+    this.llvmIrBuilder.CreateBr(doWhileDecBB);
+
+    this.llvmIrBuilder.SetInsertPoint(doWhileDecBB);
+    this.breakBB = outsideBlock;
+    this.continueBB = doWhileCondCheckerBB;
+
+    this.currentFn.parsingChildContext();
+    for (const insideDoWhileBlockAst of curAst.blocks) {
+      this.consumeAst(insideDoWhileBlockAst);
+    }
+
+    this.llvmIrBuilder.CreateBr(doWhileCondCheckerBB);
+    this.currentFn.finishedParsingChildContext();
+
+    this.llvmIrBuilder.SetInsertPoint(doWhileCondCheckerBB);
+
+    const conditionExp = this.getExpValue(curAst.condition);
+
+    this.llvmIrBuilder.CreateCondBr(conditionExp, doWhileDecBB, outsideBlock);
+
+    this.llvmIrBuilder.SetInsertPoint(outsideBlock);
+  }
+
   /**
    * Expected curAst to be of type KeywordTokens.Continue
    */
@@ -909,8 +964,6 @@ export class CodeGen {
       return ast;
     }
   }
-
-
 }
 
 const getDatatypeOfExp = (exp: Expression): DataType => {

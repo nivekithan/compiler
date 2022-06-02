@@ -664,3 +664,67 @@ BB.6:                                             ; preds = %BB.5, %BB.3
 "
 `);
 });
+
+test("Do while lop declaration with continue and break", () => {
+  const input = `
+const a = true;
+
+do {
+  const a = 2;
+  const b = 2;
+
+  if (true) {
+    continue
+  } else {
+    break
+  }
+
+} while (a !== false)
+
+const b = 1;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca i1, align 1
+  store i1 true, i1* %a, align 1
+  br label %BB.0
+
+BB.0:                                             ; preds = %BB.1, %entry
+  %\\"a:0\\" = alloca double, align 8
+  store double 2.000000e+00, double* %\\"a:0\\", align 8
+  %\\"b:0\\" = alloca double, align 8
+  store double 2.000000e+00, double* %\\"b:0\\", align 8
+  br i1 true, label %BB.3, label %BB.4
+
+BB.1:                                             ; preds = %BB.5, %BB.3
+  %0 = load i1, i1* %a, align 1
+  %1 = icmp ne i1 %0, false
+  br i1 %1, label %BB.0, label %BB.2
+
+BB.2:                                             ; preds = %BB.1, %BB.4
+  %b = alloca double, align 8
+  store double 1.000000e+00, double* %b, align 8
+  ret void
+
+BB.3:                                             ; preds = %BB.0
+  br label %BB.1
+  br label %BB.5
+
+BB.4:                                             ; preds = %BB.0
+  br label %BB.2
+  br label %BB.5
+
+BB.5:                                             ; preds = %BB.4, %BB.3
+  br label %BB.1
+}
+"
+`);
+});
