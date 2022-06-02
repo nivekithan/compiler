@@ -29,7 +29,7 @@ import llvm, {
   UndefValue,
   Value,
 } from "llvm-bindings";
-import { Token } from "../lexer/tokens";
+import { KeywordTokens, Token } from "../lexer/tokens";
 import { TLLVMFunction } from "./function";
 
 export const convertToLLVMModule = (asts: Ast[]): string => {
@@ -50,6 +50,9 @@ export class CodeGen {
 
   currentFn: TLLVMFunction;
 
+  breakBB: BasicBlock | null; // On loop what block to go on break statement
+  continueBB: BasicBlock | null; // on loop what block to go on continue statement
+
   globalVarDatabases: { [varName: string]: LLVMFunction | undefined };
 
   constructor(typeCheckedAst: Ast[], moduleName: string) {
@@ -61,6 +64,9 @@ export class CodeGen {
     this.llvmContext = new LLVMContext();
     this.llvmModule = new Module(moduleName, this.llvmContext);
     this.llvmIrBuilder = new IRBuilder(this.llvmContext);
+
+    this.breakBB = null;
+    this.continueBB = null;
 
     this.globalVarDatabases = {};
 
@@ -106,9 +112,109 @@ export class CodeGen {
       this.consumeReassignment(curAst);
     } else if (curAst.type === "typeCheckedIfBlockDeclaration") {
       this.consumeTypeCheckedIfBlockDeclaration(curAst);
+    } else if (curAst.type === "WhileLoopDeclaration") {
+      this.consumeWhileLoopDeclaration(curAst);
+    } else if (curAst.type === KeywordTokens.Continue) {
+      this.consumeContinueStatement(curAst);
+    } else if (curAst.type === KeywordTokens.Break) {
+      this.consumeBreakStatement(curAst);
     } else {
       throw Error(`It is still not supported for compiling ast ${curAst.type}`);
     }
+  }
+  /**
+   * Expected curAst to be of type KeywordTokens.Continue
+   */
+  consumeContinueStatement(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== KeywordTokens.Continue) {
+      throw new Error(
+        `Expected curAst to be of type KeywordTokens.Continue but instead got ${curAst?.type}`
+      );
+    }
+
+    if (this.continueBB === null) {
+      throw Error(`Expected this.continueBB to be not null`);
+    }
+
+    this.llvmIrBuilder.CreateBr(this.continueBB);
+  }
+  /**
+   * Expected curAst to be of type KeywordTokens.Break
+   */
+  consumeBreakStatement(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== KeywordTokens.Break) {
+      throw new Error(
+        `Expected curAst to be of type KeywordTokens.Break but instead got ${curAst?.type}`
+      );
+    }
+
+    if (this.breakBB === null) {
+      throw Error(`Expected this.breakBB to be not null`);
+    }
+
+    this.llvmIrBuilder.CreateBr(this.breakBB);
+  }
+
+  /**
+   * Expects the curAst to be of WhileLoopDeclaration
+   */
+
+  consumeWhileLoopDeclaration(curAst: Ast | null) {
+    if (curAst === null || curAst.type !== "WhileLoopDeclaration") {
+      throw new Error(
+        `Expected curAst to of type WhileLoopDeclaration but instead got ${curAst?.type}`
+      );
+    }
+
+    const whileLoopCondCheckerBB = BasicBlock.Create(
+      this.llvmContext,
+      undefined,
+      this.currentFn.getLLVMFunction()
+    );
+
+    const whileLoopDecBB = BasicBlock.Create(
+      this.llvmContext,
+      undefined,
+      this.currentFn.getLLVMFunction()
+    );
+
+    const outsideBlockBB = BasicBlock.Create(
+      this.llvmContext,
+      undefined,
+      this.currentFn.getLLVMFunction()
+    );
+
+    this.llvmIrBuilder.CreateBr(whileLoopCondCheckerBB);
+
+    this.llvmIrBuilder.SetInsertPoint(whileLoopCondCheckerBB);
+
+    const whileLoopCondExp = this.getExpValue(curAst.condition);
+
+    this.llvmIrBuilder.CreateCondBr(
+      whileLoopCondExp,
+      whileLoopDecBB,
+      outsideBlockBB
+    );
+
+    this.llvmIrBuilder.SetInsertPoint(whileLoopDecBB);
+
+    this.currentFn.parsingChildContext();
+
+    this.continueBB = whileLoopCondCheckerBB;
+    this.breakBB = outsideBlockBB;
+
+    for (const insideWhileLoopAst of curAst.blocks) {
+      this.consumeAst(insideWhileLoopAst);
+    }
+
+    this.llvmIrBuilder.CreateBr(whileLoopCondCheckerBB);
+
+    this.continueBB = null;
+    this.breakBB = null;
+
+    this.currentFn.finishedParsingChildContext();
+
+    this.llvmIrBuilder.SetInsertPoint(outsideBlockBB);
   }
 
   /**
@@ -802,6 +908,20 @@ export class CodeGen {
 
       return ast;
     }
+  }
+
+  createBasicBlock(
+    context: LLVMContext,
+    name: string,
+    parent?: TLLVMFunction,
+    insertBefore?: BasicBlock
+  ): BasicBlock {
+    return BasicBlock.Create(
+      context,
+      name,
+      parent?.getLLVMFunction(),
+      insertBefore
+    );
   }
 }
 

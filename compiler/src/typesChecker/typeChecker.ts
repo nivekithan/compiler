@@ -92,7 +92,7 @@ class TypeCheckerFactory {
   /**
    * Expects the curAst to be of type ImportDeclaration
    */
-  typeCheckImportDeclaration(ast?: Ast) {
+  typeCheckImportDeclaration() {
     const curAst = this.getCurAst();
 
     if (curAst === null || curAst.type !== "importDeclaration")
@@ -129,7 +129,7 @@ class TypeCheckerFactory {
       });
     });
 
-    ast === undefined ? this.next() : null;
+   this.next();
   }
 
   /**

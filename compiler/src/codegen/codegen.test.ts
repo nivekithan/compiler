@@ -587,3 +587,125 @@ entry:
 "
 `);
 });
+
+test("While loop declaration", () => {
+  const input = `
+
+let a = 1;
+
+while (a !== 5) {
+  a += 1;
+}
+
+const b = 2;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca double, align 8
+  store double 1.000000e+00, double* %a, align 8
+  br label %0
+
+0:                                                ; preds = %3, %entry
+  %1 = load double, double* %a, align 8
+  %2 = fcmp one double %1, 5.000000e+00
+  br i1 %2, label %3, label %6
+
+3:                                                ; preds = %0
+  %4 = load double, double* %a, align 8
+  %5 = fadd double %4, 1.000000e+00
+  store double %5, double* %a, align 8
+  br label %0
+
+6:                                                ; preds = %0
+  %b = alloca double, align 8
+  store double 2.000000e+00, double* %b, align 8
+  ret void
+}
+"
+`);
+});
+
+test("While loop declaration with continue and break", () => {
+  const input = `
+  let a = 10;
+  const b = a - 5;
+  
+
+  while (a <= 10) {
+
+    if (a === 5) {
+      if (b === 5 + 1) {
+        continue;
+      }
+      break;
+    }
+
+
+    a -= 1;
+  }
+  
+  const x = 10;`;
+
+  const output = convertToLLVMModule(
+    typeCheckAst(convertToAst(convertToTokens(input)))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca double, align 8
+  store double 1.000000e+01, double* %a, align 8
+  %b = alloca double, align 8
+  %0 = load double, double* %a, align 8
+  %1 = fsub double %0, 5.000000e+00
+  store double %1, double* %b, align 8
+  br label %2
+
+2:                                                ; preds = %12, %15, %entry
+  %3 = load double, double* %a, align 8
+  %4 = fcmp ole double %3, 1.000000e+01
+  br i1 %4, label %5, label %8
+
+5:                                                ; preds = %2
+  %6 = load double, double* %a, align 8
+  %7 = fcmp oeq double %6, 5.000000e+00
+  br i1 %7, label %9, label %12
+
+8:                                                ; preds = %16, %2
+  %x = alloca double, align 8
+  store double 1.000000e+01, double* %x, align 8
+  ret void
+
+9:                                                ; preds = %5
+  %10 = load double, double* %b, align 8
+  %11 = fcmp oeq double %10, 6.000000e+00
+  br i1 %11, label %15, label %16
+
+12:                                               ; preds = %16, %5
+  %13 = load double, double* %a, align 8
+  %14 = fsub double %13, 1.000000e+00
+  store double %14, double* %a, align 8
+  br label %2
+
+15:                                               ; preds = %9
+  br label %2
+  br label %16
+
+16:                                               ; preds = %15, %9
+  br label %8
+  br label %12
+}
+"
+`);
+});
