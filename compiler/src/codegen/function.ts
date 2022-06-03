@@ -32,13 +32,13 @@ export class TLLVMFunction {
 
   getVarInfo(varName: string): Value | null {
     const varNameWithContext = `${varName}${this.context}`;
-    const splitedVarNameWithContext = varNameWithContext.split(":");
+    const splittedVarNameWithContext = varNameWithContext.split(":");
 
-    while (splitedVarNameWithContext.length !== 0) {
-      const varNameWithContext = splitedVarNameWithContext.join(":");
+    while (splittedVarNameWithContext.length !== 0) {
+      const varNameWithContext = splittedVarNameWithContext.join(":");
 
       if (this.localVarDatabase[varNameWithContext] === undefined) {
-        splitedVarNameWithContext.pop();
+        splittedVarNameWithContext.pop();
         continue;
       }
 
@@ -54,16 +54,16 @@ export class TLLVMFunction {
   }
 
   finishedParsingChildContext() {
-    const splitedContext = this.context.split(":");
+    const splittedContext = this.context.split(":");
 
-    if (splitedContext.length <= 1) {
+    if (splittedContext.length <= 1) {
       throw new Error(
         "There is no child context, this usually means that finishedParsingChildContext is called before parsingChildContext"
       );
     }
 
-    splitedContext.pop();
-    this.context = splitedContext.join(":");
+    splittedContext.pop();
+    this.context = splittedContext.join(":");
   }
 
   getBasicBlockTempName() {
