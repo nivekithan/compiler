@@ -1,5 +1,4 @@
 import exp from "constants";
-import { desugarAst } from "../desugar/desugar";
 import { convertToTokens } from "../lexer/lexer";
 import { convertToAst } from "../parser/parser";
 import { typeCheckAst } from "../typesChecker/typeChecker";
@@ -29,11 +28,10 @@ test("Testing const variable declaration", () => {
     const t = [1, 2];
     const u = t[1];
     const v = {a : 1, b : 2};
-    const w = v.a;
-    const x = "123"`;
+    const w = v.a;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -108,20 +106,6 @@ entry:
   %14 = getelementptr { double, double }, { double, double }* %13, i64 0, i32 0
   %15 = load double, double* %14, align 8
   store double %15, double* %w, align 8
-  %x = alloca { [3 x i8]*, double }*, align 8
-  %16 = alloca { [3 x i8]*, double }, align 8
-  %17 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %16, i64 0, i32 0
-  %18 = alloca [3 x i8], align 1
-  %19 = getelementptr [3 x i8], [3 x i8]* %18, i64 0, i32 0
-  store i8 49, i8* %19, align 1
-  %20 = getelementptr [3 x i8], [3 x i8]* %18, i64 0, i32 1
-  store i8 50, i8* %20, align 1
-  %21 = getelementptr [3 x i8], [3 x i8]* %18, i64 0, i32 2
-  store i8 51, i8* %21, align 1
-  store [3 x i8]* %18, [3 x i8]** %17, align 8
-  %22 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %16, i64 0, i32 1
-  store double 3.000000e+00, double* %22, align 8
-  store { [3 x i8]*, double }* %16, { [3 x i8]*, double }** %x, align 8
   ret void
 }
 "
@@ -139,7 +123,7 @@ test("Testing function declaration", () => {
   }`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -179,7 +163,7 @@ test("Calling a function", () => {
 `;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -212,7 +196,7 @@ test("Calling a function with argument", () => {
   `;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -247,7 +231,7 @@ test("Testing letVariable declaration", () => {
   let a =1;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -285,7 +269,7 @@ test("Test identifier reassignment", () => {
   f /= 1;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -332,7 +316,7 @@ test("Test object reassignment", () => {
   a.b = 2;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -361,7 +345,7 @@ test("Test Array Reassignment", () => {
   a[1] = 2;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -397,7 +381,7 @@ test("If block Declaration with only if block", () => {
    const c = 2;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -439,7 +423,7 @@ if (!a) {
 const d = 1;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -490,7 +474,7 @@ if (!a) {
 const d = 1;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -557,7 +541,7 @@ if (!a) {
 const d = 1;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -626,7 +610,7 @@ test("While loop declaration with continue and break", () => {
   const x = 10;`;
 
   const output = convertToLLVMModule(
-    desugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -700,7 +684,7 @@ do {
 const b = 1;`;
 
   const output = convertToLLVMModule(
-    desugarAst(desugarAst(typeCheckAst(convertToAst(convertToTokens(input)))))
+    typeCheckAst(convertToAst(convertToTokens(input)))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -744,5 +728,3 @@ BB.5:                                             ; preds = %BB.4, %BB.3
 "
 `);
 });
-
-

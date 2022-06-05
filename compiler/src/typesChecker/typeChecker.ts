@@ -17,10 +17,8 @@ import {
   TypeCheckedIfBlockDeclaration,
   UnknownVariable as UnknownVariableDatatype,
 } from "../parser/ast";
-import { isMinusUninaryExp, isPlusUninaryExp } from "../utils/utils";
 import { Closure } from "./closure";
 import { DepImporter } from "./depImporter";
-import { getDotMemberPropForDatatype } from "./getDotMemberPropertiesForDatatype";
 
 /**
  * Mutates the passed ast
@@ -131,7 +129,7 @@ class TypeCheckerFactory {
       });
     });
 
-    this.next();
+   this.next();
   }
 
   /**
@@ -143,7 +141,7 @@ class TypeCheckerFactory {
     if (curAst === null || curAst.type !== "IfBlockDeclaration")
       throw Error("Expected curAst to be of type if Block declaration");
 
-    const ifCondDatatype = this.getDatatypeOfExpression(curAst.condition);
+    const ifCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
     if (ifCondDatatype !== LiteralDataType.Boolean)
       throw Error(
@@ -181,7 +179,7 @@ class TypeCheckerFactory {
       if (curAst === null || curAst.type !== "ElseIfBlockDeclaration")
         throw Error("Unreachable");
 
-      const elseIfCondDatatype = this.getDatatypeOfExpression(curAst.condition);
+      const elseIfCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
       if (elseIfCondDatatype !== LiteralDataType.Boolean)
         throw Error(
@@ -326,7 +324,7 @@ class TypeCheckerFactory {
     if (curAst.exp === null)
       throw Error("It is not still supported for return exp to be null");
 
-    const datatype = this.getDatatypeOfExpression(curAst.exp);
+    const datatype = this.getDataTypeOfExpression(curAst.exp);
 
     const returnType = this.closure.getReturnType();
 
@@ -339,7 +337,7 @@ class TypeCheckerFactory {
       const varClosureHook = () => {
         if (curAst.exp === null) throw Error("Not yet supported");
 
-        const newDatatype = this.getDatatypeOfExpression(curAst.exp);
+        const newDatatype = this.getDataTypeOfExpression(curAst.exp);
 
         if (isUnknownVariable(newDatatype)) {
           const VarClosure = this.closure.getClosureWithVarName(
@@ -429,7 +427,7 @@ class TypeCheckerFactory {
         `Expected curAst to be of type doWhileLoopDeclaration but instead got ${curAst?.type}`
       );
 
-    const loopCondDatatype = this.getDatatypeOfExpression(curAst.condition);
+    const loopCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
     if (loopCondDatatype !== LiteralDataType.Boolean)
       throw Error(
@@ -460,7 +458,7 @@ class TypeCheckerFactory {
         `Expected curAst to be of type whileLoopDeclaration but instead got ${curAst?.type}`
       );
 
-    const loopCondDatatype = this.getDatatypeOfExpression(curAst.condition);
+    const loopCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
     if (loopCondDatatype !== LiteralDataType.Boolean)
       throw Error(
@@ -502,7 +500,7 @@ class TypeCheckerFactory {
       throw Error("Can only declare a variable as export at top level");
 
     const expectedDatatype = curAst.datatype;
-    const expressionDatatype = this.getDatatypeOfExpression(curAst.exp);
+    const expressionDatatype = this.getDataTypeOfExpression(curAst.exp);
 
     if (
       expectedDatatype === LiteralDataType.NotCalculated ||
@@ -527,7 +525,7 @@ class TypeCheckerFactory {
 
     if (isUnknownVariable(expressionDatatype)) {
       const varClosureHook = () => {
-        const newDatatype = this.getDatatypeOfExpression(curAst.exp);
+        const newDatatype = this.getDataTypeOfExpression(curAst.exp);
 
         curAst.datatype = newDatatype;
 
@@ -689,7 +687,7 @@ class TypeCheckerFactory {
       }
     }
 
-    const expDataType = this.getDatatypeOfExpression(curAst.exp);
+    const expDataType = this.getDataTypeOfExpression(curAst.exp);
 
     if (isUnknownVariable(expDataType)) {
       const varClosureHook = () => {
@@ -765,7 +763,7 @@ class TypeCheckerFactory {
       const leftDataType = this.getDataTypeOfAssignmentPath(path.leftPath);
 
       if (isArrayDatatype(leftDataType)) {
-        const expDatatype = this.getDatatypeOfExpression(path.accessExp);
+        const expDatatype = this.getDataTypeOfExpression(path.accessExp);
         path.leftBaseType = leftDataType.baseType;
 
         if (isUnknownVariable(expDatatype)) {
@@ -812,7 +810,7 @@ class TypeCheckerFactory {
     }
   }
 
-  getDatatypeOfExpression(exp: Expression): DataType {
+  getDataTypeOfExpression(exp: Expression): DataType {
     if (exp.type === "number") {
       return LiteralDataType.Number;
     } else if (exp.type === "boolean") {
@@ -830,7 +828,7 @@ class TypeCheckerFactory {
           if (keys[keyName] !== undefined)
             throw Error(`There is already a key with name ${keyName}`);
 
-          const keyDatatype = this.getDatatypeOfExpression(keyExp);
+          const keyDatatype = this.getDataTypeOfExpression(keyExp);
 
           if (isUnknownVariable(keyDatatype)) {
             unknownVariable = keyDatatype.varName;
@@ -859,7 +857,7 @@ class TypeCheckerFactory {
       let unknownVariableName: string | null = null;
 
       exp.exps.forEach((exp) => {
-        const expType = this.getDatatypeOfExpression(exp);
+        const expType = this.getDataTypeOfExpression(exp);
 
         if (baseDataType === null) {
           baseDataType = expType;
@@ -929,7 +927,7 @@ class TypeCheckerFactory {
       }
     } else if (exp.type === Token.Plus) {
       if (isPlusUninaryExp(exp)) {
-        const argumentExp = this.getDatatypeOfExpression(exp.argument);
+        const argumentExp = this.getDataTypeOfExpression(exp.argument);
 
         if (isUnknownVariable(argumentExp)) {
           return { type: "UnknownVariable", varName: argumentExp.varName };
@@ -942,8 +940,8 @@ class TypeCheckerFactory {
 
         return LiteralDataType.Number;
       } else {
-        const leftDataType = this.getDatatypeOfExpression(exp.left);
-        const rightDataType = this.getDatatypeOfExpression(exp.right);
+        const leftDataType = this.getDataTypeOfExpression(exp.left);
+        const rightDataType = this.getDataTypeOfExpression(exp.right);
 
         if (
           leftDataType === LiteralDataType.Number &&
@@ -971,7 +969,7 @@ class TypeCheckerFactory {
       }
     } else if (exp.type === Token.Minus) {
       if (isMinusUninaryExp(exp)) {
-        const argumentExp = this.getDatatypeOfExpression(exp.argument);
+        const argumentExp = this.getDataTypeOfExpression(exp.argument);
 
         if (isUnknownVariable(argumentExp)) {
           return { type: "UnknownVariable", varName: argumentExp.varName };
@@ -984,8 +982,8 @@ class TypeCheckerFactory {
 
         return LiteralDataType.Number;
       } else {
-        const leftDataType = this.getDatatypeOfExpression(exp.left);
-        const rightDataType = this.getDatatypeOfExpression(exp.right);
+        const leftDataType = this.getDataTypeOfExpression(exp.left);
+        const rightDataType = this.getDataTypeOfExpression(exp.right);
 
         if (
           leftDataType === LiteralDataType.Number &&
@@ -1007,7 +1005,7 @@ class TypeCheckerFactory {
         }
       }
     } else if (exp.type === Token.Bang) {
-      const argumentExp = this.getDatatypeOfExpression(exp.argument);
+      const argumentExp = this.getDataTypeOfExpression(exp.argument);
 
       if (isUnknownVariable(argumentExp)) {
         return { type: "UnknownVariable", varName: argumentExp.varName };
@@ -1027,8 +1025,8 @@ class TypeCheckerFactory {
       exp.type === Token.Caret ||
       exp.type === Token.Ampersand
     ) {
-      const leftDataType = this.getDatatypeOfExpression(exp.left);
-      const rightDataType = this.getDatatypeOfExpression(exp.right);
+      const leftDataType = this.getDataTypeOfExpression(exp.left);
+      const rightDataType = this.getDataTypeOfExpression(exp.right);
 
       if (
         leftDataType === LiteralDataType.Number &&
@@ -1052,8 +1050,8 @@ class TypeCheckerFactory {
       exp.type === Token.StrictEquality ||
       exp.type === Token.StrictNotEqual
     ) {
-      const leftDataType = this.getDatatypeOfExpression(exp.left);
-      const rightDataType = this.getDatatypeOfExpression(exp.right);
+      const leftDataType = this.getDataTypeOfExpression(exp.left);
+      const rightDataType = this.getDataTypeOfExpression(exp.right);
 
       if (leftDataType === rightDataType) {
         exp.datatype = clone(leftDataType);
@@ -1076,8 +1074,8 @@ class TypeCheckerFactory {
       exp.type === Token.GreaterThan ||
       exp.type === Token.GreaterThanOrEqual
     ) {
-      const leftDataType = this.getDatatypeOfExpression(exp.left);
-      const rightDataType = this.getDatatypeOfExpression(exp.right);
+      const leftDataType = this.getDataTypeOfExpression(exp.left);
+      const rightDataType = this.getDataTypeOfExpression(exp.right);
 
       if (
         leftDataType === LiteralDataType.Number &&
@@ -1098,12 +1096,12 @@ class TypeCheckerFactory {
         );
       }
     } else if (exp.type === "FunctionCall") {
-      const leftDatatype = this.getDatatypeOfExpression(exp.left);
+      const leftDatatype = this.getDataTypeOfExpression(exp.left);
 
       if (isFunctionDatatype(leftDatatype)) {
         const passedArgumentsDatatype = exp.arguments.reduce(
           (acc: DataType[], curr) => {
-            acc.push(this.getDatatypeOfExpression(curr));
+            acc.push(this.getDataTypeOfExpression(curr));
             return acc;
           },
           []
@@ -1146,13 +1144,13 @@ class TypeCheckerFactory {
         );
       }
     } else if (exp.type === "BoxMemberAccess") {
-      const leftDatatype = this.getDatatypeOfExpression(exp.left);
+      const leftDatatype = this.getDataTypeOfExpression(exp.left);
 
       if (isUnknownVariable(leftDatatype)) {
         return { type: "UnknownVariable", varName: leftDatatype.varName };
       }
 
-      const memberAccessDatatype = this.getDatatypeOfExpression(exp.right);
+      const memberAccessDatatype = this.getDataTypeOfExpression(exp.right);
 
       if (isUnknownVariable(memberAccessDatatype)) {
         return {
@@ -1174,34 +1172,32 @@ class TypeCheckerFactory {
         );
       }
     } else if (exp.type === "DotMemberAccess") {
-      const leftDatatype = this.getDatatypeOfExpression(exp.left);
+      const leftDatatype = this.getDataTypeOfExpression(exp.left);
 
       if (isUnknownVariable(leftDatatype)) {
         return { type: "UnknownVariable", varName: leftDatatype.varName };
       }
 
-      const availableKeys = getDotMemberPropForDatatype(leftDatatype);
+      if (isObjectDatatype(leftDatatype)) {
+        const keyDatatype = leftDatatype.keys[exp.right];
 
-      if (availableKeys === null) {
+        if (keyDatatype === undefined) {
+          throw Error(`There is no key with name ${exp.right}`);
+        }
+
+        if (isUnknownVariable(keyDatatype)) {
+          return {
+            type: "UnknownVariable",
+            varName: keyDatatype.varName,
+          };
+        }
+
+        return keyDatatype;
+      } else {
         throw Error(
-          `Its not possible to use DotMemberPath for Datatype ${leftDatatype}`
+          `Expected left datatype to be object but instead got ${leftDatatype}`
         );
       }
-
-      const keyDatatype = availableKeys[exp.right];
-
-      if (keyDatatype === undefined) {
-        throw Error(`There is no key with name ${exp.right}`);
-      }
-
-      if (isUnknownVariable(keyDatatype)) {
-        return {
-          type: "UnknownVariable",
-          varName: keyDatatype.varName,
-        };
-      }
-
-      return keyDatatype;
     } else {
       throw Error(
         `Finding datatype for this expression is not yet supported \n ${exp} `
@@ -1232,7 +1228,7 @@ class TypeCheckerFactory {
   }
   // Removes the curAst
   // Will not work if the curAst is null and if we are removing the last element
-  // then it will set the curPos to null
+  // then it will set the curPos to null 
   removeCurAst() {
     if (this.curPos === null) {
       throw Error("Cannot call removeCurAst when curPos is null");
@@ -1257,6 +1253,28 @@ class TypeCheckerFactory {
     }
   }
 }
+
+const isPlusUninaryExp = (exp: Expression): exp is PlusUninaryExp => {
+  if (
+    exp.type === Token.Plus &&
+    (exp as PlusUninaryExp).argument !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
+  if (
+    exp.type === Token.Minus &&
+    (exp as MinusUninaryExp).argument !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
 
 const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
   return typeof datatype === "object" && datatype.type === "ArrayDataType";

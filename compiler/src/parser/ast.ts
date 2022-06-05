@@ -122,7 +122,6 @@ export type BreakStatement = { type: KeywordTokens.Break };
 export type ContinueStatement = { type: KeywordTokens.Continue };
 
 export type Expression =
-  | CharLiteralExp
   | StringLiteralExp
   | IdentifierExp
   | NumberLiteralExp
@@ -136,7 +135,6 @@ export type Expression =
   | FunctionCall;
 
 export type StringLiteralExp = { type: "string"; value: string };
-export type CharLiteralExp = { type: "char"; value: string };
 export type NumberLiteralExp = { type: "number"; value: number };
 export type BooleanLiteralExp = { type: "boolean"; value: boolean };
 export type IdentifierExp = {
@@ -278,7 +276,6 @@ export enum LiteralDataType {
   Number = "Number",
   Unknown = "Unknown",
   NotCalculated = "NotCalculated",
-  Char = "Char",
 }
 
 export type UnknownVariable = {

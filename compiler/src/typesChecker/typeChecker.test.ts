@@ -1548,24 +1548,3 @@ test("Typechecking strict equality and strict not equality", () => {
     },
   ]);
 });
-
-test("Typechecking length property in string", () => {
-  const input = `
-  const a = "123".length;`;
-
-  const output = typeCheckAst(convertToAst(convertToTokens(input)));
-
-  expect(output).toEqual<Ast[]>([
-    {
-      type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
-      export: false,
-      identifierName: "a",
-      exp: {
-        type: "DotMemberAccess",
-        left: { type: "string", value: "123" },
-        right: "length",
-      },
-    },
-  ]);
-});

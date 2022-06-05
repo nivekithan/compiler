@@ -31,31 +31,6 @@ import llvm, {
 } from "llvm-bindings";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { TLLVMFunction } from "./function";
-import {
-  getDatatypeOfTypeCheckedExp,
-  isArrayDatatype,
-  isArrayLiteralExp,
-  isBangUniaryExp,
-  isBooleanLiteralExp,
-  isBoxMemberAccessExp,
-  isCharLiteralexp,
-  isDotMemberAccessExp,
-  isFunctionCallExp,
-  isGreaterThanBinaryExp,
-  isGreaterThanOrEqualBinaryExp,
-  isIdentifierLiteralExp,
-  isLessThanBinaryExp,
-  isLessThanOrEqualBinaryExp,
-  isMinusUninaryExp,
-  isNumberLiteralExp,
-  isObjectDatatype,
-  isObjectLiteralExp,
-  isPlusUninaryExp,
-  isSlashBinaryExp,
-  isStarBinaryExp,
-  isStrictEqualityBinaryExp,
-  isStrictNotEqualBinaryExp,
-} from "../utils/utils";
 
 export const convertToLLVMModule = (asts: Ast[]): string => {
   const ModuleCodeGen = new CodeGen(asts, "main");
@@ -646,13 +621,11 @@ export class CodeGen {
   }
 
   getExpValue(exp: Expression): Value {
-    if (isNumberLiteralExp(exp)) {
+    if (exp.type === "number") {
       return ConstantFP.get(this.llvmIrBuilder.getDoubleTy(), exp.value);
-    } else if (isBooleanLiteralExp(exp)) {
+    } else if (exp.type === "boolean") {
       return this.llvmIrBuilder.getInt1(exp.value);
-    } else if (isCharLiteralexp(exp)) {
-      return this.llvmIrBuilder.getInt8(exp.value.charCodeAt(0));
-    } else if (isIdentifierLiteralExp(exp)) {
+    } else if (exp.type === "identifier") {
       const allocatedVarName = this.currentFn.getVarInfo(exp.name);
 
       if (allocatedVarName === null) {
@@ -667,14 +640,14 @@ export class CodeGen {
       const llvmType = this.getLLVMType(exp.datatype);
 
       return this.llvmIrBuilder.CreateLoad(llvmType, allocatedVarName);
-    } else if (isFunctionCallExp(exp)) {
+    } else if (exp.type === "FunctionCall") {
       const leftValue = this.getExpValue(exp.left);
 
       const fnArgs = exp.arguments.map((exp) => {
         return this.getExpValue(exp);
       });
       return this.llvmIrBuilder.CreateCall(leftValue as LLVMFunction, fnArgs);
-    } else if (isArrayLiteralExp(exp)) {
+    } else if (exp.type === "array") {
       const arrayDatatype = exp.datatype;
 
       if (!isArrayDatatype(arrayDatatype))
@@ -708,7 +681,7 @@ export class CodeGen {
       });
 
       return allocatedValue;
-    } else if (isObjectLiteralExp(exp)) {
+    } else if (exp.type === "object") {
       const objectDatatype = exp.datatype;
 
       if (!isObjectDatatype(objectDatatype)) {
@@ -744,7 +717,7 @@ export class CodeGen {
       });
 
       return allocatedValue;
-    } else if (isBangUniaryExp(exp)) {
+    } else if (exp.type === Token.Bang) {
       const argValue = this.getExpValue(exp.argument);
       return this.llvmIrBuilder.CreateXor(
         argValue,
@@ -769,17 +742,17 @@ export class CodeGen {
 
         return this.llvmIrBuilder.CreateFSub(leftvalue, rightValue);
       }
-    } else if (isStarBinaryExp(exp)) {
+    } else if (exp.type === Token.Star) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
       return this.llvmIrBuilder.CreateFMul(leftValue, rightValue);
-    } else if (isSlashBinaryExp(exp)) {
+    } else if (exp.type === Token.Slash) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
       return this.llvmIrBuilder.CreateFDiv(leftValue, rightValue);
-    } else if (isStrictEqualityBinaryExp(exp)) {
+    } else if (exp.type === Token.StrictEquality) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
@@ -796,7 +769,7 @@ export class CodeGen {
       } else if (comparingDatatype === LiteralDataType.Boolean) {
         return this.llvmIrBuilder.CreateICmpEQ(leftValue, rightValue);
       }
-    } else if (isStrictNotEqualBinaryExp(exp)) {
+    } else if (exp.type === Token.StrictNotEqual) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
@@ -813,27 +786,27 @@ export class CodeGen {
       } else if (comparingDatatype === LiteralDataType.Boolean) {
         return this.llvmIrBuilder.CreateICmpNE(leftValue, rightValue);
       }
-    } else if (isGreaterThanBinaryExp(exp)) {
+    } else if (exp.type === Token.GreaterThan) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
       return this.llvmIrBuilder.CreateFCmpOGT(leftValue, rightValue);
-    } else if (isGreaterThanOrEqualBinaryExp(exp)) {
+    } else if (exp.type === Token.GreaterThanOrEqual) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
       return this.llvmIrBuilder.CreateFCmpOGE(leftValue, rightValue);
-    } else if (isLessThanBinaryExp(exp)) {
+    } else if (exp.type === Token.LessThan) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
       return this.llvmIrBuilder.CreateFCmpOLT(leftValue, rightValue);
-    } else if (isLessThanOrEqualBinaryExp(exp)) {
+    } else if (exp.type === Token.LessThanOrEqual) {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
       return this.llvmIrBuilder.CreateFCmpOLE(leftValue, rightValue);
-    } else if (isBoxMemberAccessExp(exp)) {
+    } else if (exp.type === "BoxMemberAccess") {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
@@ -852,10 +825,10 @@ export class CodeGen {
         pointerToElement.getType().getPointerElementType(),
         pointerToElement
       );
-    } else if (isDotMemberAccessExp(exp)) {
+    } else if (exp.type === "DotMemberAccess") {
       const leftValue = this.getExpValue(exp.left);
 
-      const leftDatatype = getDatatypeOfTypeCheckedExp(exp.left);
+      const leftDatatype = getDatatypeOfExp(exp.left);
 
       if (!isObjectDatatype(leftDatatype)) {
         throw Error(
@@ -892,8 +865,6 @@ export class CodeGen {
       return this.llvmIrBuilder.getDoubleTy();
     } else if (dataType === LiteralDataType.Boolean) {
       return this.llvmIrBuilder.getInt1Ty();
-    } else if (dataType === LiteralDataType.Char) {
-      return this.llvmIrBuilder.getInt8Ty();
     } else if (typeof dataType === "object") {
       if (dataType.type === "FunctionDataType") {
         const returnType = this.getLLVMType(dataType.returnType);
@@ -935,7 +906,7 @@ export class CodeGen {
       }
     }
 
-    throw Error(`It is not supported to get LLVMType for Datatype ${dataType}`);
+    throw Error("something");
   }
 
   addGlobalVar(varName: string, value: LLVMFunction) {
@@ -994,3 +965,84 @@ export class CodeGen {
     }
   }
 }
+
+const getDatatypeOfExp = (exp: Expression): DataType => {
+  if (exp.type === "string") return LiteralDataType.String;
+  if (exp.type === "number") return LiteralDataType.Number;
+  if (exp.type === "boolean") return LiteralDataType.Number;
+  if (exp.type === "identifier") return exp.datatype;
+  if (exp.type === "FunctionCall") {
+    const leftDatatype = getDatatypeOfExp(exp.left);
+
+    if (isFunctionDatatype(leftDatatype)) {
+      return leftDatatype.returnType;
+    } else {
+      throw Error("Expected leftDatatype to be function datatype");
+    }
+  }
+
+  if (exp.type === "array") return exp.datatype;
+  if (exp.type === "object") return exp.datatype;
+  if (exp.type === "DotMemberAccess") {
+    const leftDatatype = getDatatypeOfExp(exp.left);
+
+    if (isObjectDatatype(leftDatatype)) {
+      const elementDatatype = leftDatatype.keys[exp.right];
+
+      if (elementDatatype === undefined)
+        throw Error("Did not expect elementDatatype to be undefined");
+
+      return elementDatatype;
+    } else {
+      throw Error("Expected leftDatatype to ObjectDatatype ");
+    }
+  }
+
+  if (exp.type === "BoxMemberAccess") {
+    const leftDatatype = getDatatypeOfExp(exp.left);
+
+    if (isArrayDatatype(leftDatatype)) {
+      return leftDatatype.baseType;
+    } else {
+      throw Error("Expected leftDatatype to be Array");
+    }
+  }
+
+  throw Error(`It is not supported for getting datatype for exp ${exp.type}`);
+};
+
+const isPlusUninaryExp = (exp: Expression): exp is PlusUninaryExp => {
+  if (
+    exp.type === Token.Plus &&
+    (exp as PlusUninaryExp).argument !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
+  if (
+    exp.type === Token.Minus &&
+    (exp as MinusUninaryExp).argument !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
+  return typeof datatype === "object" && datatype.type === "ArrayDataType";
+};
+
+const isObjectDatatype = (datatype: DataType): datatype is ObjectDatatype => {
+  return typeof datatype === "object" && datatype.type === "ObjectDataType";
+};
+
+const isFunctionDatatype = (
+  datatype: DataType
+): datatype is FunctionDatatype => {
+  return typeof datatype === "object" && datatype.type === "FunctionDataType";
+};
