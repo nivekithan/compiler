@@ -1,6 +1,5 @@
 import clone = require("clone");
 import deepEqual = require("deep-equal");
-import { type } from "os";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import {
   ArrayDatatype,
@@ -129,7 +128,7 @@ class TypeCheckerFactory {
       });
     });
 
-   this.next();
+    this.next();
   }
 
   /**
@@ -1228,7 +1227,7 @@ class TypeCheckerFactory {
   }
   // Removes the curAst
   // Will not work if the curAst is null and if we are removing the last element
-  // then it will set the curPos to null 
+  // then it will set the curPos to null
   removeCurAst() {
     if (this.curPos === null) {
       throw Error("Cannot call removeCurAst when curPos is null");

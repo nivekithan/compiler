@@ -72,4 +72,6 @@ export enum KeywordTokens {
   Import = "Import",
   From = "From",
   Export = "Export",
+  New = "New",
+  Class = "Class",
 }

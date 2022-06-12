@@ -404,6 +404,8 @@ const keyworkLookupTable: { [index: string]: KeywordTokens | undefined } = {
   import: KeywordTokens.Import,
   from: KeywordTokens.From,
   export: KeywordTokens.Export,
+  new: KeywordTokens.New,
+  class: KeywordTokens.Class
 };
 
 // ident has name of keyword (i.e "const", "let"), then it will

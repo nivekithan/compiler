@@ -106,6 +106,8 @@ test("Testing keyword Token", () => {
   import
   from
   export
+  new
+  class
   `;
 
   const output = convertToTokens(input);
@@ -123,6 +125,8 @@ test("Testing keyword Token", () => {
     KeywordTokens.Import,
     KeywordTokens.From,
     KeywordTokens.Export,
+    KeywordTokens.New,
+    KeywordTokens.Class,
   ]);
 });
 
