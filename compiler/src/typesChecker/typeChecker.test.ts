@@ -3,11 +3,11 @@ import { resolve } from "path";
 import { listenerCount } from "process";
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
-import { Ast } from "../tsTypes/ast";
 import { convertToAst } from "../parser/parser";
 import { DepImporter } from "./depImporter";
 import { typeCheckAst } from "./typeChecker";
 import { LiteralDataType } from "../tsTypes/base";
+import { TypeCheckedAst } from "../tsTypes/typechecked";
 
 test("Typechecking variableDeclaration with implicit datatype", () => {
   const input = `
@@ -20,7 +20,7 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.String,
@@ -98,7 +98,7 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.String,
@@ -206,7 +206,7 @@ test("Identifier typechecking", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Boolean,
@@ -238,7 +238,7 @@ test("Testing reassignment of operator Token.Assign", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -262,7 +262,7 @@ test("Testing reassignment of Array element", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: {
@@ -304,7 +304,7 @@ test("Testing reassignment of object key", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: { type: "ObjectDataType", keys: { b: LiteralDataType.Number } },
@@ -343,7 +343,7 @@ test("Testing reassignment with PlusAssign operator", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: {
@@ -384,7 +384,7 @@ test("Testing reassignment with MinusAssign operator", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: {
@@ -425,7 +425,7 @@ test("Testing reassignment with StarAssign operator", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: {
@@ -466,7 +466,7 @@ test("Testing reassignment with SlashAssign operator", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: {
@@ -570,7 +570,7 @@ test("Typechecking while loop declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -604,7 +604,7 @@ test("Reassigning inside the while loop declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -650,7 +650,7 @@ test("Typechecking Do while loop declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -684,7 +684,7 @@ test("Reassigning inside the do while loop declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -729,7 +729,7 @@ test("Testing Break and Continue inside while loop", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "WhileLoopDeclaration",
       condition: { type: "boolean", value: true },
@@ -747,7 +747,7 @@ test("Testing Break and Continue inside do while loop", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "DoWhileLoopDeclaration",
       condition: { type: "boolean", value: true },
@@ -784,7 +784,7 @@ test("Typechecking function declaration with implicit datatype", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "FunctionDeclaration",
       name: "a",
@@ -804,7 +804,7 @@ test("Typechecking function declaration with explicit datatype", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "FunctionDeclaration",
       name: "a",
@@ -838,7 +838,7 @@ test("Testing return exp inside loop inside function declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "FunctionDeclaration",
       arguments: [],
@@ -867,7 +867,7 @@ test("Testing function call", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "FunctionDeclaration",
       name: "a",
@@ -912,7 +912,7 @@ test("Typecheck if block declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "typeCheckedIfBlockDeclaration",
       ifBlock: {
@@ -982,7 +982,7 @@ test("Typecheck if block declaration without else if block", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "typeCheckedIfBlockDeclaration",
       ifBlock: {
@@ -1027,7 +1027,7 @@ test("Typecheck if block declaration without else block", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "typeCheckedIfBlockDeclaration",
       ifBlock: {
@@ -1083,7 +1083,7 @@ test("Typecheck if block declaration without both else and else if block", () =>
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "typeCheckedIfBlockDeclaration",
       ifBlock: {
@@ -1136,7 +1136,7 @@ test("Using arguments in function declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "FunctionDeclaration",
       export: false,
@@ -1180,7 +1180,7 @@ test("Testing hoisting function declaration", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -1225,7 +1225,7 @@ test("Testing using variable declared in top level inside another lower level cl
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "FunctionDeclaration",
       arguments: [],
@@ -1302,7 +1302,7 @@ test("Test hoisting function declaration in reassignment", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -1353,7 +1353,7 @@ test("[Reassignment] Testing using variable declared in top level inside another
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "FunctionDeclaration",
       arguments: [],
@@ -1490,7 +1490,7 @@ test("Typechecking import declaration", () => {
     TestImporter
   );
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "importDeclaration",
       from: "./someFile",
@@ -1510,7 +1510,7 @@ test("Typechecking strict equality and strict not equality", () => {
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
 
-  expect(output).toEqual<Ast[]>([
+  expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Boolean,

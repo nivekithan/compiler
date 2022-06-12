@@ -42,7 +42,6 @@ import {
   StrictEqualityBinaryExp,
   StrictNotEqualBinaryExp,
   StringLiteralExp,
-  TypeCheckedIfBlockDeclaration,
   UnknownVariable,
   VerticalBarBinaryExp,
   WhileLoopDeclaration,
@@ -61,7 +60,6 @@ export type Ast =
   | DoWhileLoopDeclaration<Expression, Ast>
   | FunctionDeclaration<Ast, DataType>
   | ReturnExp<Expression>
-  | TypeCheckedIfBlockDeclaration
   | { type: "EOF" };
 
 export type CondBlockDeclarationAst =

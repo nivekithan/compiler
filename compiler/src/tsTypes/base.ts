@@ -277,9 +277,9 @@ export interface FunctionDatatype<DataType> {
   returnType: DataType;
 }
 
-export interface TypeCheckedIfBlockDeclaration {
+export interface TypeCheckedIfBlockDeclaration<ExpType, BlockType> {
   type: "typeCheckedIfBlockDeclaration";
-  ifBlock: IfBlockDeclaration<Expression, Ast>;
-  elseIfBlocks: ElseIfBlockDeclaration<Expression, Ast>[];
-  elseBlock?: ElseBlockDeclaration<Ast>;
+  ifBlock: IfBlockDeclaration<ExpType, BlockType>;
+  elseIfBlocks: ElseIfBlockDeclaration<ExpType, BlockType>[];
+  elseBlock?: ElseBlockDeclaration<BlockType>;
 }

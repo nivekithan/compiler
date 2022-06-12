@@ -20,15 +20,25 @@ import {
   ReAssignmentPath,
   TypeCheckedIfBlockDeclaration,
   ArrayDatatype,
-  UnknownVariable as UnknownVariableDatatype,
+  ElseBlockDeclaration,
+  ElseIfBlockDeclaration,
+  // UnknownVariable as UnknownVariableDatatype,
 } from "../tsTypes/base";
+import {
+  TypeCheckedAst,
+  TypeCheckedDatatype,
+  TypeCheckedExpression,
+} from "../tsTypes/typechecked";
 import { Closure } from "./closure";
 import { DepImporter } from "./depImporter";
 
 /**
  * Mutates the passed ast
  */
-export const typeCheckAst = (asts: Ast[], depImporter?: DepImporter): Ast[] => {
+export const typeCheckAst = (
+  asts: Ast[],
+  depImporter?: DepImporter
+): TypeCheckedAst[] => {
   const TypeChecker = new TypeCheckerFactory(
     asts,
     new Closure(null, {
@@ -36,8 +46,8 @@ export const typeCheckAst = (asts: Ast[], depImporter?: DepImporter): Ast[] => {
     }),
     depImporter
   );
-  TypeChecker.typeCheck();
-  return asts;
+  const typeCheckedAst = TypeChecker.typeCheck();
+  return typeCheckedAst;
 };
 
 export type TypeCheckerOptions = {
@@ -58,11 +68,11 @@ class TypeCheckerFactory {
     this.depImporter = depImporter === undefined ? null : depImporter;
   }
 
-  typeCheck() {
+  typeCheck(): TypeCheckedAst[] {
     while (this.curPos !== null) {
       const curAst = this.getCurAst();
 
-      if (curAst === null) return;
+      if (curAst === null) return this.asts as TypeCheckedAst[];
 
       if (
         curAst.type === "constVariableDeclaration" ||
@@ -92,6 +102,8 @@ class TypeCheckerFactory {
         throw Error(`Cannot typecheck ast of type ${curAst.type}`);
       }
     }
+
+    return this.asts as TypeCheckedAst[];
   }
 
   /**
@@ -162,11 +174,18 @@ class TypeCheckerFactory {
       IfBlockClosure
     );
 
-    IfBlockTypeChecker.typeCheck();
+    const typeCheckedBlocks = IfBlockTypeChecker.typeCheck();
 
-    const typeCheckedIfBlock: TypeCheckedIfBlockDeclaration = {
+    const typeCheckedIfBlock: TypeCheckedIfBlockDeclaration<
+      TypeCheckedExpression,
+      TypeCheckedAst
+    > = {
       type: "typeCheckedIfBlockDeclaration",
-      ifBlock: curAst,
+      ifBlock: {
+        type: "IfBlockDeclaration",
+        blocks: typeCheckedBlocks,
+        condition: curAst.condition as TypeCheckedExpression,
+      },
       elseIfBlocks: [],
     };
 
@@ -202,7 +221,9 @@ class TypeCheckerFactory {
 
       ElseIfBlockTypeChecker.typeCheck();
 
-      typeCheckedIfBlock.elseIfBlocks.push(curAst);
+      typeCheckedIfBlock.elseIfBlocks.push(
+        curAst as ElseIfBlockDeclaration<TypeCheckedExpression, TypeCheckedAst>
+      );
 
       this.removeCurAst(); // removes else if block
     }
@@ -221,7 +242,8 @@ class TypeCheckerFactory {
 
       ElseBlockTypeChecker.typeCheck();
 
-      typeCheckedIfBlock.elseBlock = nextAst;
+      typeCheckedIfBlock.elseBlock =
+        nextAst as ElseBlockDeclaration<TypeCheckedAst>;
 
       this.removeCurAst(); // removes else block
     }
@@ -1250,13 +1272,13 @@ class TypeCheckerFactory {
   }
   // If the curPos is null then it will add ast at the end of array and set the curPos to asts.length - 1
   // If not then the curPos won't change
-  addAst(ast: Ast) {
+  addAst(ast: TypeCheckedAst) {
     const value = this.curPos;
 
     if (value === null) {
-      this.curPos = this.asts.push(ast) - 1;
+      this.curPos = this.asts.push(ast as Ast) - 1;
     } else {
-      this.asts.splice(value, 0, ast);
+      this.asts.splice(value, 0, ast as Ast);
     }
   }
 }
