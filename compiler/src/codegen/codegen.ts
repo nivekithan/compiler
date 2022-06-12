@@ -1,16 +1,4 @@
-import {
-  ArrayDatatype,
-  Ast,
-  DataType,
-  Expression,
-  FunctionDatatype,
-  LiteralDataType,
-  MinusBinaryExp,
-  MinusUninaryExp,
-  ObjectDatatype,
-  PlusUninaryExp,
-  ReAssignmentPath,
-} from "../parser/ast";
+import { Ast, DataType, Expression } from "../tsTypes/ast";
 import llvm, {
   AddrSpaceCastInst,
   ArrayType,
@@ -31,6 +19,17 @@ import llvm, {
 } from "llvm-bindings";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { TLLVMFunction } from "./function";
+import {
+  ReAssignmentPath,
+  LiteralDataType,
+  PlusUninaryExp,
+  MinusUninaryExp,
+  ArrayDatatype,
+  ObjectDatatype,
+  FunctionDatatype,
+} from "../tsTypes/base";
+import { getDatatypeOfTypeCheckedExp } from "../utils/utils";
+import { isArrayDatatype, isMinusUninaryExp, isObjectDatatype, isPlusUninaryExp } from "../tsTypes/all";
 
 export const convertToLLVMModule = (asts: Ast[]): string => {
   const ModuleCodeGen = new CodeGen(asts, "main");
@@ -561,7 +560,9 @@ export class CodeGen {
     }
   }
 
-  getReassignmentPointer(assignmentPath: ReAssignmentPath): Value {
+  getReassignmentPointer(
+    assignmentPath: ReAssignmentPath<Expression, DataType>
+  ): Value {
     if (assignmentPath.type === "IdentifierPath") {
       const varInfo = this.currentFn.getVarInfo(assignmentPath.name);
 
@@ -828,7 +829,7 @@ export class CodeGen {
     } else if (exp.type === "DotMemberAccess") {
       const leftValue = this.getExpValue(exp.left);
 
-      const leftDatatype = getDatatypeOfExp(exp.left);
+      const leftDatatype = getDatatypeOfTypeCheckedExp(exp.left);
 
       if (!isObjectDatatype(leftDatatype)) {
         throw Error(
@@ -965,84 +966,3 @@ export class CodeGen {
     }
   }
 }
-
-const getDatatypeOfExp = (exp: Expression): DataType => {
-  if (exp.type === "string") return LiteralDataType.String;
-  if (exp.type === "number") return LiteralDataType.Number;
-  if (exp.type === "boolean") return LiteralDataType.Number;
-  if (exp.type === "identifier") return exp.datatype;
-  if (exp.type === "FunctionCall") {
-    const leftDatatype = getDatatypeOfExp(exp.left);
-
-    if (isFunctionDatatype(leftDatatype)) {
-      return leftDatatype.returnType;
-    } else {
-      throw Error("Expected leftDatatype to be function datatype");
-    }
-  }
-
-  if (exp.type === "array") return exp.datatype;
-  if (exp.type === "object") return exp.datatype;
-  if (exp.type === "DotMemberAccess") {
-    const leftDatatype = getDatatypeOfExp(exp.left);
-
-    if (isObjectDatatype(leftDatatype)) {
-      const elementDatatype = leftDatatype.keys[exp.right];
-
-      if (elementDatatype === undefined)
-        throw Error("Did not expect elementDatatype to be undefined");
-
-      return elementDatatype;
-    } else {
-      throw Error("Expected leftDatatype to ObjectDatatype ");
-    }
-  }
-
-  if (exp.type === "BoxMemberAccess") {
-    const leftDatatype = getDatatypeOfExp(exp.left);
-
-    if (isArrayDatatype(leftDatatype)) {
-      return leftDatatype.baseType;
-    } else {
-      throw Error("Expected leftDatatype to be Array");
-    }
-  }
-
-  throw Error(`It is not supported for getting datatype for exp ${exp.type}`);
-};
-
-const isPlusUninaryExp = (exp: Expression): exp is PlusUninaryExp => {
-  if (
-    exp.type === Token.Plus &&
-    (exp as PlusUninaryExp).argument !== undefined
-  ) {
-    return true;
-  }
-
-  return false;
-};
-
-const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
-  if (
-    exp.type === Token.Minus &&
-    (exp as MinusUninaryExp).argument !== undefined
-  ) {
-    return true;
-  }
-
-  return false;
-};
-
-const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
-  return typeof datatype === "object" && datatype.type === "ArrayDataType";
-};
-
-const isObjectDatatype = (datatype: DataType): datatype is ObjectDatatype => {
-  return typeof datatype === "object" && datatype.type === "ObjectDataType";
-};
-
-const isFunctionDatatype = (
-  datatype: DataType
-): datatype is FunctionDatatype => {
-  return typeof datatype === "object" && datatype.type === "FunctionDataType";
-};

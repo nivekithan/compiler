@@ -2,10 +2,15 @@ import clone = require("clone");
 import deepEqual = require("deep-equal");
 import { KeywordTokens, Token } from "../lexer/tokens";
 import {
-  ArrayDatatype,
-  Ast,
-  DataType,
-  Expression,
+  isFunctionDatatype,
+  isArrayDatatype,
+  isObjectDatatype,
+  isPlusUninaryExp,
+  isMinusUninaryExp,
+  isUnknownVariable,
+} from "../tsTypes/all";
+import { Ast, DataType, Expression } from "../tsTypes/ast";
+import {
   FunctionDatatype,
   IdentifierDatatype,
   LiteralDataType,
@@ -14,8 +19,9 @@ import {
   PlusUninaryExp,
   ReAssignmentPath,
   TypeCheckedIfBlockDeclaration,
+  ArrayDatatype,
   UnknownVariable as UnknownVariableDatatype,
-} from "../parser/ast";
+} from "../tsTypes/base";
 import { Closure } from "./closure";
 import { DepImporter } from "./depImporter";
 
@@ -745,7 +751,9 @@ class TypeCheckerFactory {
     ast === undefined ? this.next() : null; // consumes ReAssignment
   }
 
-  getDataTypeOfAssignmentPath(path: ReAssignmentPath): DataType {
+  getDataTypeOfAssignmentPath(
+    path: ReAssignmentPath<Expression, DataType>
+  ): DataType {
     if (path.type === "IdentifierPath") {
       const identifierName = path.name;
       const identInfo = this.closure.getVariableInfo(identifierName);
@@ -1252,51 +1260,3 @@ class TypeCheckerFactory {
     }
   }
 }
-
-const isPlusUninaryExp = (exp: Expression): exp is PlusUninaryExp => {
-  if (
-    exp.type === Token.Plus &&
-    (exp as PlusUninaryExp).argument !== undefined
-  ) {
-    return true;
-  }
-
-  return false;
-};
-
-const isMinusUninaryExp = (exp: Expression): exp is MinusUninaryExp => {
-  if (
-    exp.type === Token.Minus &&
-    (exp as MinusUninaryExp).argument !== undefined
-  ) {
-    return true;
-  }
-
-  return false;
-};
-
-const isArrayDatatype = (datatype: DataType): datatype is ArrayDatatype => {
-  return typeof datatype === "object" && datatype.type === "ArrayDataType";
-};
-
-const isObjectDatatype = (dataType: DataType): dataType is ObjectDatatype => {
-  return typeof dataType === "object" && dataType.type === "ObjectDataType";
-};
-
-const isFunctionDatatype = (
-  datatype: DataType
-): datatype is FunctionDatatype => {
-  return typeof datatype === "object" && datatype.type === "FunctionDataType";
-};
-
-const isUnknownVariable = (
-  datatype: DataType
-): datatype is UnknownVariableDatatype => {
-  return typeof datatype === "object" && datatype.type === "UnknownVariable";
-};
-
-const isIdentifierDatatype = (
-  datatype: DataType
-): datatype is IdentifierDatatype => {
-  return typeof datatype === "object" && datatype.type === "IdentifierDatatype";
-};

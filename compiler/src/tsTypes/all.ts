@@ -1,0 +1,313 @@
+import { Token } from "../lexer/tokens";
+import {
+  AmpersandBinaryExp,
+  ArrayDatatype,
+  ArrayLiteralExp,
+  BangUninaryExp,
+  BooleanLiteralExp,
+  BoxMemberAccessExp,
+  CaretBinaryExp,
+  DotMemberAccessExp,
+  FunctionCall,
+  FunctionDatatype,
+  GreaterThanBinaryExp,
+  GreaterThanOrEqualBinaryExp,
+  IdentifierDatatype,
+  IdentifierExp,
+  LessThanBinaryExp,
+  LessThanOrEqualBinaryExp,
+  LiteralDataType,
+  MinusBinaryExp,
+  MinusUninaryExp,
+  NumberLiteralExp,
+  ObjectDatatype,
+  ObjectLiteralExp,
+  PlusBinaryExp,
+  PlusUninaryExp,
+  SlashBinaryExp,
+  StarBinaryExp,
+  StrictEqualityBinaryExp,
+  StrictNotEqualBinaryExp,
+  StringLiteralExp,
+  UnknownVariable,
+  VerticalBarBinaryExp,
+} from "./base";
+
+export type AllExpression<ExpType, DataType> =
+  | StringLiteralExp
+  | IdentifierExp<DataType>
+  | NumberLiteralExp
+  | BooleanLiteralExp
+  | ObjectLiteralExp<ExpType, DataType>
+  | ArrayLiteralExp<ExpType, DataType>
+  | AllUninaryExp<ExpType>
+  | AllBinaryExp<ExpType, DataType>
+  | BoxMemberAccessExp<ExpType>
+  | DotMemberAccessExp<ExpType>
+  | FunctionCall<ExpType>;
+
+export type AllUninaryExp<ExpType> =
+  | PlusUninaryExp<ExpType>
+  | MinusUninaryExp<ExpType>
+  | BangUninaryExp<ExpType>;
+
+export type AllBinaryExp<ExpType, DataType> =
+  | PlusBinaryExp<ExpType>
+  | MinusBinaryExp<ExpType>
+  | StarBinaryExp<ExpType>
+  | SlashBinaryExp<ExpType>
+  | VerticalBarBinaryExp<ExpType>
+  | CaretBinaryExp<ExpType>
+  | AmpersandBinaryExp<ExpType>
+  | StrictEqualityBinaryExp<ExpType, DataType>
+  | StrictNotEqualBinaryExp<ExpType, DataType>
+  | LessThanBinaryExp<ExpType>
+  | LessThanOrEqualBinaryExp<ExpType>
+  | GreaterThanBinaryExp<ExpType>
+  | GreaterThanOrEqualBinaryExp<ExpType>;
+
+export type AllDataType<DataType> =
+  | LiteralDataType
+  | IdentifierDatatype
+  | ArrayDatatype<DataType>
+  | ObjectDatatype<DataType>
+  | FunctionDatatype<DataType>
+  | UnknownVariable;
+
+export const isStringLiteralExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is StringLiteralExp => {
+  return exp.type === "string";
+};
+
+export const isIdentifierLiteralExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is IdentifierExp<DataType> => {
+  return exp.type === "identifier";
+};
+
+export const isNumberLiteralExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is NumberLiteralExp => {
+  return exp.type === "number";
+};
+
+export const isBooleanLiteralExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is BooleanLiteralExp => {
+  return exp.type === "boolean";
+};
+
+export const isObjectLiteralExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is ObjectLiteralExp<ExpType, DataType> => {
+  return exp.type === "object";
+};
+
+export const isArrayLiteralExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is ArrayLiteralExp<ExpType, DataType> => {
+  return exp.type === "array";
+};
+
+export const isUniaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is AllUninaryExp<ExpType> => {
+  return (
+    isPlusUninaryExp(exp) || isMinusUninaryExp(exp) || isBangUniaryExp(exp)
+  );
+};
+
+export const isPlusUninaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is PlusUninaryExp<ExpType> => {
+  if (
+    exp.type === Token.Plus &&
+    (exp as PlusUninaryExp<ExpType>).argument !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const isMinusUninaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is MinusUninaryExp<ExpType> => {
+  if (
+    exp.type === Token.Minus &&
+    (exp as MinusUninaryExp<ExpType>).argument !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const isBangUniaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is BangUninaryExp<ExpType> => {
+  if (exp.type === Token.Bang) {
+    return true;
+  }
+
+  return false;
+};
+
+export const isBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is AllBinaryExp<ExpType, DataType> => {
+  return (
+    isPlusBinaryExp(exp) ||
+    isMinusBinaryExp(exp) ||
+    isStarBinaryExp(exp) ||
+    isSlashBinaryExp(exp) ||
+    isVerticalBarBinaryExp(exp) ||
+    isCaretBinaryExp(exp) ||
+    isAmpersandBinaryExp(exp) ||
+    isStrictEqualityBinaryExp(exp) ||
+    isStrictNotEqualBinaryExp(exp) ||
+    isLessThanBinaryExp(exp) ||
+    isLessThanOrEqualBinaryExp(exp) ||
+    isGreaterThanBinaryExp(exp) ||
+    isGreaterThanOrEqualBinaryExp(exp)
+  );
+};
+
+export const isPlusBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is PlusBinaryExp<ExpType> => {
+  if (
+    exp.type === Token.Plus &&
+    (exp as PlusBinaryExp<ExpType>).left !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const isMinusBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is MinusBinaryExp<ExpType> => {
+  if (
+    exp.type === Token.Minus &&
+    (exp as MinusBinaryExp<ExpType>).left !== undefined
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const isStarBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is StarBinaryExp<ExpType> => {
+  if (exp.type === Token.Star) {
+    return true;
+  }
+
+  return false;
+};
+
+export const isSlashBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is SlashBinaryExp<ExpType> => {
+  return exp.type === Token.Slash;
+};
+
+export const isVerticalBarBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is VerticalBarBinaryExp<ExpType> => {
+  return exp.type === Token.VerticalBar;
+};
+
+export const isCaretBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is CaretBinaryExp<ExpType> => {
+  return exp.type === Token.Caret;
+};
+
+export const isAmpersandBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is AmpersandBinaryExp<ExpType> => {
+  return exp.type === Token.Ampersand;
+};
+
+export const isStrictEqualityBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is StrictEqualityBinaryExp<ExpType, DataType> => {
+  return exp.type === Token.StrictEquality;
+};
+
+export const isStrictNotEqualBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is StrictNotEqualBinaryExp<ExpType, DataType> => {
+  return exp.type === Token.StrictNotEqual;
+};
+
+export const isLessThanBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is LessThanBinaryExp<ExpType> => {
+  return exp.type === Token.LessThan;
+};
+
+export const isLessThanOrEqualBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is LessThanOrEqualBinaryExp<ExpType> => {
+  return exp.type === Token.LessThanOrEqual;
+};
+
+export const isGreaterThanBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is GreaterThanBinaryExp<ExpType> => {
+  return exp.type === Token.GreaterThan;
+};
+
+export const isGreaterThanOrEqualBinaryExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is GreaterThanOrEqualBinaryExp<ExpType> => {
+  return exp.type === Token.GreaterThanOrEqual;
+};
+
+export const isBoxMemberAccessExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is BoxMemberAccessExp<ExpType> => {
+  return exp.type === "BoxMemberAccess";
+};
+
+export const isDotMemberAccessExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is DotMemberAccessExp<ExpType> => {
+  return exp.type === "DotMemberAccess";
+};
+
+export const isFunctionCallExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is FunctionCall<ExpType> => {
+  return exp.type === "FunctionCall";
+};
+
+export const isArrayDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is ArrayDatatype<DataType> => {
+  return typeof datatype === "object" && datatype.type === "ArrayDataType";
+};
+
+export const isObjectDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is ObjectDatatype<DataType> => {
+  return typeof datatype === "object" && datatype.type === "ObjectDataType";
+};
+
+export const isFunctionDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is FunctionDatatype<DataType> => {
+  return typeof datatype === "object" && datatype.type === "FunctionDataType";
+};
+
+export const isUnknownVariable = <DataType>(
+  dataType: AllDataType<DataType>
+): dataType is UnknownVariable => {
+  return typeof dataType === "object" && dataType.type === "UnknownVariable";
+};

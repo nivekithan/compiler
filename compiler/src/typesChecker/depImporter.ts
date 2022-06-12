@@ -1,4 +1,4 @@
-import { DataType } from "../parser/ast";
+import { DataType } from "../tsTypes/ast";
 import { resolve } from "path";
 
 type AlreadyKnownDatatypes = {

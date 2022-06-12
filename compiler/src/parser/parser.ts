@@ -2,22 +2,24 @@ import { IdentifierToken, KeywordTokens, Token, Tokens } from "../lexer/tokens";
 import {
   Ast,
   BinaryExp,
-  CondBlockDeclaration,
-  ConstVariableDeclaration,
+  CondBlockDeclarationAst,
   DataType,
-  DoWhileLoopDeclaration,
   Expression,
-  IdentifierAst,
-  ImportDeclaration,
-  LetVariableDeclaration,
-  LiteralDataType,
-  ReAssignment,
-  ReAssignmentPath,
-  ReturnExp,
   UninaryExp,
-  VariableDeclaration,
+  VariableDeclarationAst,
+} from "../tsTypes/ast";
+import {
+  ReturnExp,
+  LiteralDataType,
+  DoWhileLoopDeclaration,
   WhileLoopDeclaration,
-} from "./ast";
+  ReAssignment,
+  ConstVariableDeclaration,
+  LetVariableDeclaration,
+  ImportDeclaration,
+  IdentifierAst,
+  ReAssignmentPath,
+} from "../tsTypes/base";
 
 export const convertToAst = (tokens: Tokens[]): Ast[] => {
   const Parser = new ParserFactory(tokens);
@@ -88,7 +90,7 @@ export class ParserFactory {
   /**
    * Expects the curToken to be of KeyWord.Return
    */
-  parseReturnExp(): ReturnExp {
+  parseReturnExp(): ReturnExp<Expression> {
     this.assertCurToken(KeywordTokens.Return);
     this.next(); // consumes Return
 
@@ -218,7 +220,7 @@ export class ParserFactory {
    *
    */
 
-  parseDoWhileLoop(): DoWhileLoopDeclaration {
+  parseDoWhileLoop(): DoWhileLoopDeclaration<Expression, Ast> {
     this.assertCurToken(KeywordTokens.Do);
     this.next(); // consumes Do
 
@@ -258,7 +260,7 @@ export class ParserFactory {
    *
    */
 
-  parseWhileLoop(): WhileLoopDeclaration {
+  parseWhileLoop(): WhileLoopDeclaration<Expression, Ast> {
     this.assertCurToken(KeywordTokens.While);
     this.next(); // consume While
 
@@ -297,10 +299,10 @@ export class ParserFactory {
    *
    */
 
-  parseCondBlock(): CondBlockDeclaration {
+  parseCondBlock(): CondBlockDeclarationAst {
     const curToken = this.getCurToken();
 
-    let blockType: CondBlockDeclaration["type"];
+    let blockType: CondBlockDeclarationAst["type"];
 
     if (curToken === KeywordTokens.If) {
       this.next(); // consumes if
@@ -366,7 +368,7 @@ export class ParserFactory {
    * of reassignment then it will revert the parserState and returns null
    *
    */
-  tryParseReassignment(): ReAssignment | null {
+  tryParseReassignment(): ReAssignment<Expression, DataType> | null {
     this.saveState();
 
     try {
@@ -404,7 +406,7 @@ export class ParserFactory {
    *
    */
 
-  parseVariableDeclaration(): VariableDeclaration {
+  parseVariableDeclaration(): VariableDeclarationAst {
     const curToken = this.getCurToken();
 
     if (curToken !== KeywordTokens.Const && curToken !== KeywordTokens.Let)
@@ -435,8 +437,8 @@ export class ParserFactory {
     const exp = this.parseExpression();
 
     const constVariableDeclarationAst:
-      | ConstVariableDeclaration
-      | LetVariableDeclaration = {
+      | ConstVariableDeclaration<Expression, DataType>
+      | LetVariableDeclaration<Expression, DataType> = {
       type:
         curToken === KeywordTokens.Const
           ? "constVariableDeclaration"
@@ -456,7 +458,7 @@ export class ParserFactory {
    * Expect curToken to be KeyWord.Import
    */
 
-  parseImportDeclaration(): ImportDeclaration {
+  parseImportDeclaration(): ImportDeclaration<DataType> {
     const curToken = this.getCurToken();
 
     if (curToken !== KeywordTokens.Import)
@@ -466,7 +468,7 @@ export class ParserFactory {
     this.assertCurToken(Token.AngleOpenBracket);
     this.next(); // consumes {
 
-    const identifiers: IdentifierAst[] = [];
+    const identifiers: IdentifierAst<DataType>[] = [];
 
     while (this.getCurToken() !== Token.AngleCloseBracket) {
       const curToken = this.getCurToken();
@@ -476,7 +478,7 @@ export class ParserFactory {
         );
 
       const identifierName = curToken.value;
-      const identifierAst: IdentifierAst = {
+      const identifierAst: IdentifierAst<DataType> = {
         type: "identifier",
         name: identifierName,
         dataType: LiteralDataType.NotCalculated,
@@ -519,7 +521,7 @@ export class ParserFactory {
   /**
    * Expects the curToken to be Identifier
    */
-  parseReAssignmentPath(): ReAssignmentPath {
+  parseReAssignmentPath(): ReAssignmentPath<Expression, DataType> {
     const curToken = this.getCurToken();
 
     if (curToken !== null && isIdentifier(curToken)) {
@@ -533,7 +535,7 @@ export class ParserFactory {
         );
       };
 
-      let leftPath: ReAssignmentPath | null = null;
+      let leftPath: ReAssignmentPath<Expression, DataType> | null = null;
 
       while (whileCondChecker()) {
         const curToken = this.getCurToken();

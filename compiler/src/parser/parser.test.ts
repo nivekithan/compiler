@@ -2,8 +2,9 @@ import { listenerCount } from "process";
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { typeCheckAst } from "../typesChecker/typeChecker";
-import { Ast, LiteralDataType } from "./ast";
+import { Ast } from "../tsTypes/ast";
 import { convertToAst } from "./parser";
+import { LiteralDataType } from "../tsTypes/base";
 
 test("Test import declaration", () => {
   const input = `

@@ -1,5 +1,6 @@
 import clone = require("clone");
-import { DataType, Expression, LiteralDataType } from "../parser/ast";
+import { DataType } from "../tsTypes/ast";
+import { LiteralDataType } from "../tsTypes/base";
 
 export type ClosureVariable = {
   name: string;

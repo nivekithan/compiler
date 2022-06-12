@@ -3,10 +3,11 @@ import { resolve } from "path";
 import { listenerCount } from "process";
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
-import { Ast, LiteralDataType } from "../parser/ast";
+import { Ast } from "../tsTypes/ast";
 import { convertToAst } from "../parser/parser";
 import { DepImporter } from "./depImporter";
 import { typeCheckAst } from "./typeChecker";
+import { LiteralDataType } from "../tsTypes/base";
 
 test("Typechecking variableDeclaration with implicit datatype", () => {
   const input = `
