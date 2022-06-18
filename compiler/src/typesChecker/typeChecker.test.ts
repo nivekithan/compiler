@@ -4,7 +4,6 @@ import { KeywordTokens, Token } from "../lexer/tokens";
 import { convertToAst } from "../parser/parser";
 import { DepImporter } from "./depImporter";
 import { typeCheckAst } from "./typeChecker";
-import { LiteralDataType } from "../tsTypes/base";
 import { TypeCheckedAst } from "../tsTypes/typechecked";
 
 test("Typechecking variableDeclaration with implicit datatype", () => {
@@ -28,21 +27,21 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       identifierName: "b",
       exp: { type: "number", value: 1 },
       export: false,
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       identifierName: "c",
       exp: { type: "boolean", value: true },
       export: false,
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       identifierName: "d",
       exp: { type: "boolean", value: false },
       export: false,
@@ -51,7 +50,7 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ArrayDataType",
-        baseType: LiteralDataType.Number,
+        baseType: { type: "NumberDatatype" },
         numberOfElements: 1,
       },
       identifierName: "e",
@@ -60,7 +59,7 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
         exps: [{ type: "number", value: 1 }],
         datatype: {
           type: "ArrayDataType",
-          baseType: LiteralDataType.Number,
+          baseType: { type: "NumberDatatype" },
           numberOfElements: 1,
         },
       },
@@ -70,7 +69,7 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ObjectDataType",
-        keys: { a: LiteralDataType.Number },
+        keys: { a: { type: "NumberDatatype" } },
       },
       identifierName: "f",
       exp: {
@@ -78,7 +77,7 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
         keys: [["a", { type: "number", value: 1 }]],
         datatype: {
           type: "ObjectDataType",
-          keys: { a: LiteralDataType.Number },
+          keys: { a: { type: "NumberDatatype" } },
         },
       },
       export: false,
@@ -106,21 +105,21 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       identifierName: "b",
       exp: { type: "number", value: 1 },
       export: false,
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       identifierName: "c",
       exp: { type: "boolean", value: true },
       export: false,
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       identifierName: "d",
       exp: { type: "boolean", value: false },
       export: false,
@@ -129,7 +128,7 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ArrayDataType",
-        baseType: LiteralDataType.Number,
+        baseType: { type: "NumberDatatype" },
         numberOfElements: 1,
       },
       identifierName: "e",
@@ -138,7 +137,7 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
         exps: [{ type: "number", value: 1 }],
         datatype: {
           type: "ArrayDataType",
-          baseType: LiteralDataType.Number,
+          baseType: { type: "NumberDatatype" },
           numberOfElements: 1,
         },
       },
@@ -148,7 +147,7 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ObjectDataType",
-        keys: { a: LiteralDataType.Number },
+        keys: { a: { type: "NumberDatatype" } },
       },
       identifierName: "f",
       exp: {
@@ -156,7 +155,7 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
         keys: [["a", { type: "number", value: 1 }]],
         datatype: {
           type: "ObjectDataType",
-          keys: { a: LiteralDataType.Number },
+          keys: { a: { type: "NumberDatatype" } },
         },
       },
       export: false,
@@ -196,20 +195,20 @@ test("Identifier typechecking", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       exp: { type: "boolean", value: true },
       export: false,
       identifierName: "a",
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       exp: {
         type: Token.Bang,
         argument: {
           type: "identifier",
           name: "a",
-          datatype: LiteralDataType.Boolean,
+          datatype: { type: "BooleanDataType" },
         },
       },
       export: false,
@@ -228,7 +227,7 @@ test("Testing reassignment of operator Token.Assign", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       exp: { type: "number", value: 1 },
       export: false,
       identifierName: "a",
@@ -254,7 +253,7 @@ test("Testing reassignment of Array element", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ArrayDataType",
-        baseType: LiteralDataType.Number,
+        baseType: { type: "NumberDatatype" },
         numberOfElements: 1,
       },
       exp: {
@@ -262,7 +261,7 @@ test("Testing reassignment of Array element", () => {
         exps: [{ type: "number", value: 1 }],
         datatype: {
           type: "ArrayDataType",
-          baseType: LiteralDataType.Number,
+          baseType: { type: "NumberDatatype" },
           numberOfElements: 1,
         },
       },
@@ -276,7 +275,7 @@ test("Testing reassignment of Array element", () => {
         type: "BoxMemberPath",
         leftPath: { type: "IdentifierPath", name: "a" },
         accessExp: { type: "number", value: 0 },
-        leftBaseType: LiteralDataType.Number,
+        leftBaseType: { type: "NumberDatatype" },
       },
       exp: { type: "number", value: 2 },
     },
@@ -294,13 +293,16 @@ test("Testing reassignment of object key", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: { type: "ObjectDataType", keys: { b: LiteralDataType.Number } },
+      datatype: {
+        type: "ObjectDataType",
+        keys: { b: { type: "NumberDatatype" } },
+      },
       exp: {
         type: "object",
         keys: [["b", { type: "number", value: 1 }]],
         datatype: {
           type: "ObjectDataType",
-          keys: { b: LiteralDataType.Number },
+          keys: { b: { type: "NumberDatatype" } },
         },
       },
       export: false,
@@ -314,7 +316,7 @@ test("Testing reassignment of object key", () => {
         leftPath: { type: "IdentifierPath", name: "a" },
         leftDataType: {
           type: "ObjectDataType",
-          keys: { b: LiteralDataType.Number },
+          keys: { b: { type: "NumberDatatype" } },
         },
         rightPath: "b",
       },
@@ -335,7 +337,7 @@ test("Testing reassignment with PlusAssign operator", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ArrayDataType",
-        baseType: LiteralDataType.Number,
+        baseType: { type: "NumberDatatype" },
         numberOfElements: 1,
       },
       exp: {
@@ -343,7 +345,7 @@ test("Testing reassignment with PlusAssign operator", () => {
         exps: [{ type: "number", value: 1 }],
         datatype: {
           type: "ArrayDataType",
-          baseType: LiteralDataType.Number,
+          baseType: { type: "NumberDatatype" },
           numberOfElements: 1,
         },
       },
@@ -357,7 +359,7 @@ test("Testing reassignment with PlusAssign operator", () => {
         type: "BoxMemberPath",
         leftPath: { type: "IdentifierPath", name: "a" },
         accessExp: { type: "number", value: 0 },
-        leftBaseType: LiteralDataType.Number,
+        leftBaseType: { type: "NumberDatatype" },
       },
       exp: { type: "number", value: 2 },
     },
@@ -376,7 +378,7 @@ test("Testing reassignment with MinusAssign operator", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ArrayDataType",
-        baseType: LiteralDataType.Number,
+        baseType: { type: "NumberDatatype" },
         numberOfElements: 1,
       },
       exp: {
@@ -384,7 +386,7 @@ test("Testing reassignment with MinusAssign operator", () => {
         exps: [{ type: "number", value: 1 }],
         datatype: {
           type: "ArrayDataType",
-          baseType: LiteralDataType.Number,
+          baseType: { type: "NumberDatatype" },
           numberOfElements: 1,
         },
       },
@@ -398,7 +400,7 @@ test("Testing reassignment with MinusAssign operator", () => {
         type: "BoxMemberPath",
         leftPath: { type: "IdentifierPath", name: "a" },
         accessExp: { type: "number", value: 0 },
-        leftBaseType: LiteralDataType.Number,
+        leftBaseType: { type: "NumberDatatype" },
       },
       exp: { type: "number", value: 2 },
     },
@@ -417,7 +419,7 @@ test("Testing reassignment with StarAssign operator", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ArrayDataType",
-        baseType: LiteralDataType.Number,
+        baseType: { type: "NumberDatatype" },
         numberOfElements: 1,
       },
       exp: {
@@ -425,7 +427,7 @@ test("Testing reassignment with StarAssign operator", () => {
         exps: [{ type: "number", value: 1 }],
         datatype: {
           type: "ArrayDataType",
-          baseType: LiteralDataType.Number,
+          baseType: { type: "NumberDatatype" },
           numberOfElements: 1,
         },
       },
@@ -439,7 +441,7 @@ test("Testing reassignment with StarAssign operator", () => {
         type: "BoxMemberPath",
         leftPath: { type: "IdentifierPath", name: "a" },
         accessExp: { type: "number", value: 0 },
-        leftBaseType: LiteralDataType.Number,
+        leftBaseType: { type: "NumberDatatype" },
       },
       exp: { type: "number", value: 2 },
     },
@@ -458,7 +460,7 @@ test("Testing reassignment with SlashAssign operator", () => {
       type: "constVariableDeclaration",
       datatype: {
         type: "ArrayDataType",
-        baseType: LiteralDataType.Number,
+        baseType: { type: "NumberDatatype" },
         numberOfElements: 1,
       },
       exp: {
@@ -466,7 +468,7 @@ test("Testing reassignment with SlashAssign operator", () => {
         exps: [{ type: "number", value: 1 }],
         datatype: {
           type: "ArrayDataType",
-          baseType: LiteralDataType.Number,
+          baseType: { type: "NumberDatatype" },
           numberOfElements: 1,
         },
       },
@@ -480,7 +482,7 @@ test("Testing reassignment with SlashAssign operator", () => {
         type: "BoxMemberPath",
         leftPath: { type: "IdentifierPath", name: "a" },
         accessExp: { type: "number", value: 0 },
-        leftBaseType: LiteralDataType.Number,
+        leftBaseType: { type: "NumberDatatype" },
       },
       exp: { type: "number", value: 2 },
     },
@@ -560,7 +562,7 @@ test("Typechecking while loop declaration", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       export: false,
       identifierName: "a",
       exp: { type: "number", value: 1 },
@@ -571,7 +573,7 @@ test("Typechecking while loop declaration", () => {
       blocks: [
         {
           type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
+          datatype: { type: "NumberDatatype" },
           export: false,
           identifierName: "a",
           exp: { type: "number", value: 1 },
@@ -594,7 +596,7 @@ test("Reassigning inside the while loop declaration", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       export: false,
       identifierName: "a",
       exp: { type: "number", value: 1 },
@@ -640,7 +642,7 @@ test("Typechecking Do while loop declaration", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       export: false,
       identifierName: "a",
       exp: { type: "number", value: 1 },
@@ -651,7 +653,7 @@ test("Typechecking Do while loop declaration", () => {
       blocks: [
         {
           type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
+          datatype: { type: "NumberDatatype" },
           export: false,
           identifierName: "a",
           exp: { type: "number", value: 1 },
@@ -674,7 +676,7 @@ test("Reassigning inside the do while loop declaration", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       export: false,
       identifierName: "a",
       exp: { type: "number", value: 1 },
@@ -777,7 +779,7 @@ test("Typechecking function declaration with implicit datatype", () => {
       name: "a",
       arguments: [],
       export: false,
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
       blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
     },
   ]);
@@ -797,7 +799,7 @@ test("Typechecking function declaration with explicit datatype", () => {
       name: "a",
       arguments: [],
       export: false,
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
       blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
     },
   ]);
@@ -831,7 +833,7 @@ test("Testing return exp inside loop inside function declaration", () => {
       arguments: [],
       export: false,
       name: "a",
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
       blocks: [
         {
           type: "WhileLoopDeclaration",
@@ -860,12 +862,12 @@ test("Testing function call", () => {
       name: "a",
       arguments: [],
       export: false,
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
       blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       export: false,
       identifierName: "b",
       exp: {
@@ -877,7 +879,7 @@ test("Testing function call", () => {
           datatype: {
             type: "FunctionDataType",
             arguments: {},
-            returnType: LiteralDataType.Number,
+            returnType: { type: "NumberDatatype" },
           },
         },
       },
@@ -908,7 +910,7 @@ test("Typecheck if block declaration", () => {
         blocks: [
           {
             type: "constVariableDeclaration",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
             exp: { type: "number", value: 1 },
             export: false,
             identifierName: "a",
@@ -922,7 +924,7 @@ test("Typecheck if block declaration", () => {
           blocks: [
             {
               type: "constVariableDeclaration",
-              datatype: LiteralDataType.Number,
+              datatype: { type: "NumberDatatype" },
               exp: { type: "number", value: 1 },
               export: false,
               identifierName: "a",
@@ -935,7 +937,7 @@ test("Typecheck if block declaration", () => {
           blocks: [
             {
               type: "constVariableDeclaration",
-              datatype: LiteralDataType.Number,
+              datatype: { type: "NumberDatatype" },
               exp: { type: "number", value: 1 },
               export: false,
               identifierName: "a",
@@ -948,7 +950,7 @@ test("Typecheck if block declaration", () => {
         blocks: [
           {
             type: "constVariableDeclaration",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
             exp: { type: "number", value: 1 },
             export: false,
             identifierName: "a",
@@ -978,7 +980,7 @@ test("Typecheck if block declaration without else if block", () => {
         blocks: [
           {
             type: "constVariableDeclaration",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
             exp: { type: "number", value: 1 },
             export: false,
             identifierName: "a",
@@ -990,7 +992,7 @@ test("Typecheck if block declaration without else if block", () => {
         blocks: [
           {
             type: "constVariableDeclaration",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
             exp: { type: "number", value: 1 },
             export: false,
             identifierName: "a",
@@ -1023,7 +1025,7 @@ test("Typecheck if block declaration without else block", () => {
         blocks: [
           {
             type: "constVariableDeclaration",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
             exp: { type: "number", value: 1 },
             export: false,
             identifierName: "a",
@@ -1037,7 +1039,7 @@ test("Typecheck if block declaration without else block", () => {
           blocks: [
             {
               type: "constVariableDeclaration",
-              datatype: LiteralDataType.Number,
+              datatype: { type: "NumberDatatype" },
               exp: { type: "number", value: 1 },
               export: false,
               identifierName: "a",
@@ -1050,7 +1052,7 @@ test("Typecheck if block declaration without else block", () => {
           blocks: [
             {
               type: "constVariableDeclaration",
-              datatype: LiteralDataType.Number,
+              datatype: { type: "NumberDatatype" },
               exp: { type: "number", value: 1 },
               export: false,
               identifierName: "a",
@@ -1079,7 +1081,7 @@ test("Typecheck if block declaration without both else and else if block", () =>
         blocks: [
           {
             type: "constVariableDeclaration",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
             exp: { type: "number", value: 1 },
             export: false,
             identifierName: "a",
@@ -1128,10 +1130,10 @@ test("Using arguments in function declaration", () => {
       type: "FunctionDeclaration",
       export: false,
       name: "f",
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
       arguments: [
-        ["a", LiteralDataType.Number],
-        ["b", LiteralDataType.Number],
+        ["a", { type: "NumberDatatype" }],
+        ["b", { type: "NumberDatatype" }],
       ],
       blocks: [
         {
@@ -1141,12 +1143,12 @@ test("Using arguments in function declaration", () => {
             left: {
               type: "identifier",
               name: "a",
-              datatype: LiteralDataType.Number,
+              datatype: { type: "NumberDatatype" },
             },
             right: {
               type: "identifier",
               name: "b",
-              datatype: LiteralDataType.Number,
+              datatype: { type: "NumberDatatype" },
             },
           },
         },
@@ -1170,7 +1172,7 @@ test("Testing hoisting function declaration", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       exp: {
         type: "FunctionCall",
         left: {
@@ -1179,7 +1181,7 @@ test("Testing hoisting function declaration", () => {
           datatype: {
             type: "FunctionDataType",
             arguments: {},
-            returnType: LiteralDataType.Number,
+            returnType: { type: "NumberDatatype" },
           },
         },
         arguments: [],
@@ -1193,7 +1195,7 @@ test("Testing hoisting function declaration", () => {
       blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
       export: false,
       name: "b",
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
     },
   ]);
 });
@@ -1219,22 +1221,22 @@ test("Testing using variable declared in top level inside another lower level cl
       blocks: [
         {
           type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
+          datatype: { type: "NumberDatatype" },
           exp: {
             type: "identifier",
             name: "c",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
           },
           export: false,
           identifierName: "b",
         },
         {
           type: "constVariableDeclaration",
-          datatype: LiteralDataType.Number,
+          datatype: { type: "NumberDatatype" },
           exp: {
             type: "identifier",
             name: "b",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
           },
           export: false,
           identifierName: "d",
@@ -1244,17 +1246,17 @@ test("Testing using variable declared in top level inside another lower level cl
           exp: {
             type: "identifier",
             name: "d",
-            datatype: LiteralDataType.Number,
+            datatype: { type: "NumberDatatype" },
           },
         },
       ],
       export: false,
       name: "a",
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       exp: {
         type: "number",
         value: 1,
@@ -1292,7 +1294,7 @@ test("Test hoisting function declaration in reassignment", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "letVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       exp: { type: "number", value: 1 },
       export: false,
       identifierName: "a",
@@ -1309,7 +1311,7 @@ test("Test hoisting function declaration in reassignment", () => {
           datatype: {
             type: "FunctionDataType",
             arguments: {},
-            returnType: LiteralDataType.Number,
+            returnType: { type: "NumberDatatype" },
           },
         },
         arguments: [],
@@ -1321,7 +1323,7 @@ test("Test hoisting function declaration in reassignment", () => {
       blocks: [{ type: "ReturnExpression", exp: { type: "number", value: 1 } }],
       export: false,
       name: "b",
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
     },
   ]);
 });
@@ -1349,7 +1351,7 @@ test("[Reassignment] Testing using variable declared in top level inside another
           type: "constVariableDeclaration",
           datatype: {
             type: "ArrayDataType",
-            baseType: LiteralDataType.Number,
+            baseType: { type: "NumberDatatype" },
             numberOfElements: 1,
           },
           exp: {
@@ -1358,12 +1360,12 @@ test("[Reassignment] Testing using variable declared in top level inside another
               {
                 type: "identifier",
                 name: "c",
-                datatype: LiteralDataType.Number,
+                datatype: { type: "NumberDatatype" },
               },
             ],
             datatype: {
               type: "ArrayDataType",
-              baseType: LiteralDataType.Number,
+              baseType: { type: "NumberDatatype" },
               numberOfElements: 1,
             },
           },
@@ -1374,7 +1376,7 @@ test("[Reassignment] Testing using variable declared in top level inside another
           type: "constVariableDeclaration",
           datatype: {
             type: "ObjectDataType",
-            keys: { e: LiteralDataType.Number },
+            keys: { e: { type: "NumberDatatype" } },
           },
           exp: {
             type: "object",
@@ -1388,7 +1390,7 @@ test("[Reassignment] Testing using variable declared in top level inside another
                     name: "b",
                     datatype: {
                       type: "ArrayDataType",
-                      baseType: LiteralDataType.Number,
+                      baseType: { type: "NumberDatatype" },
                       numberOfElements: 1,
                     },
                   },
@@ -1398,7 +1400,7 @@ test("[Reassignment] Testing using variable declared in top level inside another
             ],
             datatype: {
               type: "ObjectDataType",
-              keys: { e: LiteralDataType.Number },
+              keys: { e: { type: "NumberDatatype" } },
             },
           },
           export: false,
@@ -1413,7 +1415,7 @@ test("[Reassignment] Testing using variable declared in top level inside another
               name: "d",
               datatype: {
                 type: "ObjectDataType",
-                keys: { e: LiteralDataType.Number },
+                keys: { e: { type: "NumberDatatype" } },
               },
             },
             right: "e",
@@ -1422,11 +1424,11 @@ test("[Reassignment] Testing using variable declared in top level inside another
       ],
       export: false,
       name: "a",
-      returnType: LiteralDataType.Number,
+      returnType: { type: "NumberDatatype" },
     },
     {
       type: "letVariableDeclaration",
-      datatype: LiteralDataType.Number,
+      datatype: { type: "NumberDatatype" },
       exp: {
         type: "number",
         value: 1,
@@ -1467,8 +1469,8 @@ test("Typechecking import declaration", () => {
 
   const TestImporter = new DepImporter("/curDir", {
     [resolve("/curDir", "./someFile")]: {
-      a: LiteralDataType.Number,
-      b: LiteralDataType.Number,
+      a: { type: "NumberDatatype" },
+      b: { type: "NumberDatatype" },
     },
   });
 
@@ -1482,8 +1484,8 @@ test("Typechecking import declaration", () => {
       type: "importDeclaration",
       from: "./someFile",
       importedIdentifires: [
-        { type: "identifier", dataType: LiteralDataType.Number, name: "a" },
-        { type: "identifier", dataType: LiteralDataType.Number, name: "b" },
+        { type: "identifier", dataType: { type: "NumberDatatype" }, name: "a" },
+        { type: "identifier", dataType: { type: "NumberDatatype" }, name: "b" },
       ],
     },
   ]);
@@ -1499,24 +1501,24 @@ test("Typechecking strict equality and strict not equality", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       exp: {
         type: Token.StrictEquality,
         left: { type: "number", value: 1 },
         right: { type: "number", value: 1 },
-        datatype: LiteralDataType.Number,
+        datatype: { type: "NumberDatatype" },
       },
       export: false,
       identifierName: "a",
     },
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
+      datatype: { type: "BooleanDataType" },
       exp: {
         type: Token.StrictEquality,
         left: { type: "boolean", value: true },
         right: { type: "boolean", value: false },
-        datatype: LiteralDataType.Boolean,
+        datatype: { type: "BooleanDataType" },
       },
       export: false,
       identifierName: "c",

@@ -5,6 +5,7 @@ import {
   ArrayDatatype,
   ArrayLiteralExp,
   BangUninaryExp,
+  BooleanDataType,
   BooleanLiteralExp,
   BoxMemberAccessExp,
   CaretBinaryExp,
@@ -17,9 +18,10 @@ import {
   IdentifierExp,
   LessThanBinaryExp,
   LessThanOrEqualBinaryExp,
-  LiteralDataType,
   MinusBinaryExp,
   MinusUninaryExp,
+  NotCalculatedDatatype,
+  NumberDatatype,
   NumberLiteralExp,
   ObjectDatatype,
   ObjectLiteralExp,
@@ -31,6 +33,7 @@ import {
   StrictNotEqualBinaryExp,
   StringDatatype,
   StringLiteralExp,
+  UnknownDatatype,
   UnknownVariable,
   VerticalBarBinaryExp,
 } from "./base";
@@ -69,7 +72,10 @@ export type AllBinaryExp<ExpType, DataType> =
   | GreaterThanOrEqualBinaryExp<ExpType>;
 
 export type AllDataType<DataType> =
-  | LiteralDataType
+  | NumberDatatype
+  | BooleanDataType
+  | UnknownDatatype
+  | NotCalculatedDatatype
   | StringDatatype
   | IdentifierDatatype
   | ArrayDatatype<DataType>
@@ -289,6 +295,32 @@ export const isFunctionCallExp = <ExpType, DataType>(
   exp: AllExpression<ExpType, DataType>
 ): exp is FunctionCall<ExpType> => {
   return exp.type === "FunctionCall";
+};
+
+export const isNumberDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is NumberDatatype => {
+  return typeof datatype === "object" && datatype.type === "NumberDatatype";
+};
+
+export const isBooleanDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is BooleanDataType => {
+  return typeof datatype === "object" && datatype.type === "BooleanDataType";
+};
+
+export const isNotCalculatedDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is NotCalculatedDatatype => {
+  return (
+    typeof datatype === "object" && datatype.type === "NotCalculatedDatatype"
+  );
+};
+
+export const isUnknownDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is StringDatatype => {
+  return typeof datatype === "object" && datatype.type === "UnknownDatatype";
 };
 
 export const isStringDatatype = <DataType>(

@@ -242,11 +242,21 @@ export interface ReturnExp<Expression> {
   exp: Expression | null;
 }
 
-export enum LiteralDataType {
-  Boolean = "Boolean",
-  Number = "Number",
-  Unknown = "Unknown",
-  NotCalculated = "NotCalculated",
+
+export interface BooleanDataType {
+  type: "BooleanDataType";
+}
+
+export interface NumberDatatype {
+  type: "NumberDatatype";
+}
+
+export interface UnknownDatatype {
+  type: "UnknownDatatype";
+}
+
+export interface NotCalculatedDatatype {
+  type: "NotCalculatedDatatype";
 }
 
 export interface StringDatatype {

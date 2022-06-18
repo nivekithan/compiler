@@ -29,7 +29,6 @@ import {
   isVerticalBarBinaryExp,
 } from "../tsTypes/all";
 
-import { LiteralDataType } from "../tsTypes/base";
 import {
   TypeCheckedDatatype,
   TypeCheckedExpression,
@@ -46,10 +45,11 @@ export const getDatatypeOfTypeCheckedExp = (
   exp: TypeCheckedExpression
 ): TypeCheckedDatatype => {
   // if (isCharLiteralexp(exp)) return LiteralDataType.Char;
-  if (isStringLiteralExp(exp)) return LiteralDataType.String;
+  if (isStringLiteralExp(exp))
+    return { type: "StringDatatype", length: exp.value.length };
   if (isIdentifierLiteralExp(exp)) return exp.datatype;
-  if (isNumberLiteralExp(exp)) return LiteralDataType.Number;
-  if (isBooleanLiteralExp(exp)) return LiteralDataType.Boolean;
+  if (isNumberLiteralExp(exp)) return { type: "NumberDatatype" };
+  if (isBooleanLiteralExp(exp)) return { type: "BooleanDataType" };
   if (isObjectLiteralExp(exp)) return exp.datatype;
   if (isArrayLiteralExp(exp)) return exp.datatype;
   if (isFunctionCallExp(exp)) {
@@ -62,10 +62,10 @@ export const getDatatypeOfTypeCheckedExp = (
     }
   }
   if (isPlusUninaryExp(exp) || isMinusUninaryExp(exp)) {
-    return LiteralDataType.Number;
+    return { type: "NumberDatatype" };
   }
   if (isBangUniaryExp(exp)) {
-    return LiteralDataType.Boolean;
+    return { type: "BooleanDataType" };
   }
   if (
     isPlusBinaryExp(exp) ||
@@ -76,7 +76,9 @@ export const getDatatypeOfTypeCheckedExp = (
     isCaretBinaryExp(exp) ||
     isAmpersandBinaryExp(exp)
   ) {
-    return LiteralDataType.Number;
+    return {
+      type: "NumberDatatype",
+    };
   }
 
   if (
@@ -87,7 +89,7 @@ export const getDatatypeOfTypeCheckedExp = (
     isGreaterThanBinaryExp(exp) ||
     isGreaterThanOrEqualBinaryExp(exp)
   ) {
-    return LiteralDataType.Boolean;
+    return { type: "BooleanDataType" };
   }
   if (isDotMemberAccessExp(exp)) {
     const leftDatatype = getDatatypeOfTypeCheckedExp(exp.left);

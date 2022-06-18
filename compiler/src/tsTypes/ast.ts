@@ -4,6 +4,7 @@ import {
   ArrayDatatype,
   ArrayLiteralExp,
   BangUninaryExp,
+  BooleanDataType,
   BooleanLiteralExp,
   BoxMemberAccessExp,
   BreakStatement,
@@ -27,9 +28,10 @@ import {
   LessThanBinaryExp,
   LessThanOrEqualBinaryExp,
   LetVariableDeclaration,
-  LiteralDataType,
   MinusBinaryExp,
   MinusUninaryExp,
+  NotCalculatedDatatype,
+  NumberDatatype,
   NumberLiteralExp,
   ObjectDatatype,
   ObjectLiteralExp,
@@ -43,6 +45,7 @@ import {
   StrictNotEqualBinaryExp,
   StringDatatype,
   StringLiteralExp,
+  UnknownDatatype,
   UnknownVariable,
   VerticalBarBinaryExp,
   WhileLoopDeclaration,
@@ -106,7 +109,10 @@ export type BinaryExp =
   | GreaterThanOrEqualBinaryExp<Expression>;
 
 export type DataType =
-  | LiteralDataType
+  | NumberDatatype
+  | BooleanDataType
+  | UnknownDatatype
+  | NotCalculatedDatatype
   | IdentifierDatatype
   | StringDatatype
   | ArrayDatatype<DataType>

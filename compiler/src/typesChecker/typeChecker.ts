@@ -9,12 +9,15 @@ import {
   isMinusUninaryExp,
   isUnknownVariable,
   isStringDatatype,
+  isBooleanDatatype,
+  isNotCalculatedDatatype,
+  isUnknownDatatype,
+  isNumberDatatype,
 } from "../tsTypes/all";
 import { Ast, DataType, Expression } from "../tsTypes/ast";
 import {
   FunctionDatatype,
   IdentifierDatatype,
-  LiteralDataType,
   MinusUninaryExp,
   ObjectDatatype,
   PlusUninaryExp,
@@ -161,7 +164,7 @@ class TypeCheckerFactory {
 
     const ifCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
-    if (ifCondDatatype !== LiteralDataType.Boolean)
+    if (!isBooleanDatatype(ifCondDatatype))
       throw Error(
         `Expected ifCondDatatype to be only LiteralDatatype.Boolean but instead got ${ifCondDatatype}`
       );
@@ -206,7 +209,7 @@ class TypeCheckerFactory {
 
       const elseIfCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
-      if (elseIfCondDatatype !== LiteralDataType.Boolean)
+      if (!isBooleanDatatype(elseIfCondDatatype))
         throw Error(
           `Expected datatype of else if condition to be boolean but instead got ${elseIfCondDatatype}`
         );
@@ -414,7 +417,7 @@ class TypeCheckerFactory {
       }
     }
 
-    if (returnType === LiteralDataType.NotCalculated) {
+    if (isNotCalculatedDatatype(returnType)) {
       this.closure.setReturnType(datatype);
     } else if (!deepEqual(returnType, datatype, { strict: true })) {
       throw Error("Expected both returnType and datatype of exp to be equal");
@@ -457,7 +460,7 @@ class TypeCheckerFactory {
 
     const loopCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
-    if (loopCondDatatype !== LiteralDataType.Boolean)
+    if (!isBooleanDatatype(loopCondDatatype))
       throw Error(
         "Expected condition of do while loop to be of LiteralDatatype.Boolean"
       );
@@ -488,7 +491,7 @@ class TypeCheckerFactory {
 
     const loopCondDatatype = this.getDataTypeOfExpression(curAst.condition);
 
-    if (loopCondDatatype !== LiteralDataType.Boolean)
+    if (!isBooleanDatatype(loopCondDatatype))
       throw Error(
         "Expected condition of while loop to be of LiteralDatatype.Boolean"
       );
@@ -531,8 +534,8 @@ class TypeCheckerFactory {
     const expressionDatatype = this.getDataTypeOfExpression(curAst.exp);
 
     if (
-      expectedDatatype === LiteralDataType.NotCalculated ||
-      expectedDatatype === LiteralDataType.Unknown ||
+      isNotCalculatedDatatype(expectedDatatype) ||
+      isUnknownDatatype(expectedDatatype) ||
       isUnknownVariable(expressionDatatype)
     ) {
       curAst.datatype = expressionDatatype;
@@ -584,12 +587,12 @@ class TypeCheckerFactory {
           }
         } else {
           if (
-            expectedDatatype !== LiteralDataType.NotCalculated &&
-            expectedDatatype !== LiteralDataType.Unknown &&
+            !isNotCalculatedDatatype(expectedDatatype) &&
+            !isUnknownDatatype(expectedDatatype) &&
             !deepEqual(expectedDatatype, newDatatype, { strict: true })
           ) {
             throw Error(
-              `Expected both expected datatype and expressed datatype to be equal`
+              `Expected both expected datatype : ${expectedDatatype.type} and expressed : ${newDatatype.type} datatype to be equal`
             );
           }
         }
@@ -766,7 +769,7 @@ class TypeCheckerFactory {
 
     if (
       curAst.assignmentOperator !== Token.Assign &&
-      dataTypeOfPath !== LiteralDataType.Number &&
+      !isNumberDatatype(dataTypeOfPath) &&
       !isUnknownVariable(dataTypeOfPath)
     )
       throw Error(`Expected datatype to be number`);
@@ -800,7 +803,7 @@ class TypeCheckerFactory {
           return { type: "UnknownVariable", varName: expDatatype.varName };
         }
 
-        if (expDatatype !== LiteralDataType.Number) {
+        if (!isNumberDatatype(expDatatype)) {
           throw Error(
             "Only exp whose datatype is number can be used in accessing exp in BoxMemberPath"
           );
@@ -842,9 +845,9 @@ class TypeCheckerFactory {
 
   getDataTypeOfExpression(exp: Expression): DataType {
     if (exp.type === "number") {
-      return LiteralDataType.Number;
+      return { type: "NumberDatatype" };
     } else if (exp.type === "boolean") {
-      return LiteralDataType.Boolean;
+      return { type: "BooleanDataType" };
     } else if (exp.type === "string") {
       return { type: "StringDatatype", length: exp.value.length };
     } else if (exp.type === "object") {
@@ -935,7 +938,7 @@ class TypeCheckerFactory {
       return datatype;
     } else if (exp.type === "identifier") {
       if (
-        exp.datatype === LiteralDataType.NotCalculated ||
+        isNotCalculatedDatatype(exp.datatype) ||
         isUnknownVariable(exp.datatype)
       ) {
         const varInfo = this.closure.getVariableInfo(exp.name);
@@ -963,21 +966,18 @@ class TypeCheckerFactory {
           return { type: "UnknownVariable", varName: argumentExp.varName };
         }
 
-        if (argumentExp !== LiteralDataType.Number)
+        if (!isNumberDatatype(argumentExp))
           throw Error(
             "Argument to Uninary Plus Token cannot be anything other Datatype `number`"
           );
 
-        return LiteralDataType.Number;
+        return { type: "NumberDatatype" };
       } else {
         const leftDataType = this.getDataTypeOfExpression(exp.left);
         const rightDataType = this.getDataTypeOfExpression(exp.right);
 
-        if (
-          leftDataType === LiteralDataType.Number &&
-          rightDataType === LiteralDataType.Number
-        ) {
-          return LiteralDataType.Number;
+        if (isNumberDatatype(leftDataType) && isNumberDatatype(rightDataType)) {
+          return { type: "NumberDatatype" };
         } else if (
           isStringDatatype(leftDataType) &&
           isStringDatatype(rightDataType)
@@ -1008,21 +1008,18 @@ class TypeCheckerFactory {
           return { type: "UnknownVariable", varName: argumentExp.varName };
         }
 
-        if (argumentExp !== LiteralDataType.Number)
+        if (!isNumberDatatype(argumentExp))
           throw Error(
             "Argument to Uninary Plus Token cannot be anything other Datatype `number`"
           );
 
-        return LiteralDataType.Number;
+        return { type: "NumberDatatype" };
       } else {
         const leftDataType = this.getDataTypeOfExpression(exp.left);
         const rightDataType = this.getDataTypeOfExpression(exp.right);
 
-        if (
-          leftDataType === LiteralDataType.Number &&
-          rightDataType === LiteralDataType.Number
-        ) {
-          return LiteralDataType.Number;
+        if (isNumberDatatype(leftDataType) && isNumberDatatype(rightDataType)) {
+          return { type: "NumberDatatype" };
         } else {
           if (isUnknownVariable(leftDataType)) {
             return { type: "UnknownVariable", varName: leftDataType.varName };
@@ -1044,13 +1041,13 @@ class TypeCheckerFactory {
         return { type: "UnknownVariable", varName: argumentExp.varName };
       }
 
-      if (argumentExp !== LiteralDataType.Boolean) {
+      if (!isBooleanDatatype(argumentExp)) {
         throw Error(
           "Argument to Bang Uniary Exp can only be datatype of Boolean"
         );
       }
 
-      return LiteralDataType.Boolean;
+      return { type: "BooleanDataType" };
     } else if (
       exp.type === Token.Star ||
       exp.type === Token.Slash ||
@@ -1061,11 +1058,8 @@ class TypeCheckerFactory {
       const leftDataType = this.getDataTypeOfExpression(exp.left);
       const rightDataType = this.getDataTypeOfExpression(exp.right);
 
-      if (
-        leftDataType === LiteralDataType.Number &&
-        rightDataType === LiteralDataType.Number
-      ) {
-        return LiteralDataType.Number;
+      if (isNumberDatatype(leftDataType) && isNumberDatatype(rightDataType)) {
+        return { type: "NumberDatatype" };
       } else {
         if (isUnknownVariable(leftDataType)) {
           return { type: "UnknownVariable", varName: leftDataType.varName };
@@ -1087,16 +1081,14 @@ class TypeCheckerFactory {
       const rightDataType = this.getDataTypeOfExpression(exp.right);
 
       const isBothNumber =
-        leftDataType === LiteralDataType.Number &&
-        rightDataType === LiteralDataType.Number;
+        isNumberDatatype(leftDataType) && isNumberDatatype(rightDataType);
       const isBothBoolean =
-        leftDataType === LiteralDataType.Boolean &&
-        rightDataType === LiteralDataType.Boolean;
+        isBooleanDatatype(leftDataType) && isBooleanDatatype(rightDataType);
 
       if (isBothNumber || isBothBoolean) {
         exp.datatype = clone(leftDataType);
 
-        return LiteralDataType.Boolean;
+        return { type: "BooleanDataType" };
       } else {
         if (isUnknownVariable(leftDataType)) {
           return { type: "UnknownVariable", varName: leftDataType.varName };
@@ -1106,7 +1098,9 @@ class TypeCheckerFactory {
           return { type: "UnknownVariable", varName: rightDataType.varName };
         }
 
-        throw Error("Expected both leftDatatype and rightDatatype to be equal");
+        throw Error(
+          `Expected both leftDatatype : ${leftDataType.type} and rightDatatype : ${rightDataType.type} to be equal`
+        );
       }
     } else if (
       exp.type === Token.LessThan ||
@@ -1117,11 +1111,8 @@ class TypeCheckerFactory {
       const leftDataType = this.getDataTypeOfExpression(exp.left);
       const rightDataType = this.getDataTypeOfExpression(exp.right);
 
-      if (
-        leftDataType === LiteralDataType.Number &&
-        rightDataType === LiteralDataType.Number
-      ) {
-        return LiteralDataType.Boolean;
+      if (isNumberDatatype(leftDataType) && isNumberDatatype(rightDataType)) {
+        return { type: "BooleanDataType" };
       } else {
         if (isUnknownVariable(leftDataType)) {
           return { type: "UnknownVariable", varName: leftDataType.varName };
@@ -1199,7 +1190,7 @@ class TypeCheckerFactory {
         };
       }
 
-      if (memberAccessDatatype !== LiteralDataType.Number)
+      if (!isNumberDatatype(memberAccessDatatype))
         throw Error(
           "It is not supported to memberAcessDatatype to be anything other than number"
         );

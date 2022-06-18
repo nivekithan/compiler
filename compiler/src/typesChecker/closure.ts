@@ -1,6 +1,5 @@
 import clone = require("clone");
 import { DataType } from "../tsTypes/ast";
-import { LiteralDataType } from "../tsTypes/base";
 
 export type ClosureVariable = {
   name: string;
@@ -49,7 +48,7 @@ export class Closure {
       functionInfo === undefined
         ? {
             insideFunctionDeclaration: false,
-            returnType: LiteralDataType.NotCalculated,
+            returnType: { type: "NotCalculatedDatatype" },
           }
         : functionInfo;
 

@@ -13,11 +13,13 @@ import llvm, {
 } from "llvm-bindings";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { TLLVMFunction } from "./function";
-import { ReAssignmentPath, LiteralDataType } from "../tsTypes/base";
+import { ReAssignmentPath } from "../tsTypes/base";
 import { getDatatypeOfTypeCheckedExp } from "../utils/utils";
 import {
   isArrayDatatype,
+  isBooleanDatatype,
   isMinusUninaryExp,
+  isNumberDatatype,
   isObjectDatatype,
   isPlusUninaryExp,
 } from "../tsTypes/all";
@@ -761,9 +763,9 @@ export class CodeGen {
         );
       }
 
-      if (comparingDatatype === LiteralDataType.Number) {
+      if (isNumberDatatype(comparingDatatype)) {
         return this.llvmIrBuilder.CreateFCmpOEQ(leftValue, rightValue);
-      } else if (comparingDatatype === LiteralDataType.Boolean) {
+      } else if (isBooleanDatatype(comparingDatatype)) {
         return this.llvmIrBuilder.CreateICmpEQ(leftValue, rightValue);
       }
     } else if (exp.type === Token.StrictNotEqual) {
@@ -778,9 +780,9 @@ export class CodeGen {
         );
       }
 
-      if (comparingDatatype === LiteralDataType.Number) {
+      if (isNumberDatatype(comparingDatatype)) {
         return this.llvmIrBuilder.CreateFCmpONE(leftValue, rightValue);
-      } else if (comparingDatatype === LiteralDataType.Boolean) {
+      } else if (isBooleanDatatype(comparingDatatype)) {
         return this.llvmIrBuilder.CreateICmpNE(leftValue, rightValue);
       }
     } else if (exp.type === Token.GreaterThan) {
@@ -858,9 +860,9 @@ export class CodeGen {
   }
 
   getLLVMType(dataType: TypeCheckedDatatype): llvm.Type {
-    if (dataType === LiteralDataType.Number) {
+    if (isNumberDatatype(dataType)) {
       return this.llvmIrBuilder.getDoubleTy();
-    } else if (dataType === LiteralDataType.Boolean) {
+    } else if (isBooleanDatatype(dataType)) {
       return this.llvmIrBuilder.getInt1Ty();
     } else if (typeof dataType === "object") {
       if (dataType.type === "FunctionDataType") {

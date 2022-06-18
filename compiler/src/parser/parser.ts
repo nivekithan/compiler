@@ -10,7 +10,6 @@ import {
 } from "../tsTypes/ast";
 import {
   ReturnExp,
-  LiteralDataType,
   DoWhileLoopDeclaration,
   WhileLoopDeclaration,
   ReAssignment,
@@ -157,7 +156,7 @@ export class ParserFactory {
 
     const isColon = this.isCurToken(Token.Colon);
 
-    let returnType: DataType = LiteralDataType.NotCalculated;
+    let returnType: DataType = { type: "NotCalculatedDatatype" };
 
     if (isColon) {
       this.next(); // consumes :
@@ -423,7 +422,7 @@ export class ParserFactory {
 
     const isColonToken = this.isCurToken(Token.Colon);
 
-    let datatype: DataType = LiteralDataType.NotCalculated;
+    let datatype: DataType = { type: "NotCalculatedDatatype" };
 
     if (isColonToken) {
       this.next(); // consumes :
@@ -481,7 +480,7 @@ export class ParserFactory {
       const identifierAst: IdentifierAst<DataType> = {
         type: "identifier",
         name: identifierName,
-        dataType: LiteralDataType.NotCalculated,
+        dataType: { type: "NotCalculatedDatatype" },
       };
       identifiers.push(identifierAst);
 
@@ -567,7 +566,7 @@ export class ParserFactory {
             leftPath = {
               type: "DotMemberPath",
               leftPath,
-              leftDataType: LiteralDataType.NotCalculated,
+              leftDataType: { type: "NotCalculatedDatatype" },
               rightPath: identifierName,
             };
             this.next(); // consumes identifier
@@ -591,7 +590,7 @@ export class ParserFactory {
             type: "BoxMemberPath",
             leftPath,
             accessExp: identExp,
-            leftBaseType: LiteralDataType.NotCalculated,
+            leftBaseType: { type: "NotCalculatedDatatype" },
           };
           continue;
         }
@@ -647,7 +646,7 @@ export class ParserFactory {
       return {
         type: "identifier",
         name: curToken.value,
-        datatype: LiteralDataType.NotCalculated,
+        datatype: { type: "NotCalculatedDatatype" },
       };
     } else if (isNumberLiteral(curToken)) {
       this.next(); // consumes NumberLiteral
@@ -701,7 +700,11 @@ export class ParserFactory {
 
       this.next(); // consumes }
 
-      return { type: "object", keys, datatype: LiteralDataType.NotCalculated };
+      return {
+        type: "object",
+        keys,
+        datatype: { type: "NotCalculatedDatatype" },
+      };
     } else if (curToken === Token.BoxOpenBracket) {
       this.next(); // consumes [
 
@@ -723,7 +726,11 @@ export class ParserFactory {
 
       this.next(); // consumes ]
 
-      return { type: "array", exps, datatype: LiteralDataType.NotCalculated };
+      return {
+        type: "array",
+        exps,
+        datatype: { type: "NotCalculatedDatatype" },
+      };
     }
 
     return null;
@@ -923,13 +930,13 @@ export class ParserFactory {
          * or else the datatype returned by this function will always fail
          * deepEqual check in typechecker
          */
-        return LiteralDataType.NotCalculated;
+        return { type: "NotCalculatedDatatype" };
       } else if (identifierName === "boolean") {
         this.next(); // consumes boolean
-        return LiteralDataType.Boolean;
+        return { type: "BooleanDataType" };
       } else if (identifierName === "number") {
         this.next(); // consumes number
-        return LiteralDataType.Number;
+        return { type: "NumberDatatype" };
       } else {
         this.next(); // consumes Datatype
         return { type: "IdentifierDatatype", name: identifierName };
@@ -999,7 +1006,7 @@ export class ParserFactory {
        * deepEqual check in typechecker
        */
       // return { type: "ArrayDataType", baseType: left };
-      return LiteralDataType.NotCalculated;
+      return { type: "NotCalculatedDatatype" };
     }
 
     return null;

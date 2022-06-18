@@ -3,6 +3,7 @@ import {
   ArrayDatatype,
   ArrayLiteralExp,
   BangUninaryExp,
+  BooleanDataType,
   BooleanLiteralExp,
   BoxMemberAccessExp,
   BreakStatement,
@@ -25,9 +26,9 @@ import {
   LessThanBinaryExp,
   LessThanOrEqualBinaryExp,
   LetVariableDeclaration,
-  LiteralDataType,
   MinusBinaryExp,
   MinusUninaryExp,
+  NumberDatatype,
   NumberLiteralExp,
   ObjectDatatype,
   ObjectLiteralExp,
@@ -99,10 +100,8 @@ export type BinaryExp =
   | GreaterThanOrEqualBinaryExp<TypeCheckedExpression>;
 
 export type TypeCheckedDatatype =
-  | Exclude<
-      LiteralDataType,
-      LiteralDataType.NotCalculated | LiteralDataType.Unknown
-    >
+  | NumberDatatype
+  | BooleanDataType
   | StringDatatype
   | ArrayDatatype<TypeCheckedDatatype>
   | ObjectDatatype<TypeCheckedDatatype>
