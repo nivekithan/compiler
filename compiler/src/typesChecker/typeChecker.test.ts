@@ -1,6 +1,4 @@
-import { FunctionType, PtrToIntInst } from "llvm-bindings";
 import { resolve } from "path";
-import { listenerCount } from "process";
 import { convertToTokens } from "../lexer/lexer";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { convertToAst } from "../parser/parser";
@@ -23,7 +21,7 @@ test("Typechecking variableDeclaration with implicit datatype", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.String,
+      datatype: { type: "StringDatatype", length: 1 },
       identifierName: "a",
       exp: { type: "string", value: "1" },
       export: false,
@@ -101,7 +99,7 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
   expect(output).toEqual<TypeCheckedAst[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.String,
+      datatype: { type: "StringDatatype", length: 1 },
       identifierName: "a",
       exp: { type: "string", value: "1" },
       export: false,
@@ -164,17 +162,6 @@ test("Typechecking variableDeclaration with explicit datatype", () => {
       export: false,
     },
   ]);
-});
-
-test("Wrong explicit string datatype", () => {
-  const input = `
-    const s : string = true;`;
-
-  const getOutput = () => {
-    typeCheckAst(convertToAst(convertToTokens(input)));
-  };
-
-  expect(getOutput).toThrowError();
 });
 
 test("Wrong explicit number datatype", () => {
@@ -1505,7 +1492,6 @@ test("Typechecking import declaration", () => {
 test("Typechecking strict equality and strict not equality", () => {
   const input = `
   const a = 1 === 1;
-  const b = "1" !== "1";
   const c = true === false;`;
 
   const output = typeCheckAst(convertToAst(convertToTokens(input)));
@@ -1522,18 +1508,6 @@ test("Typechecking strict equality and strict not equality", () => {
       },
       export: false,
       identifierName: "a",
-    },
-    {
-      type: "constVariableDeclaration",
-      datatype: LiteralDataType.Boolean,
-      exp: {
-        type: Token.StrictNotEqual,
-        left: { type: "string", value: "1" },
-        right: { type: "string", value: "1" },
-        datatype: LiteralDataType.String,
-      },
-      export: false,
-      identifierName: "b",
     },
     {
       type: "constVariableDeclaration",

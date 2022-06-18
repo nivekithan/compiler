@@ -41,6 +41,7 @@ import {
   StarBinaryExp,
   StrictEqualityBinaryExp,
   StrictNotEqualBinaryExp,
+  StringDatatype,
   StringLiteralExp,
   UnknownVariable,
   VerticalBarBinaryExp,
@@ -107,6 +108,7 @@ export type BinaryExp =
 export type DataType =
   | LiteralDataType
   | IdentifierDatatype
+  | StringDatatype
   | ArrayDatatype<DataType>
   | ObjectDatatype<DataType>
   | FunctionDatatype<DataType>

@@ -819,7 +819,6 @@ test("Testing Do While loop Declaration", () => {
 
 test("Testing type parsing", () => {
   const input = `
-  const a : string = 1;
   const a : number = 1;
   const a : boolean = 1;
   const a : what = 1;`;
@@ -827,13 +826,6 @@ test("Testing type parsing", () => {
   const output = convertToAst(convertToTokens(input));
 
   expect(output).toEqual<Ast[]>([
-    {
-      type: "constVariableDeclaration",
-      datatype: LiteralDataType.String,
-      exp: { type: "number", value: 1 },
-      identifierName: "a",
-      export: false,
-    },
     {
       type: "constVariableDeclaration",
       datatype: LiteralDataType.Number,
@@ -913,6 +905,23 @@ test("Testing Array datatype is ignored", () => {
   ]);
 });
 
+test("Testing string datatype is ignored", () => {
+  const input = `
+  const a : string = "a"`;
+
+  const output = convertToAst(convertToTokens(input));
+
+  expect(output).toEqual<Ast[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: LiteralDataType.NotCalculated,
+      exp: { type: "string", value: "a" },
+      export: false,
+      identifierName: "a",
+    },
+  ]);
+});
+
 test("Testing object datatype", () => {
   const input = `
   const a : {b : boolean} = {b : true}`;
@@ -939,15 +948,15 @@ test("Testing object datatype", () => {
 
 test("Testing parsing Grouped type", () => {
   const input = `
-  const a : ((string)) = "a"`;
+  const a : ((number)) = 1`;
 
   const output = convertToAst(convertToTokens(input));
 
   expect(output).toEqual<Ast[]>([
     {
       type: "constVariableDeclaration",
-      datatype: LiteralDataType.String,
-      exp: { type: "string", value: "a" },
+      datatype: LiteralDataType.Number,
+      exp: { type: "number", value: 1 },
       export: false,
       identifierName: "a",
     },

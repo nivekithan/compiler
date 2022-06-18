@@ -8,6 +8,7 @@ import {
   isPlusUninaryExp,
   isMinusUninaryExp,
   isUnknownVariable,
+  isStringDatatype,
 } from "../tsTypes/all";
 import { Ast, DataType, Expression } from "../tsTypes/ast";
 import {
@@ -845,7 +846,7 @@ class TypeCheckerFactory {
     } else if (exp.type === "boolean") {
       return LiteralDataType.Boolean;
     } else if (exp.type === "string") {
-      return LiteralDataType.String;
+      return { type: "StringDatatype", length: exp.value.length };
     } else if (exp.type === "object") {
       let unknownVariable: string | null = null;
 
@@ -978,10 +979,13 @@ class TypeCheckerFactory {
         ) {
           return LiteralDataType.Number;
         } else if (
-          leftDataType === LiteralDataType.String &&
-          rightDataType === LiteralDataType.String
+          isStringDatatype(leftDataType) &&
+          isStringDatatype(rightDataType)
         ) {
-          return LiteralDataType.String;
+          return {
+            type: "StringDatatype",
+            length: leftDataType.length + rightDataType.length,
+          };
         } else {
           if (isUnknownVariable(leftDataType)) {
             return { type: "UnknownVariable", varName: leftDataType.varName };
@@ -1082,7 +1086,14 @@ class TypeCheckerFactory {
       const leftDataType = this.getDataTypeOfExpression(exp.left);
       const rightDataType = this.getDataTypeOfExpression(exp.right);
 
-      if (leftDataType === rightDataType) {
+      const isBothNumber =
+        leftDataType === LiteralDataType.Number &&
+        rightDataType === LiteralDataType.Number;
+      const isBothBoolean =
+        leftDataType === LiteralDataType.Boolean &&
+        rightDataType === LiteralDataType.Boolean;
+
+      if (isBothNumber || isBothBoolean) {
         exp.datatype = clone(leftDataType);
 
         return LiteralDataType.Boolean;

@@ -1,9 +1,4 @@
-import { Token } from "../lexer/tokens";
 import {
-  AllBinaryExp,
-  AllDataType,
-  AllExpression,
-  AllUninaryExp,
   isAmpersandBinaryExp,
   isArrayDatatype,
   isArrayLiteralExp,
@@ -33,46 +28,12 @@ import {
   isStringLiteralExp,
   isVerticalBarBinaryExp,
 } from "../tsTypes/all";
-import {
-  Ast,
-  BinaryExp,
 
-  // CharLiteralExp,
-  DataType,
-  Expression,
-  UninaryExp,
-} from "../tsTypes/ast";
+import { LiteralDataType } from "../tsTypes/base";
 import {
-  VerticalBarBinaryExp,
-  FunctionCall,
-  FunctionDatatype,
-  GreaterThanBinaryExp,
-  GreaterThanOrEqualBinaryExp,
-  IdentifierExp,
-  LessThanBinaryExp,
-  LessThanOrEqualBinaryExp,
-  LiteralDataType,
-  MinusBinaryExp,
-  MinusUninaryExp,
-  NumberLiteralExp,
-  ObjectDatatype,
-  ObjectLiteralExp,
-  PlusBinaryExp,
-  PlusUninaryExp,
-  SlashBinaryExp,
-  StarBinaryExp,
-  StrictEqualityBinaryExp,
-  StrictNotEqualBinaryExp,
-  StringLiteralExp,
-  DotMemberAccessExp,
-  BooleanLiteralExp,
-  BoxMemberAccessExp,
-  CaretBinaryExp,
-  BangUninaryExp,
-  AmpersandBinaryExp,
-  ArrayDatatype,
-  ArrayLiteralExp,
-} from "../tsTypes/base";
+  TypeCheckedDatatype,
+  TypeCheckedExpression,
+} from "../tsTypes/typechecked";
 
 /**
  * Finds the datatype of Exp. It assumes the exp to be typechecked and it
@@ -81,7 +42,9 @@ import {
  * @param exp - Ast which has been typechecked
  * @return Datatype of exp
  */
-export const getDatatypeOfTypeCheckedExp = (exp: Expression): DataType => {
+export const getDatatypeOfTypeCheckedExp = (
+  exp: TypeCheckedExpression
+): TypeCheckedDatatype => {
   // if (isCharLiteralexp(exp)) return LiteralDataType.Char;
   if (isStringLiteralExp(exp)) return LiteralDataType.String;
   if (isIdentifierLiteralExp(exp)) return exp.datatype;

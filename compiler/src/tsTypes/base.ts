@@ -244,10 +244,14 @@ export interface ReturnExp<Expression> {
 
 export enum LiteralDataType {
   Boolean = "Boolean",
-  String = "String",
   Number = "Number",
   Unknown = "Unknown",
   NotCalculated = "NotCalculated",
+}
+
+export interface StringDatatype {
+  type: "StringDatatype";
+  length: number;
 }
 
 export interface UnknownVariable {

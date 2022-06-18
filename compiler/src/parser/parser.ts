@@ -915,8 +915,15 @@ export class ParserFactory {
       const identifierName = curToken.value;
 
       if (identifierName === "string") {
-        this.next(); // consumes string
-        return LiteralDataType.String;
+        this.next();
+        /**
+         * Since there is no way to mention number of characters in
+         * an string in a way that typescript server wont shout errors
+         * this function should always return NotCalculated Datatype
+         * or else the datatype returned by this function will always fail
+         * deepEqual check in typechecker
+         */
+        return LiteralDataType.NotCalculated;
       } else if (identifierName === "boolean") {
         this.next(); // consumes boolean
         return LiteralDataType.Boolean;

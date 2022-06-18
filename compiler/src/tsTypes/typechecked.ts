@@ -39,6 +39,7 @@ import {
   StarBinaryExp,
   StrictEqualityBinaryExp,
   StrictNotEqualBinaryExp,
+  StringDatatype,
   StringLiteralExp,
   TypeCheckedIfBlockDeclaration,
   VerticalBarBinaryExp,
@@ -102,6 +103,7 @@ export type TypeCheckedDatatype =
       LiteralDataType,
       LiteralDataType.NotCalculated | LiteralDataType.Unknown
     >
+  | StringDatatype
   | ArrayDatatype<TypeCheckedDatatype>
   | ObjectDatatype<TypeCheckedDatatype>
   | FunctionDatatype<TypeCheckedDatatype>;

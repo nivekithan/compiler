@@ -1,5 +1,4 @@
-import { unlink } from "fs";
-import { AllocaInst, Function as LLVMFunction, Value } from "llvm-bindings";
+import { Function as LLVMFunction, Value } from "llvm-bindings";
 
 export class TLLVMFunction {
   llvmFunction: LLVMFunction;

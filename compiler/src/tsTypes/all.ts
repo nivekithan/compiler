@@ -1,4 +1,5 @@
 import { Token } from "../lexer/tokens";
+import { DataType } from "./ast";
 import {
   AmpersandBinaryExp,
   ArrayDatatype,
@@ -28,6 +29,7 @@ import {
   StarBinaryExp,
   StrictEqualityBinaryExp,
   StrictNotEqualBinaryExp,
+  StringDatatype,
   StringLiteralExp,
   UnknownVariable,
   VerticalBarBinaryExp,
@@ -68,6 +70,7 @@ export type AllBinaryExp<ExpType, DataType> =
 
 export type AllDataType<DataType> =
   | LiteralDataType
+  | StringDatatype
   | IdentifierDatatype
   | ArrayDatatype<DataType>
   | ObjectDatatype<DataType>
@@ -286,6 +289,12 @@ export const isFunctionCallExp = <ExpType, DataType>(
   exp: AllExpression<ExpType, DataType>
 ): exp is FunctionCall<ExpType> => {
   return exp.type === "FunctionCall";
+};
+
+export const isStringDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is StringDatatype => {
+  return typeof datatype === "object" && datatype.type === "StringDatatype";
 };
 
 export const isArrayDatatype = <DataType>(
