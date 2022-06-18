@@ -108,6 +108,10 @@ export interface ContinueStatement {
   type: KeywordTokens.Continue;
 }
 
+export interface CharLiteralExp {
+  type: "char";
+  value: string; // string.length has to be one
+}
 export interface StringLiteralExp {
   type: "string";
   value: string;
@@ -242,13 +246,16 @@ export interface ReturnExp<Expression> {
   exp: Expression | null;
 }
 
-
 export interface BooleanDataType {
   type: "BooleanDataType";
 }
 
 export interface NumberDatatype {
   type: "NumberDatatype";
+}
+
+export interface CharDatatype {
+  type: "CharDatatype";
 }
 
 export interface UnknownDatatype {

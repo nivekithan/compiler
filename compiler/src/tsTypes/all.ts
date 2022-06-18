@@ -9,6 +9,8 @@ import {
   BooleanLiteralExp,
   BoxMemberAccessExp,
   CaretBinaryExp,
+  CharDatatype,
+  CharLiteralExp,
   DotMemberAccessExp,
   FunctionCall,
   FunctionDatatype,
@@ -39,6 +41,7 @@ import {
 } from "./base";
 
 export type AllExpression<ExpType, DataType> =
+  | CharLiteralExp
   | StringLiteralExp
   | IdentifierExp<DataType>
   | NumberLiteralExp
@@ -74,6 +77,7 @@ export type AllBinaryExp<ExpType, DataType> =
 export type AllDataType<DataType> =
   | NumberDatatype
   | BooleanDataType
+  | CharDatatype
   | UnknownDatatype
   | NotCalculatedDatatype
   | StringDatatype
@@ -82,6 +86,12 @@ export type AllDataType<DataType> =
   | ObjectDatatype<DataType>
   | FunctionDatatype<DataType>
   | UnknownVariable;
+
+export const isCharLiteralExp = <ExpType, DataType>(
+  exp: AllExpression<ExpType, DataType>
+): exp is CharLiteralExp => {
+  return exp.type === "char";
+};
 
 export const isStringLiteralExp = <ExpType, DataType>(
   exp: AllExpression<ExpType, DataType>
@@ -307,6 +317,12 @@ export const isBooleanDatatype = <DataType>(
   datatype: AllDataType<DataType>
 ): datatype is BooleanDataType => {
   return typeof datatype === "object" && datatype.type === "BooleanDataType";
+};
+
+export const isCharDatatype = <DataType>(
+  datatype: AllDataType<DataType>
+): datatype is CharDatatype => {
+  return typeof datatype === "object" && datatype.type === "CharDatatype";
 };
 
 export const isNotCalculatedDatatype = <DataType>(
