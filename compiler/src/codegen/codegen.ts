@@ -18,6 +18,8 @@ import { getDataTypeOfDeSugaredExpression } from "../tsTypes/desugared";
 import {
   isArrayDatatype,
   isBooleanDatatype,
+  isCharDatatype,
+  isCharLiteralExp,
   isMinusUninaryExp,
   isNumberDatatype,
   isObjectDatatype,
@@ -622,6 +624,8 @@ export class CodeGen {
   getExpValue(exp: DeSugaredExpression): Value {
     if (exp.type === "number") {
       return ConstantFP.get(this.llvmIrBuilder.getDoubleTy(), exp.value);
+    } else if (isCharLiteralExp(exp)) {
+      return this.llvmIrBuilder.getInt16(exp.value.charCodeAt(0));
     } else if (exp.type === "boolean") {
       return this.llvmIrBuilder.getInt1(exp.value);
     } else if (exp.type === "identifier") {
@@ -864,6 +868,8 @@ export class CodeGen {
       return this.llvmIrBuilder.getDoubleTy();
     } else if (isBooleanDatatype(dataType)) {
       return this.llvmIrBuilder.getInt1Ty();
+    } else if (isCharDatatype(dataType)) {
+      return this.llvmIrBuilder.getInt16Ty();
     } else if (typeof dataType === "object") {
       if (dataType.type === "FunctionDataType") {
         const returnType = this.getLLVMType(dataType.returnType);

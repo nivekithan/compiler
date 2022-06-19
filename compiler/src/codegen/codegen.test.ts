@@ -729,3 +729,103 @@ BB.5:                                             ; preds = %BB.4, %BB.3
 "
 `);
 });
+
+test("Normal String variable decalaration", () => {
+  const input = `
+  const a = "123"`;
+
+  const output = convertToLLVMModule(
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca [3 x i16]*, align 8
+  %0 = alloca [3 x i16], align 2
+  %1 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 0
+  store i16 49, i16* %1, align 2
+  %2 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 1
+  store i16 50, i16* %2, align 2
+  %3 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 2
+  store i16 51, i16* %3, align 2
+  store [3 x i16]* %0, [3 x i16]** %a, align 8
+  ret void
+}
+"
+`);
+});
+
+test("Reassigning string variable", () => {
+  const input = `
+  let a = "123";
+  a = "456";`;
+
+  const output = convertToLLVMModule(
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca [3 x i16]*, align 8
+  %0 = alloca [3 x i16], align 2
+  %1 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 0
+  store i16 49, i16* %1, align 2
+  %2 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 1
+  store i16 50, i16* %2, align 2
+  %3 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 2
+  store i16 51, i16* %3, align 2
+  store [3 x i16]* %0, [3 x i16]** %a, align 8
+  %4 = alloca [3 x i16], align 2
+  %5 = getelementptr [3 x i16], [3 x i16]* %4, i64 0, i32 0
+  store i16 52, i16* %5, align 2
+  %6 = getelementptr [3 x i16], [3 x i16]* %4, i64 0, i32 1
+  store i16 53, i16* %6, align 2
+  %7 = getelementptr [3 x i16], [3 x i16]* %4, i64 0, i32 2
+  store i16 54, i16* %7, align 2
+  store [3 x i16]* %4, [3 x i16]** %a, align 8
+  ret void
+}
+"
+`);
+});
+
+test("Reassigning string value to another variable", () => {
+  const input = `
+  const a = "123";
+  const b = a;`;
+
+  const output = convertToLLVMModule(
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca [3 x i16]*, align 8
+  %0 = alloca [3 x i16], align 2
+  %1 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 0
+  store i16 49, i16* %1, align 2
+  %2 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 1
+  store i16 50, i16* %2, align 2
+  %3 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 2
+  store i16 51, i16* %3, align 2
+  store [3 x i16]* %0, [3 x i16]** %a, align 8
+  %b = alloca [3 x i16]*, align 8
+  %4 = load [3 x i16]*, [3 x i16]** %a, align 8
+  store [3 x i16]* %4, [3 x i16]** %b, align 8
+  ret void
+}
+"
+`);
+});
