@@ -1,4 +1,5 @@
 import clone from "clone";
+import { KeywordTokens } from "../lexer/tokens";
 import {
   isArrayDatatype,
   isArrayLiteralExp,
@@ -18,7 +19,11 @@ import {
   isStringLiteralExp,
   isUniaryExp,
 } from "../tsTypes/all";
-import { CharLiteralExp, ConstVariableDeclaration } from "../tsTypes/base";
+import {
+  CharLiteralExp,
+  ConstVariableDeclaration,
+  ReAssignmentPath,
+} from "../tsTypes/base";
 import {
   DeSugaredAst,
   DeSugaredDatatype,
@@ -58,12 +63,39 @@ class DeSugarAstFactory {
         curAst.type === "constVariableDeclaration" ||
         curAst.type === "letVariableDeclaration"
       ) {
-        this.deSugarVariableDeclaration(curAst);
+        const newAst = this.deSugarVariableDeclaration(curAst);
+        deSugaredAst.push(newAst);
+      } else if (curAst.type === "ReAssignment") {
+        const newAst = this.deSugarReAssignment(curAst);
+        deSugaredAst.push(newAst);
+      } else if (curAst.type === "WhileLoopDeclaration") {
+        const newAst = this.deSugarWhileLoopDeclaration(curAst);
+        deSugaredAst.push(newAst);
+      } else if (curAst.type === "DoWhileLoopDeclaration") {
+        const newAst = this.deSugarDoWhileLoopDeclaration(curAst);
+        deSugaredAst.push(newAst);
+      } else if (curAst.type === "FunctionDeclaration") {
+        const newAst = this.deSugarFunctionDeclaration(curAst);
+        deSugaredAst.push(newAst);
+      } else if (curAst.type === "ReturnExpression") {
+        const newAst = this.deSugarReturnExpression(curAst);
+        deSugaredAst.push(newAst);
+      } else if (curAst.type === "typeCheckedIfBlockDeclaration") {
+        const newAst = this.deSugarIsBlockDeclaration(curAst);
+        deSugaredAst.push(newAst);
+      } else if (
+        curAst.type === KeywordTokens.Continue ||
+        curAst.type === KeywordTokens.Break
+      ) {
+        const newAst = clone(curAst);
+        deSugaredAst.push(newAst);
+      } else {
+        throw new Error(
+          `Expression of type ${curAst.type} is still not yet supported to deSugared`
+        );
       }
 
-      throw new Error(
-        `Expression of type ${curAst.type} is still not yet supported to deSugared`
-      );
+      this.next();
     }
 
     return deSugaredAst;
@@ -86,6 +118,169 @@ class DeSugarAstFactory {
       ...curAst,
       exp: newExpression,
       datatype: newDataType,
+    };
+  }
+
+  deSugarReAssignment(curAst: TypeCheckedAst): DeSugaredAst {
+    if (curAst.type !== "ReAssignment")
+      throw new Error(
+        `Expected curAst to be type of ReAssignment but instead got ${curAst.type}`
+      );
+
+    const newReAssignmentPath = this.deSugarReassignmentPath(curAst.path);
+    const newExp = this.deSugarExpression(curAst.exp);
+
+    return { ...curAst, path: newReAssignmentPath, exp: newExp };
+  }
+
+  deSugarReassignmentPath(
+    curAst: ReAssignmentPath<TypeCheckedExpression, TypeCheckedDatatype>
+  ): ReAssignmentPath<DeSugaredExpression, DeSugaredDatatype> {
+    if (curAst.type === "IdentifierPath") {
+      return clone(curAst);
+    } else if (curAst.type === "BoxMemberPath") {
+      const newAccessExp = this.deSugarExpression(curAst.accessExp);
+      const newLeftBaseType = this.deSugarDataType(curAst.leftBaseType);
+      const newLeftPath = this.deSugarReassignmentPath(curAst.leftPath);
+      return {
+        type: "BoxMemberPath",
+        accessExp: newAccessExp,
+        leftBaseType: newLeftBaseType,
+        leftPath: newLeftPath,
+      };
+    } else if (curAst.type === "DotMemberPath") {
+      const newLeftDatatype = this.deSugarDataType(curAst.leftDataType);
+      const newLeftPath = this.deSugarReassignmentPath(curAst.leftPath);
+      return {
+        type: "DotMemberPath",
+        leftDataType: newLeftDatatype,
+        leftPath: newLeftPath,
+        rightPath: curAst.rightPath,
+      };
+    }
+
+    throw new Error(
+      `Ast of type ${curAst} is still not yet supported in deSugarReAssignmentPath`
+    );
+  }
+
+  deSugarWhileLoopDeclaration(curAst: TypeCheckedAst): DeSugaredAst {
+    if (curAst.type !== "WhileLoopDeclaration")
+      throw new Error(
+        `Expected curAst to be type of whileLoopDeclaration but instead got ${curAst.type}`
+      );
+
+    const newCondition = this.deSugarExpression(curAst.condition);
+
+    const whileBlockDeSugarer = new DeSugarAstFactory(curAst.blocks);
+    const newBlocks = whileBlockDeSugarer.deSugarAst();
+
+    return {
+      type: "WhileLoopDeclaration",
+      blocks: newBlocks,
+      condition: newCondition,
+    };
+  }
+
+  deSugarDoWhileLoopDeclaration(curAst: TypeCheckedAst): DeSugaredAst {
+    if (curAst.type !== "DoWhileLoopDeclaration")
+      throw new Error(
+        `Expected curAst to be of type of doWhileLoopDeclaration but instead got ${curAst.type}`
+      );
+
+    const newCondition = this.deSugarExpression(curAst.condition);
+    const doWhileBlockDeSugarer = new DeSugarAstFactory(curAst.blocks);
+    const newBlocks = doWhileBlockDeSugarer.deSugarAst();
+
+    return {
+      type: "DoWhileLoopDeclaration",
+      condition: newCondition,
+      blocks: newBlocks,
+    };
+  }
+
+  deSugarFunctionDeclaration(curAst: TypeCheckedAst): DeSugaredAst {
+    if (curAst.type !== "FunctionDeclaration")
+      throw new Error(
+        `Expected curAst to be of type deSugarFunctionDeclaration but instead got ${curAst.type}`
+      );
+
+    const newArguments = curAst.arguments.map(
+      ([name, dataType]): [string, DeSugaredDatatype] => {
+        return [name, this.deSugarDataType(dataType)];
+      }
+    );
+
+    const newReturnType = this.deSugarDataType(curAst.returnType);
+
+    const fnDecDeSugarer = new DeSugarAstFactory(curAst.blocks);
+    const newBlocks = fnDecDeSugarer.deSugarAst();
+
+    return {
+      ...curAst,
+      arguments: newArguments,
+      blocks: newBlocks,
+      returnType: newReturnType,
+    };
+  }
+
+  deSugarReturnExpression(curAst: TypeCheckedAst): DeSugaredAst {
+    if (curAst.type !== "ReturnExpression")
+      throw new Error(
+        `Expected curAst to be type of ReturnExpression but instead got ${curAst.type}`
+      );
+
+    const newExp =
+      curAst.exp === null ? null : this.deSugarExpression(curAst.exp);
+    return { type: "ReturnExpression", exp: newExp };
+  }
+
+  deSugarIsBlockDeclaration(curAst: TypeCheckedAst): DeSugaredAst {
+    if (curAst.type !== "typeCheckedIfBlockDeclaration")
+      throw new Error(
+        `Expected curAst to be type of IfBlockDeclaration but instead got ${curAst.type}`
+      );
+
+    const newIfBlockCond = this.deSugarExpression(curAst.ifBlock.condition);
+    const newIfBlocks = new DeSugarAstFactory(
+      curAst.ifBlock.blocks
+    ).deSugarAst();
+
+    const newIfBlock = {
+      type: "IfBlockDeclaration",
+      blocks: newIfBlocks,
+      condition: newIfBlockCond,
+    } as const;
+
+    const oldElseBlock = curAst.elseBlock;
+
+    oldElseBlock?.blocks;
+    const newElseBlocks = oldElseBlock
+      ? new DeSugarAstFactory(oldElseBlock.blocks).deSugarAst()
+      : undefined;
+
+    const newElseBlock = newElseBlocks
+      ? ({ type: "ElseBlockDeclaration", blocks: newElseBlocks } as const)
+      : undefined;
+
+    const newElseIfBlocks = curAst.elseIfBlocks.map((elseIfBlock) => {
+      const newElseIfBlockCond = this.deSugarExpression(elseIfBlock.condition);
+      const newElseIfBlocks = new DeSugarAstFactory(
+        elseIfBlock.blocks
+      ).deSugarAst();
+
+      return {
+        type: "ElseIfBlockDeclaration",
+        blocks: newElseIfBlocks,
+        condition: newElseIfBlockCond,
+      } as const;
+    });
+
+    return {
+      type: "typeCheckedIfBlockDeclaration",
+      elseIfBlocks: newElseIfBlocks,
+      ifBlock: newIfBlock,
+      elseBlock: newElseBlock,
     };
   }
 

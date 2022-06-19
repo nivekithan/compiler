@@ -194,13 +194,11 @@ export interface StrictEqualityBinaryExp<ExpType, DataType> {
   type: Token.StrictEquality;
   left: ExpType;
   right: ExpType;
-  datatype?: DataType;
 }
 export interface StrictNotEqualBinaryExp<ExpType, DataType> {
   type: Token.StrictNotEqual;
   left: ExpType;
   right: ExpType;
-  datatype?: DataType;
 }
 export interface LessThanBinaryExp<ExpType> {
   type: Token.LessThan;

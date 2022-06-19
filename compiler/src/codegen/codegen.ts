@@ -14,7 +14,7 @@ import llvm, {
 import { KeywordTokens, Token } from "../lexer/tokens";
 import { TLLVMFunction } from "./function";
 import { ReAssignmentPath } from "../tsTypes/base";
-import { getDatatypeOfTypeCheckedExp } from "../utils/utils";
+import { getDataTypeOfDeSugaredExpression } from "../tsTypes/desugared";
 import {
   isArrayDatatype,
   isBooleanDatatype,
@@ -24,19 +24,19 @@ import {
   isPlusUninaryExp,
 } from "../tsTypes/all";
 import {
-  TypeCheckedAst,
-  TypeCheckedDatatype,
-  TypeCheckedExpression,
-} from "../tsTypes/typechecked";
+  DeSugaredAst,
+  DeSugaredExpression,
+  DeSugaredDatatype,
+} from "../tsTypes/desugared";
 
-export const convertToLLVMModule = (asts: TypeCheckedAst[]): string => {
+export const convertToLLVMModule = (asts: DeSugaredAst[]): string => {
   const ModuleCodeGen = new CodeGen(asts, "main");
   ModuleCodeGen.consume();
   return ModuleCodeGen.dumpModule();
 };
 
 export class CodeGen {
-  asts: TypeCheckedAst[];
+  asts: DeSugaredAst[];
   curPos: number | null;
 
   moduleName: string;
@@ -52,7 +52,7 @@ export class CodeGen {
 
   globalVarDatabases: { [varName: string]: LLVMFunction | undefined };
 
-  constructor(typeCheckedAst: TypeCheckedAst[], moduleName: string) {
+  constructor(typeCheckedAst: DeSugaredAst[], moduleName: string) {
     this.asts = typeCheckedAst;
     this.curPos = 0;
 
@@ -94,7 +94,7 @@ export class CodeGen {
     this.llvmIrBuilder.CreateRet(null as unknown as Value);
   }
 
-  consumeAst(curAst: TypeCheckedAst | null) {
+  consumeAst(curAst: DeSugaredAst | null) {
     if (curAst === null) throw Error("Does not expect curAst to be null");
 
     if (curAst.type === "constVariableDeclaration") {
@@ -126,7 +126,7 @@ export class CodeGen {
    * Expects the curAst to be of type DoWhileLoopDeclaration
    */
 
-  consumeDoWhileLoopDeclaration(curAst: TypeCheckedAst | null) {
+  consumeDoWhileLoopDeclaration(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== "DoWhileLoopDeclaration") {
       throw new Error(
         `Expected curAst to be of type DoWhileLoopDeclaration but instead got ${curAst?.type}`
@@ -177,7 +177,7 @@ export class CodeGen {
   /**
    * Expected curAst to be of type KeywordTokens.Continue
    */
-  consumeContinueStatement(curAst: TypeCheckedAst | null) {
+  consumeContinueStatement(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== KeywordTokens.Continue) {
       throw new Error(
         `Expected curAst to be of type KeywordTokens.Continue but instead got ${curAst?.type}`
@@ -193,7 +193,7 @@ export class CodeGen {
   /**
    * Expected curAst to be of type KeywordTokens.Break
    */
-  consumeBreakStatement(curAst: TypeCheckedAst | null) {
+  consumeBreakStatement(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== KeywordTokens.Break) {
       throw new Error(
         `Expected curAst to be of type KeywordTokens.Break but instead got ${curAst?.type}`
@@ -211,7 +211,7 @@ export class CodeGen {
    * Expects the curAst to be of WhileLoopDeclaration
    */
 
-  consumeWhileLoopDeclaration(curAst: TypeCheckedAst | null) {
+  consumeWhileLoopDeclaration(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== "WhileLoopDeclaration") {
       throw new Error(
         `Expected curAst to of type WhileLoopDeclaration but instead got ${curAst?.type}`
@@ -273,7 +273,7 @@ export class CodeGen {
    * Expects the curAst to be of TypeCheckedIfBlockDeclaration
    */
 
-  consumeTypeCheckedIfBlockDeclaration(curAst: TypeCheckedAst | null) {
+  consumeTypeCheckedIfBlockDeclaration(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== "typeCheckedIfBlockDeclaration") {
       throw Error(
         `Expected curAst to be of type typeCheckedIfBlockDeclaration but instead got ${curAst?.type}`
@@ -415,7 +415,7 @@ export class CodeGen {
    *
    */
 
-  consumeReassignment(curAst: TypeCheckedAst | null) {
+  consumeReassignment(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== "ReAssignment")
       throw Error(
         `Expected curAst to be of type ConsumeReaassignment but instead got ${curAst?.type}`
@@ -463,7 +463,7 @@ export class CodeGen {
    * Expects the curAst to be constVariableDeclaration
    */
 
-  consumeVariableDeclaration(curAst: TypeCheckedAst | null) {
+  consumeVariableDeclaration(curAst: DeSugaredAst | null) {
     if (
       curAst === null ||
       (curAst.type !== "constVariableDeclaration" &&
@@ -494,7 +494,7 @@ export class CodeGen {
    * Expects the curAst to be functionDeclaration
    */
 
-  consumeFunctionDeclaration(curAst: TypeCheckedAst | null) {
+  consumeFunctionDeclaration(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== "FunctionDeclaration")
       throw Error(`Expected curAst to be of type functionDeclaration`);
 
@@ -545,7 +545,7 @@ export class CodeGen {
   /**
    * Expects the curAst to be of ReturnExpression
    */
-  consumeReturnExp(curAst: TypeCheckedAst | null) {
+  consumeReturnExp(curAst: DeSugaredAst | null) {
     if (curAst === null || curAst.type !== "ReturnExpression")
       throw new Error("Expected curAst to be of type ReturnExpression");
 
@@ -559,7 +559,7 @@ export class CodeGen {
   }
 
   getReassignmentPointer(
-    assignmentPath: ReAssignmentPath<TypeCheckedExpression, TypeCheckedDatatype>
+    assignmentPath: ReAssignmentPath<DeSugaredExpression, DeSugaredDatatype>
   ): Value {
     if (assignmentPath.type === "IdentifierPath") {
       const varInfo = this.currentFn.getVarInfo(assignmentPath.name);
@@ -619,7 +619,7 @@ export class CodeGen {
     throw Error("Not yet Implemented");
   }
 
-  getExpValue(exp: TypeCheckedExpression): Value {
+  getExpValue(exp: DeSugaredExpression): Value {
     if (exp.type === "number") {
       return ConstantFP.get(this.llvmIrBuilder.getDoubleTy(), exp.value);
     } else if (exp.type === "boolean") {
@@ -755,7 +755,7 @@ export class CodeGen {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
-      const comparingDatatype = exp.datatype;
+      const comparingDatatype = getDataTypeOfDeSugaredExpression(exp.left);
 
       if (comparingDatatype === undefined) {
         throw Error(
@@ -772,7 +772,7 @@ export class CodeGen {
       const leftValue = this.getExpValue(exp.left);
       const rightValue = this.getExpValue(exp.right);
 
-      const comparingDatatype = exp.datatype;
+      const comparingDatatype = getDataTypeOfDeSugaredExpression(exp.left);
 
       if (comparingDatatype === undefined) {
         throw Error(
@@ -827,7 +827,7 @@ export class CodeGen {
     } else if (exp.type === "DotMemberAccess") {
       const leftValue = this.getExpValue(exp.left);
 
-      const leftDatatype = getDatatypeOfTypeCheckedExp(exp.left);
+      const leftDatatype = getDataTypeOfDeSugaredExpression(exp.left);
 
       if (!isObjectDatatype(leftDatatype)) {
         throw Error(
@@ -859,7 +859,7 @@ export class CodeGen {
     );
   }
 
-  getLLVMType(dataType: TypeCheckedDatatype): llvm.Type {
+  getLLVMType(dataType: DeSugaredDatatype): llvm.Type {
     if (isNumberDatatype(dataType)) {
       return this.llvmIrBuilder.getDoubleTy();
     } else if (isBooleanDatatype(dataType)) {
@@ -950,7 +950,7 @@ export class CodeGen {
     }
   }
 
-  getCurAst(): TypeCheckedAst | null {
+  getCurAst(): DeSugaredAst | null {
     if (this.curPos === null) {
       return null;
     } else {

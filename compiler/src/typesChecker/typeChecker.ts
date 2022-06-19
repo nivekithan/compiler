@@ -1086,8 +1086,6 @@ class TypeCheckerFactory {
         isBooleanDatatype(leftDataType) && isBooleanDatatype(rightDataType);
 
       if (isBothNumber || isBothBoolean) {
-        exp.datatype = clone(leftDataType);
-
         return { type: "BooleanDataType" };
       } else {
         if (isUnknownVariable(leftDataType)) {

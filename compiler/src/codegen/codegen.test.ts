@@ -1,4 +1,5 @@
 import exp from "constants";
+import { deSugarAst } from "../desugared/desugar";
 import { convertToTokens } from "../lexer/lexer";
 import { convertToAst } from "../parser/parser";
 import { typeCheckAst } from "../typesChecker/typeChecker";
@@ -31,7 +32,7 @@ test("Testing const variable declaration", () => {
     const w = v.a;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -123,7 +124,7 @@ test("Testing function declaration", () => {
   }`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -163,7 +164,7 @@ test("Calling a function", () => {
 `;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -196,7 +197,7 @@ test("Calling a function with argument", () => {
   `;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -231,7 +232,7 @@ test("Testing letVariable declaration", () => {
   let a =1;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -269,7 +270,7 @@ test("Test identifier reassignment", () => {
   f /= 1;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -316,7 +317,7 @@ test("Test object reassignment", () => {
   a.b = 2;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -345,7 +346,7 @@ test("Test Array Reassignment", () => {
   a[1] = 2;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -381,7 +382,7 @@ test("If block Declaration with only if block", () => {
    const c = 2;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -423,7 +424,7 @@ if (!a) {
 const d = 1;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -474,7 +475,7 @@ if (!a) {
 const d = 1;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -541,7 +542,7 @@ if (!a) {
 const d = 1;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -610,7 +611,7 @@ test("While loop declaration with continue and break", () => {
   const x = 10;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
@@ -684,7 +685,7 @@ do {
 const b = 1;`;
 
   const output = convertToLLVMModule(
-    typeCheckAst(convertToAst(convertToTokens(input)))
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
   );
 
   expect(output).toMatchInlineSnapshot(`
