@@ -1523,3 +1523,32 @@ test("Typechecking strict equality and strict not equality", () => {
     },
   ]);
 });
+
+test("Testing compiler provided fn", () => {
+  const input = `
+  const a = printFoo()`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<TypeCheckedAst[]>([
+    {
+      type: "constVariableDeclaration",
+      export: false,
+      identifierName: "a",
+      datatype: { type: "BooleanDataType" },
+      exp: {
+        type: "FunctionCall",
+        arguments: [],
+        left: {
+          type: "identifier",
+          datatype: {
+            type: "FunctionDataType",
+            arguments: {},
+            returnType: { type: "BooleanDataType" },
+          },
+          name: "printFoo",
+        },
+      },
+    },
+  ]);
+});

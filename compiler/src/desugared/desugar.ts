@@ -22,6 +22,7 @@ import {
 import {
   CharLiteralExp,
   ConstVariableDeclaration,
+  IdentifierAst,
   ReAssignmentPath,
 } from "../tsTypes/base";
 import {
@@ -35,6 +36,7 @@ import {
   TypeCheckedDatatype,
   TypeCheckedExpression,
 } from "../tsTypes/typechecked";
+import { AstModifier } from "./astModifier";
 
 export const deSugarAst = (
   typeCheckedAst: TypeCheckedAst[]
@@ -46,49 +48,56 @@ export const deSugarAst = (
 class DeSugarAstFactory {
   asts: TypeCheckedAst[];
   curPos: number | null;
+  deSugaredAst: DeSugaredAst[];
+  modifier: AstModifier;
 
   constructor(typeCheckedAst: TypeCheckedAst[]) {
     this.asts = typeCheckedAst;
     this.curPos = 0;
+    this.deSugaredAst = [];
+    this.modifier = new AstModifier(this.deSugaredAst);
   }
 
   deSugarAst(): DeSugaredAst[] {
-    const deSugaredAst: DeSugaredAst[] = [];
+    this.deSugaredAst = [];
+    this.modifier = new AstModifier(this.deSugaredAst);
+
     while (this.curPos !== null) {
       const curAst = this.getCurAst();
 
-      if (curAst === null) return deSugaredAst;
+      if (curAst === null) return this.deSugaredAst;
 
       if (
         curAst.type === "constVariableDeclaration" ||
         curAst.type === "letVariableDeclaration"
       ) {
         const newAst = this.deSugarVariableDeclaration(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
       } else if (curAst.type === "ReAssignment") {
         const newAst = this.deSugarReAssignment(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
       } else if (curAst.type === "WhileLoopDeclaration") {
         const newAst = this.deSugarWhileLoopDeclaration(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
       } else if (curAst.type === "DoWhileLoopDeclaration") {
         const newAst = this.deSugarDoWhileLoopDeclaration(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
       } else if (curAst.type === "FunctionDeclaration") {
         const newAst = this.deSugarFunctionDeclaration(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
       } else if (curAst.type === "ReturnExpression") {
         const newAst = this.deSugarReturnExpression(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
       } else if (curAst.type === "typeCheckedIfBlockDeclaration") {
         const newAst = this.deSugarIsBlockDeclaration(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
       } else if (
         curAst.type === KeywordTokens.Continue ||
         curAst.type === KeywordTokens.Break
       ) {
         const newAst = clone(curAst);
-        deSugaredAst.push(newAst);
+        this.deSugaredAst.push(newAst);
+      } else if (curAst.type === "importDeclaration") {
       } else {
         throw new Error(
           `Expression of type ${curAst.type} is still not yet supported to deSugared`
@@ -98,7 +107,32 @@ class DeSugarAstFactory {
       this.next();
     }
 
-    return deSugaredAst;
+    return this.deSugaredAst;
+  }
+
+  deSugarImportDeclaration(curAst: TypeCheckedAst): DeSugaredAst {
+    if (curAst.type !== "importDeclaration")
+      throw new Error(
+        `Expected curAst to be type of importDeclaration but instead got ${curAst.type}`
+      );
+
+    const newImportedIdentifiers = curAst.importedIdentifires.map(
+      (identifierAst) => {
+        const newIdentifierAst: IdentifierAst<DeSugaredDatatype> = {
+          type: "identifier",
+          name: identifierAst.name,
+          dataType: this.deSugarDataType(identifierAst.dataType),
+        };
+
+        return newIdentifierAst;
+      }
+    );
+
+    return {
+      type: "importDeclaration",
+      importedIdentifires: newImportedIdentifiers,
+      from: curAst.from,
+    };
   }
 
   deSugarVariableDeclaration(curAst: TypeCheckedAst): DeSugaredAst {
@@ -338,6 +372,10 @@ class DeSugarAstFactory {
       throw new Error(
         `Expected expression to be of type array but instead got ${exp.type}`
       );
+    }
+
+    if (exp.name === "printFoo") {
+      this.modifier.importCompilerFn("printFoo");
     }
 
     const newIdentifierDatatype = this.deSugarDataType(exp.datatype);

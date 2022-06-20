@@ -1,5 +1,4 @@
-import clone = require("clone");
-import deepEqual = require("deep-equal");
+import deepEqual from "deep-equal";
 import { KeywordTokens, Token } from "../lexer/tokens";
 import {
   isFunctionDatatype,
@@ -16,24 +15,15 @@ import {
 } from "../tsTypes/all";
 import { Ast, DataType, Expression } from "../tsTypes/ast";
 import {
-  FunctionDatatype,
-  IdentifierDatatype,
-  MinusUninaryExp,
-  ObjectDatatype,
-  PlusUninaryExp,
   ReAssignmentPath,
   TypeCheckedIfBlockDeclaration,
-  ArrayDatatype,
   ElseBlockDeclaration,
   ElseIfBlockDeclaration,
   // UnknownVariable as UnknownVariableDatatype,
 } from "../tsTypes/base";
-import {
-  TypeCheckedAst,
-  TypeCheckedDatatype,
-  TypeCheckedExpression,
-} from "../tsTypes/typechecked";
+import { TypeCheckedAst, TypeCheckedExpression } from "../tsTypes/typechecked";
 import { Closure } from "./closure";
+import { getGlobalClosure } from "./closureWithGlobals";
 import { DepImporter } from "./depImporter";
 
 /**
@@ -45,9 +35,7 @@ export const typeCheckAst = (
 ): TypeCheckedAst[] => {
   const TypeChecker = new TypeCheckerFactory(
     asts,
-    new Closure(null, {
-      isInsideLoop: false,
-    }),
+    getGlobalClosure(),
     depImporter
   );
   const typeCheckedAst = TypeChecker.typeCheck();
