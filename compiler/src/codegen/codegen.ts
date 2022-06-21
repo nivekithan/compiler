@@ -20,6 +20,7 @@ import {
   isBooleanDatatype,
   isCharDatatype,
   isCharLiteralExp,
+  isFunctionDatatype,
   isMinusUninaryExp,
   isNumberDatatype,
   isObjectDatatype,
@@ -119,11 +120,49 @@ export class CodeGen {
       this.consumeContinueStatement(curAst);
     } else if (curAst.type === KeywordTokens.Break) {
       this.consumeBreakStatement(curAst);
+    } else if (curAst.type === "importDeclaration") {
+      this.consumeImportDeclaration(curAst);
     } else {
       throw Error(`It is still not supported for compiling ast ${curAst.type}`);
     }
   }
 
+  /**
+   * Expects the curAst to be of type importDeclaration
+   */
+  consumeImportDeclaration(curAst: DeSugaredAst | null) {
+    if (curAst === null || curAst.type !== "importDeclaration")
+      throw new Error(
+        `Expected curAst to be of type importDeclaration but instead got ${curAst?.type}`
+      );
+
+    const importedIdentifiers = curAst.importedIdentifires;
+
+    for (const identifier of importedIdentifiers) {
+      const identifierDataType = identifier.dataType;
+
+      if (!isFunctionDatatype(identifierDataType)) {
+        throw new Error(
+          `Can only import functionDataType but instead there is import of datatype ${identifierDataType}`
+        );
+      }
+
+      const returnLLVMType = this.getLLVMType(identifierDataType.returnType);
+      const fnArguments = Object.values(identifierDataType.arguments).map(
+        (argumentType) => this.getLLVMType(argumentType!)
+      );
+
+      const fnType = FunctionType.get(returnLLVMType, fnArguments, false);
+      const fnValue = LLVMFunction.Create(
+        fnType,
+        LLVMFunction.LinkageTypes.ExternalLinkage,
+        identifier.name,
+        this.llvmModule
+      );
+
+      this.addGlobalVar(identifier.name, fnValue);
+    }
+  }
   /**
    * Expects the curAst to be of type DoWhileLoopDeclaration
    */
@@ -625,7 +664,7 @@ export class CodeGen {
     if (exp.type === "number") {
       return ConstantFP.get(this.llvmIrBuilder.getDoubleTy(), exp.value);
     } else if (isCharLiteralExp(exp)) {
-      return this.llvmIrBuilder.getInt16(exp.value.charCodeAt(0));
+      return this.llvmIrBuilder.getInt8(exp.value.charCodeAt(0));
     } else if (exp.type === "boolean") {
       return this.llvmIrBuilder.getInt1(exp.value);
     } else if (exp.type === "identifier") {
@@ -869,7 +908,7 @@ export class CodeGen {
     } else if (isBooleanDatatype(dataType)) {
       return this.llvmIrBuilder.getInt1Ty();
     } else if (isCharDatatype(dataType)) {
-      return this.llvmIrBuilder.getInt16Ty();
+      return this.llvmIrBuilder.getInt8Ty();
     } else if (typeof dataType === "object") {
       if (dataType.type === "FunctionDataType") {
         const returnType = this.getLLVMType(dataType.returnType);

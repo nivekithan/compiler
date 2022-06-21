@@ -744,15 +744,15 @@ source_filename = \\"main\\"
 
 define void @main() {
 entry:
-  %a = alloca [3 x i16]*, align 8
-  %0 = alloca [3 x i16], align 2
-  %1 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 0
-  store i16 49, i16* %1, align 2
-  %2 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 1
-  store i16 50, i16* %2, align 2
-  %3 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 2
-  store i16 51, i16* %3, align 2
-  store [3 x i16]* %0, [3 x i16]** %a, align 8
+  %a = alloca [3 x i8]*, align 8
+  %0 = alloca [3 x i8], align 1
+  %1 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 0
+  store i8 49, i8* %1, align 1
+  %2 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 1
+  store i8 50, i8* %2, align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 2
+  store i8 51, i8* %3, align 1
+  store [3 x i8]* %0, [3 x i8]** %a, align 8
   ret void
 }
 "
@@ -774,23 +774,23 @@ source_filename = \\"main\\"
 
 define void @main() {
 entry:
-  %a = alloca [3 x i16]*, align 8
-  %0 = alloca [3 x i16], align 2
-  %1 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 0
-  store i16 49, i16* %1, align 2
-  %2 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 1
-  store i16 50, i16* %2, align 2
-  %3 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 2
-  store i16 51, i16* %3, align 2
-  store [3 x i16]* %0, [3 x i16]** %a, align 8
-  %4 = alloca [3 x i16], align 2
-  %5 = getelementptr [3 x i16], [3 x i16]* %4, i64 0, i32 0
-  store i16 52, i16* %5, align 2
-  %6 = getelementptr [3 x i16], [3 x i16]* %4, i64 0, i32 1
-  store i16 53, i16* %6, align 2
-  %7 = getelementptr [3 x i16], [3 x i16]* %4, i64 0, i32 2
-  store i16 54, i16* %7, align 2
-  store [3 x i16]* %4, [3 x i16]** %a, align 8
+  %a = alloca [3 x i8]*, align 8
+  %0 = alloca [3 x i8], align 1
+  %1 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 0
+  store i8 49, i8* %1, align 1
+  %2 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 1
+  store i8 50, i8* %2, align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 2
+  store i8 51, i8* %3, align 1
+  store [3 x i8]* %0, [3 x i8]** %a, align 8
+  %4 = alloca [3 x i8], align 1
+  %5 = getelementptr [3 x i8], [3 x i8]* %4, i64 0, i32 0
+  store i8 52, i8* %5, align 1
+  %6 = getelementptr [3 x i8], [3 x i8]* %4, i64 0, i32 1
+  store i8 53, i8* %6, align 1
+  %7 = getelementptr [3 x i8], [3 x i8]* %4, i64 0, i32 2
+  store i8 54, i8* %7, align 1
+  store [3 x i8]* %4, [3 x i8]** %a, align 8
   ret void
 }
 "
@@ -812,20 +812,44 @@ source_filename = \\"main\\"
 
 define void @main() {
 entry:
-  %a = alloca [3 x i16]*, align 8
-  %0 = alloca [3 x i16], align 2
-  %1 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 0
-  store i16 49, i16* %1, align 2
-  %2 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 1
-  store i16 50, i16* %2, align 2
-  %3 = getelementptr [3 x i16], [3 x i16]* %0, i64 0, i32 2
-  store i16 51, i16* %3, align 2
-  store [3 x i16]* %0, [3 x i16]** %a, align 8
-  %b = alloca [3 x i16]*, align 8
-  %4 = load [3 x i16]*, [3 x i16]** %a, align 8
-  store [3 x i16]* %4, [3 x i16]** %b, align 8
+  %a = alloca [3 x i8]*, align 8
+  %0 = alloca [3 x i8], align 1
+  %1 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 0
+  store i8 49, i8* %1, align 1
+  %2 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 1
+  store i8 50, i8* %2, align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 2
+  store i8 51, i8* %3, align 1
+  store [3 x i8]* %0, [3 x i8]** %a, align 8
+  %b = alloca [3 x i8]*, align 8
+  %4 = load [3 x i8]*, [3 x i8]** %a, align 8
+  store [3 x i8]* %4, [3 x i8]** %b, align 8
   ret void
 }
+"
+`);
+});
+
+test("Using Compiler provided fn", () => {
+  const input = `
+  const a = printFoo();`;
+
+  const output = convertToLLVMModule(
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+  );
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca i1, align 1
+  %0 = call i1 @printFoo()
+  store i1 %0, i1* %a, align 1
+  ret void
+}
+
+declare i1 @printFoo()
 "
 `);
 });
