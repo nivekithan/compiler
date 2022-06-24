@@ -133,3 +133,131 @@ test("desugaring compiler Provide functions", () => {
     },
   ]);
 });
+
+test("Desugaring box member access of string literals", () => {
+  const input = `
+  const a = "123";
+  const b = a[1];`;
+
+  const output = deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))));
+  expect(output).toEqual<DeSugaredAst[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: {
+        type: "ObjectDataType",
+        keys: {
+          value: {
+            type: "ArrayDataType",
+            baseType: { type: "CharDatatype" },
+            numberOfElements: 3,
+          },
+          length: { type: "NumberDatatype" },
+        },
+      },
+      exp: {
+        type: "object",
+        datatype: {
+          type: "ObjectDataType",
+          keys: {
+            value: {
+              type: "ArrayDataType",
+              baseType: { type: "CharDatatype" },
+              numberOfElements: 3,
+            },
+            length: { type: "NumberDatatype" },
+          },
+        },
+        keys: [
+          [
+            "value",
+            {
+              type: "array",
+              datatype: {
+                type: "ArrayDataType",
+                baseType: { type: "CharDatatype" },
+                numberOfElements: 3,
+              },
+              exps: [
+                { type: "char", value: "1" },
+                { type: "char", value: "2" },
+                { type: "char", value: "3" },
+              ],
+            },
+          ],
+          ["length", { type: "number", value: 3 }],
+        ],
+      },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "constVariableDeclaration",
+      export: false,
+      identifierName: "b",
+      datatype: {
+        type: "ObjectDataType",
+        keys: {
+          value: {
+            type: "ArrayDataType",
+            baseType: { type: "CharDatatype" },
+            numberOfElements: 1,
+          },
+          length: { type: "NumberDatatype" },
+        },
+      },
+      exp: {
+        type: "object",
+        datatype: {
+          type: "ObjectDataType",
+          keys: {
+            value: {
+              type: "ArrayDataType",
+              baseType: { type: "CharDatatype" },
+              numberOfElements: 1,
+            },
+            length: { type: "NumberDatatype" },
+          },
+        },
+        keys: [
+          [
+            "value",
+            {
+              type: "array",
+              datatype: {
+                type: "ArrayDataType",
+                baseType: { type: "CharDatatype" },
+                numberOfElements: 1,
+              },
+              exps: [
+                {
+                  type: "BoxMemberAccess",
+                  left: {
+                    type: "DotMemberAccess",
+                    left: {
+                      type: "identifier",
+                      datatype: {
+                        type: "ObjectDataType",
+                        keys: {
+                          value: {
+                            type: "ArrayDataType",
+                            baseType: { type: "CharDatatype" },
+                            numberOfElements: 3,
+                          },
+                          length: { type: "NumberDatatype" },
+                        },
+                      },
+                      name: "a",
+                    },
+                    right: "value",
+                  },
+                  right: { type: "number", value: 1 },
+                },
+              ],
+            },
+          ],
+          ["length", { type: "number", value: 1 }],
+        ],
+      },
+    },
+  ]);
+});

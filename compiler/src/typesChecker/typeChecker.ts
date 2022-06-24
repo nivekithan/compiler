@@ -1184,6 +1184,8 @@ class TypeCheckerFactory {
 
       if (isArrayDatatype(leftDatatype)) {
         return leftDatatype.baseType;
+      } else if (isStringDatatype(leftDatatype)) {
+        return { type: "StringDatatype", length: 1 };
       } else {
         throw Error(
           `Expected left datatype to be Array but instead got ${leftDatatype}`

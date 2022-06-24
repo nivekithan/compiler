@@ -25,6 +25,7 @@ import {
   isStarBinaryExp,
   isStrictEqualityBinaryExp,
   isStrictNotEqualBinaryExp,
+  isStringDatatype,
   isStringLiteralExp,
   isVerticalBarBinaryExp,
 } from "../tsTypes/all";
@@ -110,6 +111,8 @@ export const getDatatypeOfTypeCheckedExp = (
 
     if (isArrayDatatype(leftDatatype)) {
       return leftDatatype.baseType;
+    } else if (isStringDatatype(leftDatatype)) {
+      return { type: "StringDatatype", length: 1 };
     } else {
       throw Error("Expected leftDatatype to be Array");
     }

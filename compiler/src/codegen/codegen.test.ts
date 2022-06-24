@@ -890,6 +890,56 @@ entry:
 `);
 });
 
+test("BoxMemberAccess on string", () => {
+  const input = `
+  const a = "124";
+  const b = a[1];`;
+
+  const output = convertToLLVMModule(
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca { [3 x i8]*, double }*, align 8
+  %0 = alloca { [3 x i8]*, double }, align 8
+  %1 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 0
+  %2 = alloca [3 x i8], align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 0
+  store i8 49, i8* %3, align 1
+  %4 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 1
+  store i8 50, i8* %4, align 1
+  %5 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 2
+  store i8 52, i8* %5, align 1
+  store [3 x i8]* %2, [3 x i8]** %1, align 8
+  %6 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 1
+  store double 3.000000e+00, double* %6, align 8
+  store { [3 x i8]*, double }* %0, { [3 x i8]*, double }** %a, align 8
+  %b = alloca { [1 x i8]*, double }*, align 8
+  %7 = alloca { [1 x i8]*, double }, align 8
+  %8 = getelementptr { [1 x i8]*, double }, { [1 x i8]*, double }* %7, i64 0, i32 0
+  %9 = alloca [1 x i8], align 1
+  %10 = getelementptr [1 x i8], [1 x i8]* %9, i64 0, i32 0
+  %11 = load { [3 x i8]*, double }*, { [3 x i8]*, double }** %a, align 8
+  %12 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %11, i64 0, i32 0
+  %13 = load [3 x i8]*, [3 x i8]** %12, align 8
+  %14 = getelementptr [3 x i8], [3 x i8]* %13, i64 0, i32 1
+  %15 = load i8, i8* %14, align 1
+  store i8 %15, i8* %10, align 1
+  store [1 x i8]* %9, [1 x i8]** %8, align 8
+  %16 = getelementptr { [1 x i8]*, double }, { [1 x i8]*, double }* %7, i64 0, i32 1
+  store double 1.000000e+00, double* %16, align 8
+  store { [1 x i8]*, double }* %7, { [1 x i8]*, double }** %b, align 8
+  ret void
+}
+"
+`)
+});
+
 test("Using Compiler provided fn", () => {
   const input = `
   const a = printFoo();`;

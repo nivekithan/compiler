@@ -5,6 +5,7 @@ import { convertToAst } from "../parser/parser";
 import { DepImporter } from "./depImporter";
 import { typeCheckAst } from "./typeChecker";
 import { TypeCheckedAst } from "../tsTypes/typechecked";
+import { t } from "xstate";
 
 test("Typechecking variableDeclaration with implicit datatype", () => {
   const input = `
@@ -1579,6 +1580,39 @@ test("Testing length field on string", () => {
           name: "a",
         },
         right: "length",
+      },
+      export: false,
+      identifierName: "b",
+    },
+  ]);
+});
+
+test("Testing box member access on string datatype", () => {
+  const input = `
+  const a = "123";
+  const b = a[1];`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<TypeCheckedAst[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "StringDatatype", length: 3 },
+      exp: { type: "string", value: "123" },
+      export: false,
+      identifierName: "a",
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "StringDatatype", length: 1 },
+      exp: {
+        type: "BoxMemberAccess",
+        left: {
+          type: "identifier",
+          datatype: { type: "StringDatatype", length: 3 },
+          name: "a",
+        },
+        right: { type: "number", value: 1 },
       },
       export: false,
       identifierName: "b",

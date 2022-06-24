@@ -24,6 +24,7 @@ import {
   ArrayLiteralExp,
   CharLiteralExp,
   ConstVariableDeclaration,
+  DotMemberAccessExp,
   IdentifierAst,
   NumberDatatype,
   NumberLiteralExp,
@@ -40,6 +41,7 @@ import {
   TypeCheckedDatatype,
   TypeCheckedExpression,
 } from "../tsTypes/typechecked";
+import { getDatatypeOfTypeCheckedExp } from "../utils/utils";
 import { AstModifier } from "./astModifier";
 
 export const deSugarAst = (
@@ -364,7 +366,7 @@ class DeSugarAstFactory {
       numberOfElements: exp.value.length,
     };
 
-    const valueFiled: ArrayLiteralExp<DeSugaredExpression, DeSugaredDatatype> =
+    const valueField: ArrayLiteralExp<DeSugaredExpression, DeSugaredDatatype> =
       {
         type: "array",
         exps: Array.from(exp.value).map((s): CharLiteralExp => {
@@ -387,7 +389,7 @@ class DeSugarAstFactory {
         keys: { value: valueDatatype, length: lengthDatatype },
       },
       keys: [
-        ["value", valueFiled],
+        ["value", valueField],
         ["length", lengthField],
       ],
     };
@@ -462,13 +464,87 @@ class DeSugarAstFactory {
         `Expected expression to be of type BoxMemberAccessExp but instead got ${exp.type}`
       );
 
-    const newLeftExpression = this.deSugarExpression(exp.left);
+    const isLeftStringDatatype =
+      getDatatypeOfTypeCheckedExp(exp).type === "StringDatatype";
+
+    if (isLeftStringDatatype) {
+      return this.deSugarStringBoxMemberAccessExp(exp.left, exp.right);
+    }
+
+    const newLeftExpression: DeSugaredExpression = this.deSugarExpression(
+      exp.left
+    );
     const newRightExpression = this.deSugarExpression(exp.right);
 
     return {
       type: "BoxMemberAccess",
       left: newLeftExpression,
       right: newRightExpression,
+    };
+  }
+
+  deSugarStringBoxMemberAccessExp(
+    left: TypeCheckedExpression,
+    right: TypeCheckedExpression
+  ): DeSugaredExpression {
+    const leftDatatype = getDatatypeOfTypeCheckedExp(left);
+
+    if (!isStringDatatype(leftDatatype)) {
+      throw new Error(
+        `Expected left datatype to be string datatype but instead got ${leftDatatype.type}`
+      );
+    }
+
+    const rightDatatype = getDatatypeOfTypeCheckedExp(right);
+
+    if (!isNumberDatatype(rightDatatype)) {
+      throw new Error(
+        `Expected right datatype to be number datatype but instead got ${rightDatatype.type}`
+      );
+    }
+
+    const leftValueField: DotMemberAccessExp<DeSugaredExpression> = {
+      type: "DotMemberAccess",
+      left: this.deSugarExpression(left),
+      right: "value",
+    };
+
+    const lengthField: NumberLiteralExp = { type: "number", value: 1 };
+
+    const valueField: ArrayLiteralExp<DeSugaredExpression, DeSugaredDatatype> =
+      {
+        type: "array",
+        exps: [
+          {
+            type: "BoxMemberAccess",
+            left: leftValueField,
+            right: this.deSugarExpression(right),
+          },
+        ],
+        datatype: {
+          type: "ArrayDataType",
+          baseType: { type: "CharDatatype" },
+          numberOfElements: 1,
+        },
+      };
+
+    return {
+      type: "object",
+      datatype: {
+        type: "ObjectDataType",
+        keys: {
+          value: {
+            type: "ArrayDataType",
+            baseType: { type: "CharDatatype" },
+            numberOfElements: 1,
+          },
+          length: { type: "NumberDatatype" },
+        },
+      },
+      keys: [
+        ["value", valueField],
+        ["length", lengthField],
+      ],
     };
   }
 
