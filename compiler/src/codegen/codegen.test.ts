@@ -850,6 +850,46 @@ entry:
 `);
 });
 
+test("Testing length property in string", () => {
+  const input = `
+  const a = "134";
+  const b = a.length`;
+
+  const output = convertToLLVMModule(
+    deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))))
+  );
+
+  expect(output).toMatchInlineSnapshot(`
+"; ModuleID = 'main'
+source_filename = \\"main\\"
+
+define void @main() {
+entry:
+  %a = alloca { [3 x i8]*, double }*, align 8
+  %0 = alloca { [3 x i8]*, double }, align 8
+  %1 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 0
+  %2 = alloca [3 x i8], align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 0
+  store i8 49, i8* %3, align 1
+  %4 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 1
+  store i8 51, i8* %4, align 1
+  %5 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 2
+  store i8 52, i8* %5, align 1
+  store [3 x i8]* %2, [3 x i8]** %1, align 8
+  %6 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 1
+  store double 3.000000e+00, double* %6, align 8
+  store { [3 x i8]*, double }* %0, { [3 x i8]*, double }** %a, align 8
+  %b = alloca double, align 8
+  %7 = load { [3 x i8]*, double }*, { [3 x i8]*, double }** %a, align 8
+  %8 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %7, i64 0, i32 1
+  %9 = load double, double* %8, align 8
+  store double %9, double* %b, align 8
+  ret void
+}
+"
+`);
+});
+
 test("Using Compiler provided fn", () => {
   const input = `
   const a = printFoo();`;

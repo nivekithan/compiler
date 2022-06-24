@@ -1552,3 +1552,36 @@ test("Testing compiler provided fn", () => {
     },
   ]);
 });
+
+test("Testing length field on string", () => {
+  const input = `
+  const a = "123";
+  const b = a.length;`;
+
+  const output = typeCheckAst(convertToAst(convertToTokens(input)));
+
+  expect(output).toEqual<TypeCheckedAst[]>([
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "StringDatatype", length: 3 },
+      export: false,
+      identifierName: "a",
+      exp: { type: "string", value: "123" },
+    },
+    {
+      type: "constVariableDeclaration",
+      datatype: { type: "NumberDatatype" },
+      exp: {
+        type: "DotMemberAccess",
+        left: {
+          type: "identifier",
+          datatype: { type: "StringDatatype", length: 3 },
+          name: "a",
+        },
+        right: "length",
+      },
+      export: false,
+      identifierName: "b",
+    },
+  ]);
+});

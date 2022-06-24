@@ -6,7 +6,9 @@ import { deSugarAst } from "./desugar";
 
 test("Test desugaring string literals", () => {
   const input = `
-    const a = "234"`;
+    const a = "234";
+    
+    const b = a.length`;
 
   const output = deSugarAst(typeCheckAst(convertToAst(convertToTokens(input))));
 
@@ -59,6 +61,31 @@ test("Test desugaring string literals", () => {
         },
       },
       identifierName: "a",
+    },
+    {
+      type: "constVariableDeclaration",
+      identifierName: "b",
+      datatype: { type: "NumberDatatype" },
+      exp: {
+        type: "DotMemberAccess",
+        left: {
+          type: "identifier",
+          datatype: {
+            type: "ObjectDataType",
+            keys: {
+              value: {
+                type: "ArrayDataType",
+                baseType: { type: "CharDatatype" },
+                numberOfElements: 3,
+              },
+              length: { type: "NumberDatatype" },
+            },
+          },
+          name: "a",
+        },
+        right: "length",
+      },
+      export: false,
     },
   ]);
 });

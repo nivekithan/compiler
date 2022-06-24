@@ -287,7 +287,7 @@ export interface ArrayDatatype<DataType> {
 
 export interface ObjectDatatype<DataType> {
   type: "ObjectDataType";
-  keys: { [name: string]: DataType | undefined };
+  keys: Record<string, DataType | undefined>;
 }
 
 export interface FunctionDatatype<DataType> {

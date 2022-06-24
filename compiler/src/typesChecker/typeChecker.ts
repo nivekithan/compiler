@@ -25,6 +25,7 @@ import { TypeCheckedAst, TypeCheckedExpression } from "../tsTypes/typechecked";
 import { Closure } from "./closure";
 import { getGlobalClosure } from "./closureWithGlobals";
 import { DepImporter } from "./depImporter";
+import { getFieldsForDatatype } from "./fieldsForDatatype";
 
 /**
  * Mutates the passed ast
@@ -1195,26 +1196,30 @@ class TypeCheckerFactory {
         return { type: "UnknownVariable", varName: leftDatatype.varName };
       }
 
-      if (isObjectDatatype(leftDatatype)) {
-        const keyDatatype = leftDatatype.keys[exp.right];
+      const availableFields = getFieldsForDatatype(leftDatatype);
 
-        if (keyDatatype === undefined) {
-          throw Error(`There is no key with name ${exp.right}`);
-        }
-
-        if (isUnknownVariable(keyDatatype)) {
-          return {
-            type: "UnknownVariable",
-            varName: keyDatatype.varName,
-          };
-        }
-
-        return keyDatatype;
-      } else {
-        throw Error(
-          `Expected left datatype to be object but instead got ${leftDatatype}`
+      if (availableFields === undefined) {
+        throw new Error(
+          `There are no fields available for datatype ${leftDatatype.type}`
         );
       }
+
+      const accessedFieldDatatype = availableFields[exp.right];
+
+      if (accessedFieldDatatype === undefined) {
+        throw new Error(
+          `There are no fields named ${exp.right} available for datatype ${leftDatatype.type}`
+        );
+      }
+
+      if (isUnknownVariable(accessedFieldDatatype)) {
+        return {
+          type: "UnknownVariable",
+          varName: accessedFieldDatatype.varName,
+        };
+      }
+
+      return accessedFieldDatatype;
     } else {
       throw Error(
         `Finding datatype for this expression is not yet supported \n ${exp} `
