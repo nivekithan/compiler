@@ -15,22 +15,48 @@ test("Test desugaring string literals", () => {
       type: "constVariableDeclaration",
       export: false,
       exp: {
-        type: "array",
+        type: "object",
         datatype: {
-          type: "ArrayDataType",
-          baseType: { type: "CharDatatype" },
-          numberOfElements: 3,
+          type: "ObjectDataType",
+          keys: {
+            value: {
+              type: "ArrayDataType",
+              baseType: { type: "CharDatatype" },
+              numberOfElements: 3,
+            },
+            length: { type: "NumberDatatype" },
+          },
         },
-        exps: [
-          { type: "char", value: "2" },
-          { type: "char", value: "3" },
-          { type: "char", value: "4" },
+        keys: [
+          [
+            "value",
+            {
+              type: "array",
+              exps: [
+                { type: "char", value: "2" },
+                { type: "char", value: "3" },
+                { type: "char", value: "4" },
+              ],
+              datatype: {
+                type: "ArrayDataType",
+                baseType: { type: "CharDatatype" },
+                numberOfElements: 3,
+              },
+            },
+          ],
+          ["length", { type: "number", value: 3 }],
         ],
       },
       datatype: {
-        type: "ArrayDataType",
-        baseType: { type: "CharDatatype" },
-        numberOfElements: 3,
+        type: "ObjectDataType",
+        keys: {
+          value: {
+            type: "ArrayDataType",
+            baseType: { type: "CharDatatype" },
+            numberOfElements: 3,
+          },
+          length: { type: "NumberDatatype" },
+        },
       },
       identifierName: "a",
     },

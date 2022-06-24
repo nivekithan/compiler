@@ -20,9 +20,13 @@ import {
   isUniaryExp,
 } from "../tsTypes/all";
 import {
+  ArrayDatatype,
+  ArrayLiteralExp,
   CharLiteralExp,
   ConstVariableDeclaration,
   IdentifierAst,
+  NumberDatatype,
+  NumberLiteralExp,
   ReAssignmentPath,
 } from "../tsTypes/base";
 import {
@@ -354,16 +358,38 @@ class DeSugarAstFactory {
         `Expected expression to be of type string but instead got ${exp.type}`
       );
 
+    const valueDatatype: ArrayDatatype<DeSugaredDatatype> = {
+      type: "ArrayDataType",
+      baseType: { type: "CharDatatype" },
+      numberOfElements: exp.value.length,
+    };
+
+    const valueFiled: ArrayLiteralExp<DeSugaredExpression, DeSugaredDatatype> =
+      {
+        type: "array",
+        exps: Array.from(exp.value).map((s): CharLiteralExp => {
+          return { type: "char", value: s };
+        }),
+        datatype: valueDatatype,
+      };
+
+    const lengthField: NumberLiteralExp = {
+      type: "number",
+      value: exp.value.length,
+    };
+
+    const lengthDatatype: NumberDatatype = { type: "NumberDatatype" };
+
     return {
-      type: "array",
-      exps: Array.from(exp.value).map((s): CharLiteralExp => {
-        return { type: "char", value: s };
-      }),
+      type: "object",
       datatype: {
-        type: "ArrayDataType",
-        baseType: { type: "CharDatatype" },
-        numberOfElements: exp.value.length,
+        type: "ObjectDataType",
+        keys: { value: valueDatatype, length: lengthDatatype },
       },
+      keys: [
+        ["value", valueFiled],
+        ["length", lengthField],
+      ],
     };
   }
 
@@ -507,9 +533,15 @@ class DeSugarAstFactory {
   deSugarDataType(dataType: TypeCheckedDatatype): DeSugaredDatatype {
     if (isStringDatatype(dataType)) {
       return {
-        type: "ArrayDataType",
-        baseType: { type: "CharDatatype" },
-        numberOfElements: dataType.length,
+        type: "ObjectDataType",
+        keys: {
+          value: {
+            type: "ArrayDataType",
+            baseType: { type: "CharDatatype" },
+            numberOfElements: dataType.length,
+          },
+          length: { type: "NumberDatatype" },
+        },
       };
     } else if (isNumberDatatype(dataType)) {
       return clone(dataType);

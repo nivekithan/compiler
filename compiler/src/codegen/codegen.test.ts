@@ -744,15 +744,20 @@ source_filename = \\"main\\"
 
 define void @main() {
 entry:
-  %a = alloca [3 x i8]*, align 8
-  %0 = alloca [3 x i8], align 1
-  %1 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 0
-  store i8 49, i8* %1, align 1
-  %2 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 1
-  store i8 50, i8* %2, align 1
-  %3 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 2
-  store i8 51, i8* %3, align 1
-  store [3 x i8]* %0, [3 x i8]** %a, align 8
+  %a = alloca { [3 x i8]*, double }*, align 8
+  %0 = alloca { [3 x i8]*, double }, align 8
+  %1 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 0
+  %2 = alloca [3 x i8], align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 0
+  store i8 49, i8* %3, align 1
+  %4 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 1
+  store i8 50, i8* %4, align 1
+  %5 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 2
+  store i8 51, i8* %5, align 1
+  store [3 x i8]* %2, [3 x i8]** %1, align 8
+  %6 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 1
+  store double 3.000000e+00, double* %6, align 8
+  store { [3 x i8]*, double }* %0, { [3 x i8]*, double }** %a, align 8
   ret void
 }
 "
@@ -774,23 +779,33 @@ source_filename = \\"main\\"
 
 define void @main() {
 entry:
-  %a = alloca [3 x i8]*, align 8
-  %0 = alloca [3 x i8], align 1
-  %1 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 0
-  store i8 49, i8* %1, align 1
-  %2 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 1
-  store i8 50, i8* %2, align 1
-  %3 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 2
-  store i8 51, i8* %3, align 1
-  store [3 x i8]* %0, [3 x i8]** %a, align 8
-  %4 = alloca [3 x i8], align 1
-  %5 = getelementptr [3 x i8], [3 x i8]* %4, i64 0, i32 0
-  store i8 52, i8* %5, align 1
-  %6 = getelementptr [3 x i8], [3 x i8]* %4, i64 0, i32 1
-  store i8 53, i8* %6, align 1
-  %7 = getelementptr [3 x i8], [3 x i8]* %4, i64 0, i32 2
-  store i8 54, i8* %7, align 1
-  store [3 x i8]* %4, [3 x i8]** %a, align 8
+  %a = alloca { [3 x i8]*, double }*, align 8
+  %0 = alloca { [3 x i8]*, double }, align 8
+  %1 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 0
+  %2 = alloca [3 x i8], align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 0
+  store i8 49, i8* %3, align 1
+  %4 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 1
+  store i8 50, i8* %4, align 1
+  %5 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 2
+  store i8 51, i8* %5, align 1
+  store [3 x i8]* %2, [3 x i8]** %1, align 8
+  %6 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 1
+  store double 3.000000e+00, double* %6, align 8
+  store { [3 x i8]*, double }* %0, { [3 x i8]*, double }** %a, align 8
+  %7 = alloca { [3 x i8]*, double }, align 8
+  %8 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %7, i64 0, i32 0
+  %9 = alloca [3 x i8], align 1
+  %10 = getelementptr [3 x i8], [3 x i8]* %9, i64 0, i32 0
+  store i8 52, i8* %10, align 1
+  %11 = getelementptr [3 x i8], [3 x i8]* %9, i64 0, i32 1
+  store i8 53, i8* %11, align 1
+  %12 = getelementptr [3 x i8], [3 x i8]* %9, i64 0, i32 2
+  store i8 54, i8* %12, align 1
+  store [3 x i8]* %9, [3 x i8]** %8, align 8
+  %13 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %7, i64 0, i32 1
+  store double 3.000000e+00, double* %13, align 8
+  store { [3 x i8]*, double }* %7, { [3 x i8]*, double }** %a, align 8
   ret void
 }
 "
@@ -812,18 +827,23 @@ source_filename = \\"main\\"
 
 define void @main() {
 entry:
-  %a = alloca [3 x i8]*, align 8
-  %0 = alloca [3 x i8], align 1
-  %1 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 0
-  store i8 49, i8* %1, align 1
-  %2 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 1
-  store i8 50, i8* %2, align 1
-  %3 = getelementptr [3 x i8], [3 x i8]* %0, i64 0, i32 2
-  store i8 51, i8* %3, align 1
-  store [3 x i8]* %0, [3 x i8]** %a, align 8
-  %b = alloca [3 x i8]*, align 8
-  %4 = load [3 x i8]*, [3 x i8]** %a, align 8
-  store [3 x i8]* %4, [3 x i8]** %b, align 8
+  %a = alloca { [3 x i8]*, double }*, align 8
+  %0 = alloca { [3 x i8]*, double }, align 8
+  %1 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 0
+  %2 = alloca [3 x i8], align 1
+  %3 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 0
+  store i8 49, i8* %3, align 1
+  %4 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 1
+  store i8 50, i8* %4, align 1
+  %5 = getelementptr [3 x i8], [3 x i8]* %2, i64 0, i32 2
+  store i8 51, i8* %5, align 1
+  store [3 x i8]* %2, [3 x i8]** %1, align 8
+  %6 = getelementptr { [3 x i8]*, double }, { [3 x i8]*, double }* %0, i64 0, i32 1
+  store double 3.000000e+00, double* %6, align 8
+  store { [3 x i8]*, double }* %0, { [3 x i8]*, double }** %a, align 8
+  %b = alloca { [3 x i8]*, double }*, align 8
+  %7 = load { [3 x i8]*, double }*, { [3 x i8]*, double }** %a, align 8
+  store { [3 x i8]*, double }* %7, { [3 x i8]*, double }** %b, align 8
   ret void
 }
 "
