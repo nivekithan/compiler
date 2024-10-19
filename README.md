@@ -1,6 +1,6 @@
 # Typescript Compiler
 
-This is a small Educational compiler which I created to apply my knowledge I learned from Compiler coruse from Collage. I have also written a lot of comprenhsive test to make sure compiler works as it expected.
+This is a small Educational compiler which I created to apply my knowledge of compilers. I have also written a lot of comprenhsive test to make sure compiler works as it expected.
 
 It converts a small subset of typescript language to Native code using LLVM backend.
 
